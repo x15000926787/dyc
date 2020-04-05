@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"/>
+    <meta content="yes" name="apple-mobile-web-app-capable"/>
+    <meta content="black" name="apple-mobile-web-app-status-bar-style"/>
+    <meta content="telephone=no" name="format-detection"/>
+    <meta content="email=no" name="format-detection"/>
+    <meta content="initial-scale=1.0,user-scalable=no,maximum-scale=1" media="(device-height: 568px)" name="viewport"/>
+    <title>form表单验证</title>
+    <style>
+        body{
+            background: #343c48;
+            color: #fff;
+        }
+        fieldset{
+            border: 0;
+            margin: 0 0 0 45px;
+            
+        }
+        .outermost{
+            margin: 300px 0 0 600px;
+            background: #2a3039;
+            width: 600px;
+            border-radius: 10px;
+        }
+        dl dt,dl dd{
+            display: inline-block;
+            vertical-align: top;
+        }
+        input{
+            height: 30px;
+            line-height: 30px;
+            width: 220px;
+            outline: none;
+            padding: 0 10px;
+            background: #343c48 !important;
+            border: 1px solid #95a2b1;
+            color: #fff !important;
+        }
+        dl{
+            margin-bottom: 15px;
+        }
+        button{
+            width: 120px;
+    height: 35px;
+    border: 0;
+    background: #4499ff;
+    color: #fff;
+    margin: 20px 0 10px 178px;
+    border-radius: 5px;
+        }
+
+.tit{
+    font-size: 24px;
+    font-weight: 700;
+    /* text-align: center; */
+    margin: 5px 0 30px 195px;
+}
+
+       
+    </style>
+    
+   
+
+</head>
+<body>
+    
+<form  id="form" class="outermost">
+   
+    <fieldset>
+       
+        <div class="tit"><label id="uname"></label>账户管理</div>
+        
+        <dl>
+            <dt>原始密码</dt>
+            <dd>
+                <input type="password"  id="oq">
+            </dd>
+        </dl>
+        <dl>
+            <dt>新密码</dt>
+            <dd>
+                <input type="password"  id="eq">
+            </dd>
+        </dl>
+        <dl>
+            <dt>确认新密码</dt>
+            <dd>
+                <input type="password" id="req" data-equal="#eq" >
+            </dd>
+        </dl>
+        <dl>
+            <dt>手机</dt>
+            <dd>
+                <input type="text" id="phone" data-mobile="true">
+            </dd>
+        </dl>
+        <dl>
+            <dt>邮箱</dt>
+            <dd>
+                <input type="text" id="email" data-email="true">
+            </dd>
+        </dl>
+
+        <button type="button" id="button1">提交</button><label id="info"></label>
+    </fieldset>
+
+</form>
+
+<script src="js/jquery.js"></script>
+<script src="verJs/verJs.min.js"></script>
+<script type="text/javascript"  src="setup.js"></script>
+    <script type="text/javascript">
+        var uid;
+        var ophone;
+        var oemail;
+        function connect(){
+            //console.log(url);
+            $.ajax({
+                url:httpIp + '/LF/getsessions',
+                dataType : "json",
+                type : "POST",
+                success : function(data) {
+                    if(data) {
+                        console.log(data);
+                        if (data.result==1)
+                        {
+                         $("#phone").val(data.phone)  ;
+                         $("#email").val(data.email)  ;
+                         $("#uname").html(data.uname);
+                         uid = data.uid;
+                            phone = data.phone;
+                            email = data.email;
+
+                    }else{
+                        alert("something wrong!");
+                    }
+                }
+            }
+
+        });
+
+        }
+
+        function commit(){
+            //console.log(url);
+            var oq=$("#oq").val();
+            var eq=$("#eq").val();
+            var req=$("#req").val();
+            var phone=$("#phone").val();
+            var email=$("#email").val();
+            if (oq.length>0)
+            {
+                if (eq.length==0 || req.length==0)
+                {
+                    setTimeout(function () {
+                        $("#info").html("新密码不能为空！");
+                    },200);
+
+                    return;
+                }
+                if (eq!=req)
+                {
+
+                    setTimeout(function () {
+                        $("#info").html("新密码两次输入不同！");
+                    },200);
+                    return;
+                }
+                console.log(oq,eq,uid);
+                $.ajax({
+                    url:httpIp + '/LF/resetpasswd',
+                    type: 'POST',
+                    async: true,
+                    data: { op: oq, np: eq ,us:uid},
+                    timeout: timeOutNum,
+                    dataType: 'json',
+                    success : function(data) {
+                        if(data) {
+                            console.log(data);
+                            if (data.result==1)
+                            {
+
+                                setTimeout(function () {
+                                    $("#info").html("密码修改成功！");
+
+                                    window.location.href = "reset.html";//指向登录的页面地址
+                                },300)
+                            }else if (data.result==2)
+                            {
+                                $("#info").html("原密码错误！");
+                            }
+                            else{
+                                alert("something wrong!");
+                            }
+                        }
+                    }
+
+                });
+            }
+            if (phone.length==0)
+            {
+                if (confirm("确定取消手机短信告警？")==true){
+                    phone = "";
+
+                }else{
+                    return;
+                }
+
+            }
+            if (email.length==0)
+            {
+                if (confirm("确定取消Email告警？")==true){
+                    email = "";
+                }else{
+                    return;
+                }
+
+            }
+            console.log(phone,email,uid);
+            if (ophone!=phone||oemail!=email)
+            {
+                $.ajax({
+                    url:httpIp + '/LF/resetphone',
+                    type: 'POST',
+                    async: true,
+                    data: { op: phone, np: email ,us:uid},
+                    timeout: timeOutNum,
+                    dataType: 'json',
+                    success : function(data) {
+                        if(data) {
+                            console.log(data);
+                            if (data.result==1)
+                            {
+
+                                setTimeout(function () {
+                                    $("#info").html("密码修改成功！");
+
+                                    window.location.href = "reset.html";//指向登录的页面地址
+                                },3000)
+                            }
+                            else{
+                                alert("something wrong!");
+                            }
+                        }
+                    }
+
+                });
+            }
+
+
+        }
+        function max_width() {
+                    var max = 0;
+                    $("dt").each(function () {
+                        max = Math.max(max,$(this).width());
+                    });
+                    $("dt").width(max);
+            }
+        $(document).on("click", "#button1", function() { commit(); });
+    max_width();
+        connect();
+
+    </script>
+
+</body>
+</html>

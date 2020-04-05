@@ -1,0 +1,1833 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title></title>
+
+	<meta http-equiv="Cache-Control" content="no-transform">
+	<meta http-equiv="Cache-Control" content="no-siteapp">
+	<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,user-scalable=yes">
+
+
+	<!--<link rel="stylesheet" href="css/bootstrap.min.css">
+	<link href="css/main.css" rel="stylesheet" type="text/css">-->
+	<style type="text/css">
+		input[type=number] {
+			height: 25px;
+			width: 52px;
+		}
+		.zhiding .block{
+			width:50px;
+			margin-right:10px;
+			display: inline-block;
+		}
+		input.col{
+			width:95px;
+			margin-right: 2px;
+		}
+		.delete{
+
+			width:20px;
+
+			height:20px;
+
+			border-radius:60%;
+
+			position:absolute;
+
+			top:-10px;
+
+			right:-10px;
+
+		}
+	</style>
+	<style>
+		/*input css*/
+		.iInput{
+			position: absolute;
+			width: 99px;
+			height: 16px;
+			left: 88px;
+			top: 2px;
+			border-bottom: 0px;
+			border-right: 0px;
+			border-left: 0px;
+			border-top: 0px;
+		}
+		.chart-container {
+			height: 330px;
+		}
+        .cronframe{
+			position: absolute;
+			width: 1000px;
+			height: 900px;
+			left: 300px;
+			top: 180px;
+			border-bottom: 0px;
+			border-right: 0px;
+			border-left: 0px;
+			border-top: 0px;
+		}
+		.chart-tooltip {
+			position: absolute;
+			display: none;
+			padding: 5px;
+			max-width: 200px;
+			font-size: 12px;
+			text-align: center;
+			color: #fff;
+			background-color: #000;
+			border-radius: 4px;
+			opacity: 0.8;
+		}
+        table  td {
+           text-align:center;
+           vertical-align:middle;
+        }
+        table  th {
+           text-align:center;
+        }
+      table.gridtable {
+	font-family: verdana,arial,sans-serif;
+	font-size:11px;
+	color:#333333;
+	border-width: 1px;
+	border-color: #666666;
+	border-collapse: collapse;
+}
+table.gridtable th {
+	border-width: 1px;
+	padding: 6px;
+	border-style: solid;
+	border-color: #666666;
+	background-color: #dedede;
+}
+table.gridtable td {
+	border-width: 1px;
+	padding: 6px;
+	border-style: solid;
+	border-color: #666666;
+	background-color: #ffffff;
+}
+		.chart {
+			width: 100%;
+			height: 400px;
+		}
+	</style>
+	<!-- Bootstrap 3.3.6 -->
+	<!-- Bootstrap 3.3.6 -->
+	<link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
+	<link rel="stylesheet" href="dist/css/min.css">
+
+	<!--<link rel="stylesheet" href="dist/css/skins/_all-skins.css">-->
+	<!--<link rel="stylesheet" href="plugins/datepicker/datepicker3.css">-->
+	<!--<link rel="stylesheet" type="text/css" href="plugins/datepicker/daterangepicker.css" />-->
+
+	<link rel="stylesheet" href="css/font-awesome.min.css">
+	<link rel="stylesheet" href="ionicons.min.css">
+	<link rel="stylesheet" href="handsontable.css">
+	<!--<link href="css/bootstrap-datetimepicker.min.css" rel="stylesheet" media="screen">-->
+   <link rel="stylesheet" href="js/themes/default/style.min.css">
+
+	<script src="plugins/jQuery/jquery-2.2.3.min.js"></script>
+    <!--<script src="js/jstree.min.js"></script>
+	<script src="js/chart.js"></script>
+	<script src="plugins/datepicker/bootstrap-datepicker.js"></script>
+	<script src="plugins/datepicker/locales/bootstrap-datepicker.zh-CN.js"></script>
+	<script type="text/javascript" src="plugins/datepicker/moment.js"></script>
+
+	<script type="text/javascript" src="plugins/datepicker/daterangepicker.js"></script>
+	<script src="bootstrap/js/bootstrap.min.js"></script>
+	<script src="dist/js/app.js"></script>
+
+	<script type="text/javascript" src="js/bootstrap-datetimepicker.js" charset="UTF-8"></script>
+	<script type="text/javascript" src="js/locales/bootstrap-datetimepicker.zh-CN.js" charset="UTF-8"></script>
+-->
+	 <link data-jsfiddle="common" rel="stylesheet" media="screen" href="dist/pikaday/pikaday.css">
+  <script data-jsfiddle="common" src="dist/pikaday/pikaday.js"></script>
+  <script data-jsfiddle="common" src="dist/moment/moment.js"></script>
+  <script data-jsfiddle="common" src="dist/zeroclipboard/ZeroClipboard.js"></script>
+
+ 
+  <script data-jsfiddle="common" src="dist/handsontable.js"></script>
+     <script src="setup.js"></script>
+	<!--<script src="js/DDoc.js"></script>
+	<script src="js/FileSaver.js"></script>
+	<script src="js/jszip.js"></script>-->
+
+
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+
+<script type="text/javascript">
+$(function(){
+	$(".format-img img").wrapAll("<ul></ul>");
+	$(".format-img img").each(function(){
+		$(this).wrap('<li></li>');
+	});
+        $(".format-img li:odd").css({background:"#fff"});
+})
+</script>
+<style type="text/css">
+
+body{ background:#fff;}
+.format-img{min-width:780px;}
+.format-img ul{ margin:0; padding:0; list-style:none; float:left; width:100%; background:#fff; text-align:center;}
+	.format-img ul li{ float:left; width:14.285%;_width:14.28%; line-height:0; padding:15px 0}
+		.format-img ul li img{ border:solid 0px #f08; padding:0px; background:#fff;}
+</style>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+
+<body class="skin-blue layout-top-nav" style="height: auto;">
+
+<!-- 遮罩层 -->
+<div id="cover" style="background: #000; position: absolute; left: 0px; top: 0px; width: 100%; height:100%; opacity: 0.8; display: none; z-index: 198 ">
+
+</div>
+
+	<div style="width:90%;margin-left :10px">
+		<div class="nav-tabs-custom">
+
+			<div id="zjTitle"> 定时任务列表</div>
+
+			<div id="editCell" class="hot handsontable">
+
+			</div>
+
+
+
+		</div>
+
+ <!--
+       <table class="table table-striped table-bordered table-hover">
+       -->
+       <div id="authorTitle"> 任务详情</div>
+		<div id="editDetail" class="hot handsontable">
+
+		</div>
+		<br>
+		<br>
+		<div id="newdtl" style="display: none">
+			<div> 添加控制点</div>
+        <table class="gridtable" >
+        <thead>
+            <tr><th style="width:300px">类型</th><th style="width:300px">名称</th><th style="width:300px">value</th><th   style="width:300px"><a id='canBtn' title='取消' href='javascript:canceladd()'><span class='glyphicon glyphicon-log-out'></span></a></th></tr>
+        </thead>
+        <tbody>
+		<tr><td  ><select id="newtype" onchange="changeaodo()"><option value="1" selected>状态</option><option value="2">开关</option></select></td>
+				<td  >
+					<select id="newname" onchange="changename()"></select>
+				</td>
+				<td  >
+					<!--<input list="list" id="newval"/>
+					<datalist id="list">
+						&lt;!&ndash;<option value="111">ddd</option>&ndash;&gt;
+
+					</datalist>-->
+					<div style="position:relative;">
+						<select style="width:120px;" id="list"
+								onchange="document.getElementById('input').value=this.value">
+
+						</select>
+						<input id="input" name="input" class="iInput" >
+					</div>
+				</td>
+                <td >
+					<a id='savdtl' href='javascript:void(0);' title='保存' style="display:block;text-align:center; float:center;"><span class='glyphicon glyphicon-ok-circle' ></span>&nbsp;</a>
+
+				</td>
+              </tr>
+
+
+        </tbody>
+       </table>
+
+		</div>
+
+
+
+
+	</div>
+	<!--<iframe id="cronme" class="cronframe" src="tcron.jsp" style="display: none" frameborder="1"></iframe>-->
+<div id="crondiv" style=" position: absolute; left: 200px; top: 60px; width: 80%;z-index: 199 ;display: none;background: #fff">
+	<img src="img/timg.jpeg" class="delete" onclick="closecron()"/>
+    <div id="mainContent" class="wrapper">
+
+	<div class="row"><div class="col-lg-9"><h1 class="toolName">Cron表达式生成器</h1>
+
+		<div>
+
+			<ul class="nav nav-tabs" role="tablist">
+				<li role="presentation" class="active">
+					<a href="#second" aria-controls="second" role="tab" data-toggle="tab">秒</a>
+				</li>
+				<li role="presentation">
+					<a href="#minute" aria-controls="minute" role="tab" data-toggle="tab">分钟</a></li>
+				<li role="presentation">
+					<a href="#hour" aria-controls="hour" role="tab" data-toggle="tab">小时</a>
+				</li>
+				<li role="presentation">
+					<a href="#day" aria-controls="day" role="tab" data-toggle="tab">日</a>
+				</li>
+				<li role="presentation">
+					<a href="#month" aria-controls="month" role="tab" data-toggle="tab">月</a>
+				</li>
+				<li role="presentation">
+					<a href="#week" aria-controls="week" role="tab" data-toggle="tab">周</a>
+				</li>
+				<li role="presentation">
+					<a href="#year" aria-controls="year" role="tab" data-toggle="tab">年</a>
+				</li>
+			</ul>
+
+			<div class="tab-content">
+
+				<div role="tabpanel" class="tab-pane active" id="second">
+					<div class="radio">
+						<label>
+							<input type="radio" name="secondType" value="All" checked="checked">
+							每秒 允许的通配符[, - * /]
+						</label>
+					</div>
+					<div class="radio">
+						<label>
+							<input type="radio" name="secondType" value="Cyclic">
+							周期从
+							<input type="number" maxlength="2" max="59" min="0" value="0" id="secondTypeCyclic_1">
+							-
+							<input type="number" maxlength="2" max="59" min="1" value="1" id="secondTypeCyclic_2">
+							秒
+						</label>
+					</div>
+					<div class="radio">
+						<label>
+							<input type="radio" name="secondType" value="Interval">
+							从
+							<input type="number" maxlength="2" max="59" min="0" value="0" id="secondTypeInterval_1" value="">
+							秒开始,每
+							<input type="number" maxlength="2" max="59" min="1" value="1" id="secondTypeInterval_2" value="">
+							秒执行一次
+						</label>
+					</div>
+					<div class="radio">
+						<label>
+							<input type="radio" name="secondType" value="Assigned">
+							指定
+						</label>
+					</div>
+					<div style="margin-left: 20px;">
+						<div id="secondTypeAssigned_1" class="zhiding"></div>
+
+					</div>
+				</div>
+
+				<div role="tabpanel" class="tab-pane" id="minute">
+					<div class="radio">
+						<label>
+							<input type="radio" name="minuteType" value="All" checked="checked">
+							每分钟 允许的通配符[, - * /]
+						</label>
+					</div>
+					<div class="radio">
+						<label>
+							<input type="radio" name="minuteType" value="Cyclic">
+							周期从
+							<input type="number" maxlength="2" max="59" min="0" value="0" id="minuteTypeCyclic_1" value="">
+							-
+							<input type="number" maxlength="2" max="59" min="1" value="1" id="minuteTypeCyclic_2" value="">
+							分钟
+						</label>
+					</div>
+					<div class="radio">
+						<label>
+							<input type="radio" name="minuteType" value="Interval">
+							从
+							<input type="number" maxlength="2" max="59" min="0" value="0" id="minuteTypeInterval_1" value="">
+							分钟开始,每
+							<input type="number" maxlength="2" max="59" min="1" value="1" id="minuteTypeInterval_2" value="">
+							分钟执行一次
+						</label>
+					</div>
+					<div class="radio">
+						<label>
+							<input type="radio" name="minuteType" value="Assigned">
+							指定
+						</label>
+					</div>
+					<div style="margin-left: 20px;">
+						<div id="minuteTypeAssigned_1" class="zhiding"></div>
+
+					</div>
+				</div>
+
+				<div role="tabpanel" class="tab-pane" id="hour">
+					<div class="radio">
+						<label>
+							<input type="radio" name="hourType" value="All" checked="checked">
+							每小时 允许的通配符[, - * /]
+						</label>
+					</div>
+					<div class="radio">
+						<label>
+							<input type="radio" name="hourType" value="Cyclic">
+							周期从
+							<input type="number" maxlength="2" max="23" min="0" value="0" id="hourTypeCyclic_1" value="">
+							-
+							<input type="number" maxlength="2" max="23" min="1" value="1" id="hourTypeCyclic_2" value="">
+							小时
+						</label>
+					</div>
+					<div class="radio">
+						<label>
+							<input type="radio" name="hourType" value="Interval">
+							从
+							<input type="number" maxlength="2" max="23" min="0" value="0" id="hourTypeInterval_1" value="">
+							时开始,每
+							<input type="number" maxlength="2" max="23" min="1" value="1" id="hourTypeInterval_2" value="">
+							小时执行一次
+						</label>
+					</div>
+					<div class="radio">
+						<label>
+							<input type="radio" name="hourType" value="Assigned">
+							指定
+						</label>
+					</div>
+					<div style="margin-left: 20px;">
+
+						<div id="hourTypeAssigned_1" class="zhiding"></div>
+					</div>
+				</div>
+
+				<div role="tabpanel" class="tab-pane" id="day">
+					<div class="radio">
+						<label>
+							<input type="radio" name="dayType" value="All" checked="checked">
+							每日 允许的通配符[, - * / L W]
+						</label>
+					</div>
+					<div class="radio">
+						<label>
+							<input type="radio" name="dayType" value="Cyclic">
+							周期从
+							<input type="number" maxlength="2" max="31" min="1" value="1" id="dayTypeCyclic_1" value="">
+							-
+							<input type="number" maxlength="2" max="31" min="2" value="2" id="dayTypeCyclic_2" value="">
+							日
+						</label>
+					</div>
+					<div class="radio">
+						<label>
+							<input type="radio" name="dayType" value="Interval">
+							从
+							<input type="number" maxlength="2" max="31" min="1" value="1" id="dayTypeInterval_1" value="">
+							日开始,每
+							<input type="number" maxlength="2" max="31" min="1" value="1" id="dayTypeInterval_2" value="">
+							日执行一次
+						</label>
+					</div>
+					<div class="radio">
+						<label>
+							<input type="radio" name="dayType" value="Assigned">
+							指定
+						</label>
+					</div>
+					<div style="margin-left: 20px;">
+						<div id="dayTypeAssigned_1" class="zhiding"></div>
+
+					</div>
+					<div class="radio">
+						<label>
+							<input type="radio" name="dayType" value="NotAssigned">
+							不指定
+						</label>
+					</div>
+					<div class="radio">
+						<label>
+							<input type="radio" name="dayType" value="RecentDays">
+							每月
+							<input type="number" id="dayTypeRecentDays_1" value="">
+							号最近的那个工作日
+						</label>
+					</div>
+					<div class="radio">
+						<label>
+							<input type="radio" name="dayType" value="LastDayOfMonth">
+							本月最后一天
+						</label>
+					</div>
+					<div class="radio">
+						<label>
+							<input type="radio" name="dayType" value="LastDayOfMonthRecentDays">
+							本月最后一个工作日
+						</label>
+					</div>
+				</div>
+
+				<div role="tabpanel" class="tab-pane" id="month">
+					<div class="radio">
+						<label>
+							<input type="radio" name="monthType" value="All" checked="checked">
+							每月 允许的通配符[, - * /]
+						</label>
+					</div>
+					<div class="radio">
+						<label>
+							<input type="radio" name="monthType" value="Cyclic">
+							周期从
+							<input type="number" maxlength="2" max="12" min="1" value="1" id="monthTypeCyclic_1" value="">
+							-
+							<input type="number" maxlength="2" max="12" min="1" value="2" id="monthTypeCyclic_2" value="">
+							月
+						</label>
+					</div>
+					<div class="radio">
+						<label>
+							<input type="radio" name="monthType" value="Interval">
+							从
+							<input type="number" maxlength="2" max="12" min="1" value="1" id="monthTypeInterval_1" value="">
+							月开始,每
+							<input type="number" maxlength="2" max="12" min="1" value="1" id="monthTypeInterval_2" value="">
+							月执行一次
+						</label>
+					</div>
+					<div class="radio">
+						<label>
+							<input type="radio" name="monthType" value="Assigned">
+							指定
+						</label>
+					</div>
+					<div style="margin-left: 20px;">
+						<div id="monthTypeAssigned_1" class="zhiding"></div>
+
+					</div>
+					<div class="radio">
+						<label>
+							<input type="radio" name="monthType" value="NotAssigned">
+							不指定
+						</label>
+					</div>
+				</div>
+
+				<div role="tabpanel" class="tab-pane" id="week">
+					<div class="radio">
+						<label>
+							<input type="radio" name="weekType" value="All" checked="checked">
+							每周 允许的通配符[, - * / L #]
+						</label>
+					</div>
+					<div class="radio">
+						<label>
+							<input type="radio" name="weekType" value="Cyclic">
+							周期从
+							<input type="number" maxlength="2" max="7" min="1" value="1" id="weekTypeCyclic_1" value="">
+							-
+							<input type="number" maxlength="2" max="7" min="1" value="1" id="weekTypeCyclic_2" value="">
+							周
+						</label>
+					</div>
+					<div class="radio">
+						<label>
+							<input type="radio" name="weekType" value="WeeksOfWeek">
+							第
+							<input type="number" maxlength="2" max="7" min="1" value="1" id="weekTypeWeeksOfWeek_1" value="">
+							周 的星期
+							<input type="number" maxlength="2" max="7" min="1" value="1" id="weekTypeWeeksOfWeek_2" value="">
+						</label>
+					</div>
+					<div class="radio">
+						<label>
+							<input type="radio" name="weekType" value="Assigned">
+							指定
+						</label>
+					</div>
+					<div style="margin-left: 20px;">
+						<div id="weekTypeAssigned_1" class="zhiding"></div>
+
+					</div>
+					<div class="radio">
+						<label>
+							<input type="radio" name="weekType" value="NotAssigned">
+							不指定
+						</label>
+					</div>
+					<div class="radio">
+						<label>
+							<input type="radio" name="weekType" value="LastWeekOfMonth">
+							本月最后一个星期
+							<input type="number" id="weekTypeLastWeekOfMonth_1" value="1">
+						</label>
+					</div>
+				</div>
+
+				<div role="tabpanel" class="tab-pane" id="year">
+					<div class="radio">
+						<label>
+							<input type="radio" name="yearType" value="All" checked="checked">
+							每年 允许的通配符[, - * /]
+						</label>
+					</div>
+					<div class="radio">
+						<label>
+							<input type="radio" name="yearType" value="NotAssigned">
+							不指定
+						</label>
+					</div>
+					<div class="radio">
+						<label>
+							<input type="radio" name="yearType" value="Cyclic">
+							周期从
+							<input type="number" id="yearTypeCyclic_1" value="2019">
+							-
+							<input type="number" id="yearTypeCyclic_2" value="2299">
+							年
+						</label>
+					</div>
+					<div class="radio">
+						<label>
+							<input type="radio" name="yearType" value="Assigned">
+							指定
+						</label>
+					</div>
+					<div style="margin-left: 20px;">
+						<div id="yearTypeAssigned_1" class="zhiding"></div>
+
+					</div>
+				</div>
+			</div>
+		</div>
+		<hr>
+		<div class="panel panel-info">
+			<div class="panel-heading">
+				<h3 class="panel-title">结果</h3>
+			</div>
+			<div class="panel-body">
+				<form class="form-inline">
+					<body >
+					<div class="form-group">
+						<label for="result" class="sr-only">Password</label>
+						<table style="height: 100px;">
+							<tbody>
+							<tr>
+								<td>
+								</td>
+								<td align="center">
+									秒
+								</td>
+								<td align="center">
+									分钟
+								</td>
+								<td align="center">
+									小时
+								</td>
+								<td align="center">
+									日
+								</td>
+								<td align="center">
+									月
+									<br>
+								</td>
+								<td align="center">
+									星期
+								</td>
+								<td align="center">
+									年
+								</td>
+							</tr>
+							<tr>
+								<td>
+									表达式字段:
+								</td>
+								<td>
+									<input type="text" disabled name="v_secondType" class="col" value="*" readonly="readonly">
+								</td>
+								<td>
+									<input type="text" disabled name="v_minuteType" class="col" value="*" readonly="readonly">
+								</td>
+								<td>
+									<input type="text" disabled name="v_hourType" class="col" value="*" readonly="readonly">
+								</td>
+								<td>
+									<input type="text" disabled name="v_dayType" class="col" value="*" readonly="readonly">
+								</td>
+								<td>
+									<input type="text" disabled name="v_monthType" class="col" value="*" readonly="readonly">
+								</td>
+								<td>
+									<input type="text" disabled name="v_weekType" class="col" value="?" readonly="readonly">
+								</td>
+								<td>
+									<input type="text" disabled name="v_yearType" class="col" readonly="readonly">
+								</td>
+							</tr>
+							<tr>
+								<td>Cron 表达式:</td>
+								<td colspan="6">
+									<input type="text" name="cron" id="result" style="width:98%;" >
+								</td>
+								<td>
+									<input type="button" class="btn btn-info btn-sm" value=" 解 析 " id="get10">
+									<input type="button" class="btn btn-info btn-sm" value=" 确 定 " onclick="copycron()" id="copy">
+								</td>
+							</tr>
+							<tr>
+								<td colspan="8">最近10次运行时间:</td>
+							</tr>
+							<tr>
+								<td colspan="8" id="runTime">
+								</td>
+							</tr>
+							</tbody>
+						</table>
+					</div>
+					</body>
+				</form>
+			</div>
+		</div>
+		<div class="ToolAbout">
+
+
+			<strong>常用Quartz Cron表达式：</strong>
+			<p>
+				（1）<strong>0 0 2 1 * ?</strong> 表示在每月的1日的凌晨2点调整任务
+			</p>
+			<p>
+				（2）<strong>0 15 10 ? * MON-FRI</strong> 表示周一到周五每天上午10:15执行作业
+			</p>
+			<p>
+				（3）<strong>0 15 10 ? 6L </strong> 表示每个月的最后一个星期五上午10:15执行作
+			</p>
+			<p>
+				（4）<strong>0 0 10,14,16 * * ?</strong> 每天上午10点，下午2点，4点
+			</p>
+			<p>
+				（5）<strong>0 0/30 9-17 * * ?</strong> 朝九晚五工作时间内每半小时
+			</p>
+			<p>
+				（6）<strong>0 0 12 ? * WED</strong> 表示每个星期三中午12点
+			</p>
+			<p>
+				（7）<strong>0 0 12 * * ?</strong> 每天中午12点触发
+			</p>
+			<p>
+				（8）<strong>0 15 10 ? * * </strong> 每天上午10:15触发
+			</p>
+
+			<!--<p>
+			（12）<strong>0 * 14 * * ?</strong> 在每天下午2点到下午2:59期间的每1分钟触发
+		</p>
+			<p>
+				（13）<strong>0 0/5 14 * * ?</strong> 在每天下午2点到下午2:55期间的每5分钟触发
+			</p>
+			<p>
+				（14）<strong>0 0/5 14,18 * * ?</strong> 在每天下午2点到2:55期间和下午6点到6:55期间的每5分钟触发
+			</p>
+			<p>
+				（15）<strong>0 0-5 14 * * ?</strong> 在每天下午2点到下午2:05期间的每1分钟触发
+			</p>
+			<p>
+				（16）<strong>0 10,44 14 ? 3 WED</strong> 每年三月的星期三的下午2:10和2:44触发
+			</p>
+			<p>
+				（17）<strong>0 15 10 ? * MON-FRI</strong> 周一至周五的上午10:15触发
+			</p>
+			<p>
+				（18）<strong>0 15 10 15 * ?</strong> 每月15日上午10:15触发
+			</p>
+			<p>
+				（19）<strong>0 15 10 L * ?</strong> 每月最后一日的上午10:15触发
+			</p>
+			<p>
+				（20）<strong>0 15 10 ? * 5L</strong> 每月的最后一个星期五上午10:15触发
+			</p>
+			<p>
+				（21）<strong>0 15 10 ? * 5L </strong> 2002年至2005年的每月的最后一个星期五上午10:15触发
+			</p>
+			<p>
+				（22）<strong>0 15 10 ? * 5#3</strong> 每月的第三个星期五上午10:15触发
+			</p>-->
+		</div></div>
+
+	    </div>
+		<script type="text/javascript" src="js/common/common.js"></script>
+		<script type="text/javascript" src="js/common/main.js" charset="utf-8"></script>
+		<script src="js/home/quartz-cron/quartz-cron.js"></script>
+
+		<script type="text/javascript">
+			var nowJz = 0;
+			var nowJzLong = "all"
+			var nowPlanSn = 0
+			var nowZhName = ""
+			var timeOutNum = 100000;
+			var titleFontSize = 5;
+			var aodo=['',"状态","档位"];
+			var columns1 = [{ data: 0, readOnly: true, type: 'text', wordWrap: false },{data: 1, readOnly: false, type: 'text'},{data: 2,type: 'text'},{data: 3,type: 'text'},{data:4,renderer:'html',readonly:true}];
+			var colHeaders1 = ['ID', '任务名称','定时周期','描述',"<a id='addBtn' href='javascript:addRow()'><span class='glyphicon glyphicon-plus'></span></a>"];
+			var columns2 = [{ data: 0, readOnly: true, type: 'text', wordWrap: false },{data: 1,readOnly: true, type: 'text'},{data: 2,readOnly: true, type: 'text'},{data: 3,readOnly: true, type: 'text'},{data:4,renderer:'html',readonly:true}];
+			var colHeaders2 = ['ID','名称','KEY','value',"<a id='addBtn2' href='javascript:addDetail()'><span class='glyphicon glyphicon-plus'></span></a>"];
+
+			var etypes;
+			var nowTab = 1;
+			var kaskid = 1;
+			var timeSearchTemp = "";
+			//var its = str.split(" ");
+			function onload() {
+				//reset();
+
+				/*if (str.length>0){
+					$("#result").val(str);
+					$('input[name=v_secondType]').val(its[0]);
+					$('input[name=v_minuteType]').val(its[1]);
+					$('input[name=v_hourType]').val(its[2]);
+					$('input[name=v_dayType]').val(its[3]);
+					$('input[name=v_monthType]').val(its[4]);
+					$('input[name=v_weekType]').val(its[5]);
+					$('input[name=v_yearType]').val(its[6]);
+					$("#get10").click();
+				}*/
+
+				//analysis();
+
+			}
+
+			function copycron()
+			{
+				var Url2=$("#result").val();
+				/*Url2.select(); // 选择对象
+				document.execCommand("Copy"); // 执行浏览器复制命令
+				//alert("已复制好，可贴粘。");
+				if (window.confirm("已复制好，可贴粘。关闭cron编辑器?")==true)
+				{
+					var ifm = $('#cronme', parent.document);
+					ifm.attr('src','');
+					setDataAtCell([
+				[ir, 3, itm[0][1]]
+			])
+				}*/
+				editHot.setDataAtCell([
+					[nowJz, 2, Url2]
+				]);
+				$('#crondiv').hide();  //关闭弹窗
+				$('#cover').css('display','none'); //关闭遮罩层
+			}
+
+
+			$("#get10").click(function ()  {
+				var rlt=$("#result").val();
+				console.log(rlt);
+				$("#runTime").empty();
+				$("#cp").html("");
+				$.ajax({
+					url: httpIp + '/qs/getcronstr',
+					type: 'POST',
+					async: true,
+					data: { pno:rlt},
+					timeout: timeOutNum,
+					dataType: 'json',
+					success: function (data, textStatus, jqXHR) {
+						if (data.result == 1) {
+							console.log(data);
+							for (i=0;i<10;i++)
+								$("#runTime").append("<tr><td>"+data.data[i]);
+
+
+						}
+					},
+					error: function (xhr, textStatus) {
+						console.log('error');
+					}
+				})
+				//$("#rm2").append(" ddd &nbsp;<input  type=checkbox > </option>&nbsp;&nbsp;");
+				//$("#rm2").append(" ddd &nbsp;<input  type=checkbox > </option>&nbsp;&nbsp;");
+
+			})
+		</script>
+
+
+
+
+		<script type="text/javascript">
+		
+
+        
+        /*var now = new Date();
+		//alert(now.getDate()+'-'+now.getMonth());  
+		//格式化日，如果小于9，前面补0  
+		var day = ("0" + now.getDate()).slice(-2);  
+		//格式化月，如果小于9，前面补0  
+		var month = ("0" + (now.getMonth() + 1)).slice(-2);  
+		//拼装完整日期格式  
+		var today = now.getFullYear()+"-"+(month)+"-"+(day) ; */
+		//完成赋值  
+
+       // document.getElementById('dayInput').valueAsDate = new Date();
+       
+       /*var phonenoValidator = function (value, callback) {
+			//console.log(value+'__'+value.length)
+			if (!value || 0 === value.length || value.length != 11 ) {
+				callback(false);
+			} else {
+				callback(true);
+			}
+		};*/
+		 function addDetail()
+		 {
+		 	$("#newdtl").show();
+		 }
+		function showCronEdit(ir)
+		{
+			nowJz = ir;
+			var cronstr = editHot.getDataAtCell(ir,2);
+
+			//$("#cronme").attr('src','tcron.jsp?ch='+cronstr);
+			$("#result").val(cronstr);
+			$("#get10").click();
+			$('#crondiv').show();  //显示弹窗
+			$('#cover').css('display','block'); //显示遮罩层
+			//$('#cover').css('height',document.body.clientHeight+'px'); //设置遮罩层的高度为当前页面高度
+			//$("#cronme").show();
+		}
+		function closecron()
+		{
+
+
+			$('#crondiv').hide();  //关闭弹窗
+			$('#cover').css('display','none'); //关闭遮罩层
+			//$('#cover').css('height',document.body.clientHeight+'px'); //设置遮罩层的高度为当前页面高度
+			//$("#cronme").show();
+		}
+		function canceladd()
+		{
+			$("#newdtl").hide();
+		}
+		 function negativeValueRenderer(instance, td, row, col, prop, value, cellProperties) {
+            	 if (prop == '4') {
+                 
+            		 Handsontable.renderers.HtmlRenderer.apply(this, arguments);
+            		 //[td.ondblclick=function (){};
+					 //td.setAttribute("readonly","22");
+					// console.log(td.style)
+             }else if (prop == '2')
+			 {
+				 Handsontable.renderers.HtmlRenderer.apply(this, arguments);
+				 td.innerHTML=editHot.getDataAtCell(row,2)+"&nbsp;&nbsp;&nbsp;<a id='cornedit' href='javascript:void(0)' style='text-align:right; float:right;'><span onclick='showCronEdit("+row+")' class='fa fa-edit'></span></a>";
+
+			 }
+            	 else
+            	 {
+            	 Handsontable.renderers.TextRenderer.apply(this, arguments);
+
+            	 }
+		 }
+         Handsontable.renderers.registerRenderer('negativeValueRenderer', negativeValueRenderer);
+		editHot = new Handsontable(document.getElementById('editCell'),
+			{
+				columns: columns1,
+				data: [],
+				formulas: true,
+				outsideClickDeselects: false,
+				stretchH: 'all',
+				colHeaders: colHeaders1,
+				rowHeaders: false,
+				fillHandle: false,
+				colWidths: 60,
+				contextMenu: false,
+				disableVisualSelection: false,
+				className: 'htCenter',
+				enterBeginsEditing: false,
+				multiSelect: true,
+				beforeOnCellMouseDown: function (event, coords) {
+					if (coords.row < 0) {
+						event.stopImmediatePropagation();
+					}
+				},
+				
+		           cells: function (row, col, prop) {
+                var cellProperties = {};
+                cellProperties.renderer = "negativeValueRenderer";
+                return cellProperties;
+                }
+			});
+		var reg = RegExp(/.do_./);
+		/*function hideCell1(cellIndex, isHide) {
+			$('#detailHot').find('tr').each(function () {
+				//console.log("ddd");
+				$(this).find('>th').eq(cellIndex).toggle(!isHide);
+				$(this).find('>td').eq(cellIndex).toggle(!isHide);
+			});
+		}*/
+		function changename(){
+			var ad = $("#newname").val().split(",")[1];
+			var aa = $("#newtype").val();
+			console.log(ad,aa);
+			$("#input").val("");
+			$("#list").empty();
+			var str="";
+			str = str + "<option value='' ";
+
+			str = str + "> </option>"
+			//$("#list").append(str);
+			if (aa==2)
+			{
+				for (var i=0;i<etypes.length;i++) {
+					str="";
+					if (ad == etypes[i][0]) {
+						console.log(etypes[i][2]);
+						str = str + "<option value='" + etypes[i][1] + "' ";
+
+						str = str + ">" +etypes[i][1]+","+ etypes[i][2] + "</option>"
+						$("#list").append(str);
+					}
+				}
+				$('#list option:first').prop('selected', 'selected');
+				$("#input").val($("#list").val());
+			}else
+			{
+
+			}
+			/*detailHot.setDataAtCell([
+				[ir, 3, itm[0][1]]
+			]);*/
+			//console.log($("#selnm"+id).find("option:selected").text());
+			//selnm.empty();
+		}
+		function changeaodo(){
+			var ad = $("#newtype").val();
+			//console.log(ir);
+			$("#newname").empty();
+			var itm,str="";
+			if (ad==1) itm = aonames;
+			else itm = donames;
+			console.log(itm);
+			for (var i=0;i<itm.length;i++) {
+				str="";
+				str = str + "<option value='" + itm[i][1]+","+itm[i][2] + "' ";
+				//if (value==itm[i][0]) str=str+"selected";
+				str = str + ">" + itm[i][0] + "</option>"
+				$("#newname").append(str);
+			}
+			$('#newname option:first').prop('selected', 'selected');
+			changename();
+			/*detailHot.setDataAtCell([
+				[ir, 3, itm[0][1]]
+			]);*/
+			//console.log($("#selnm"+id).find("option:selected").text());
+			//selnm.empty();
+		}
+		function negativeValueRenderer_jobdetail(instance, td, row, col, prop, value, cellProperties) {
+			//
+			var kk,tt,id,ado;
+			    id = detailHot.getDataAtCell(row,0);
+				kk = detailHot.getDataAtCell(row,2);
+			    tt = detailHot.getDataAtCell(row,5);  //etype
+			Handsontable.renderers.TextRenderer.apply(this, arguments);
+			switch(prop) {
+				case 3:
+					if(kk.match(reg)){
+
+						var str="";
+						for (var i=0;i<etypes.length;i++) {
+							if (tt == etypes[i][0]) {
+
+								if (value==etypes[i][1]) str=etypes[i][2];
+								//console.log(kk+"："+tt+"："+str);
+							}
+						}
+						td.innerHTML = str;
+					}
+					break;
+				case 4:
+					Handsontable.renderers.HtmlRenderer.apply(this, arguments);
+					break;
+				case 5:
+					td.style = "display:none";
+					break;
+				default:
+					;
+			}
+				/*switch(prop) {
+					case 4:
+						if(kk.match(reg)){
+							var str="";
+							for (var i=0;i<etypes.length;i++) {
+								if (tt == etypes[i][0]) {
+									str = str + "<option value='" + etypes[i][1] + "' ";
+									if (value==etypes[i][1]) str=str+"selected";
+									str = str + ">" + etypes[i][2] + "</option>"
+								}
+							}
+							td.innerHTML="<select id='sel"+id+"' >"+str+"</select>";
+						}
+						break;
+					case 1:
+						var str="";
+						for (var i=1;i<3;i++) {
+							str = str + "<option value='" + i + "' ";
+							if (value==i) str=str+"selected";
+							str = str + ">" + aodo[i] + "</option>"
+						}
+						td.innerHTML="<select id='selaodo"+id+"' onchange='changeaodo("+id+","+row+")'>"+str+"</select>";
+						break;
+					case 2:
+						var str="";
+						var itm;
+						if (ado==1) itm = aonames;
+						else itm = donames;
+						for (var i=0;i<itm.length;i++) {
+
+								str = str + "<option value='" + itm[i][0] + "' ";
+								if (value==itm[i][0]) str=str+"selected";
+								str = str + ">" + itm[i][0] + "</option>"
+
+						}
+						td.innerHTML="<select id='selnm"+id+"' >"+str+"</select>";
+
+						break;
+
+
+				}*/
+
+
+
+			/*if (prop == '4') {
+
+				Handsontable.renderers.HtmlRenderer.apply(this, arguments);
+
+			}else
+			{
+				Handsontable.renderers.TextRenderer.apply(this, arguments);
+				if (prop == '2')
+				{
+
+				}
+
+
+			}*/
+
+		}
+		Handsontable.renderers.registerRenderer('negativeValueRenderer2', negativeValueRenderer_jobdetail);
+		detailHot = new Handsontable(document.getElementById('editDetail'),
+				{
+					columns: columns2,
+					data: [],
+					formulas: true,
+					outsideClickDeselects: false,
+					stretchH: 'all',
+					colHeaders: colHeaders2,
+					rowHeaders: false,
+					fillHandle: false,
+					colWidths: 60,
+					contextMenu: false,
+					disableVisualSelection: false,
+					className: 'htCenter',
+					enterBeginsEditing: false,
+					multiSelect: true,
+					beforeOnCellMouseDown: function (event, coords) {
+						if (coords.row < 0) {
+							event.stopImmediatePropagation();
+						}
+					},
+
+					cells: function (row, col, prop) {
+						var cellProperties = {};
+						cellProperties.renderer = "negativeValueRenderer2";
+						return cellProperties;
+					}
+				});
+
+
+
+			function addRow() {
+			if (editHot != null) {
+				editHot.alter('insert_row', editHot.countRows());
+				var lastRow = editHot.countRows() - 1;
+				//editHot.setDataAtCell(lastRow, 1,lastRow+1)
+				editHot.setDataAtCell(lastRow, 1, ' ');
+				editHot.setDataAtCell(lastRow, 2, ' ');
+				editHot.setDataAtCell(lastRow, 3, ' ');
+				editHot.setDataAtCell(lastRow, 4, "<a id='subBtn' href='javascript:void(0);'><span class='fa fa-save'></span></a>&nbsp;&nbsp;&nbsp;&nbsp;<a id='delBtn' href='javascript:void(0);'><span class='glyphicon glyphicon-trash'></span></a>");
+			}
+		   }
+		
+		
+			function init() {
+				loadEtype();
+				loadFullName();
+			    loadPlan(1,"1",0);
+
+				getQuartzDetail(1,"");
+				//hideCell1(6, false);
+		}
+			function beforeSend(XMLHttpRequest){    
+		    //console.log("ddd");
+ 			 $("#showResult").show();    
+			}    
+		function complete(XMLHttpRequest, textStatus){    
+  		$("#showResult").hide();    
+			}  
+		function loadPlan(jz,mode,sn) {
+			
+			$.ajax({
+				url: httpIp + '/qs/getquartz',
+				type: 'POST',
+				async: true, 
+				data: { crew: jz, tab: mode, pId: 1 },
+				timeout: timeOutNum,
+				dataType: 'json',
+				 beforeSend:beforeSend, //发送请求        
+                 complete:complete,//请求完成    
+				success: function (data, textStatus, jqXHR) {
+
+					if (data.result == 1) {
+						console.log(data);
+					    $("#zjTitle").html("<font size='" + titleFontSize + "'>"  + "  定时任务列表" + "</font>");
+					   
+					   // $("#authorTitle").html("<font size='" + titleFontSize + "'>" +data.data[0][1] + "  短信权限列表" + "</font>");
+					   // $("#authorTitle2").html(" " +data.data[0][1] + " " + "</font>");
+					    editData = [];
+					    
+						editData = JSON.parse(JSON.stringify(data.data));
+						editDataBk = JSON.stringify(editData);
+						editHot.loadData(editData)
+
+					}
+				},
+				error: function (xhr, textStatus) {
+					editHot.loadData([]);
+				}
+			})	
+			//$("#rm2").append(" ddd &nbsp;<input  type=checkbox > </option>&nbsp;&nbsp;"); 
+			//$("#rm2").append(" ddd &nbsp;<input  type=checkbox > </option>&nbsp;&nbsp;"); 
+			
+		}	
+		function loadEtype() {
+			
+			$.ajax({
+				url: httpIp + '/qs/getetype',
+				type: 'POST',
+				async: false, 
+				timeout: timeOutNum,
+				dataType: 'json',
+				 beforeSend:beforeSend, //发送请求        
+                 complete:complete,//请求完成    
+				success: function (data, textStatus, jqXHR) {
+					if (data.result == 1) {
+
+					    etypes=data.data;
+						console.log(etypes);
+
+					}
+				},
+				error: function (xhr, textStatus) {
+
+				}
+			})	
+			//$("#rm2").append(" ddd &nbsp;<input  type=checkbox > </option>&nbsp;&nbsp;"); 
+			//$("#rm2").append(" ddd &nbsp;<input  type=checkbox > </option>&nbsp;&nbsp;"); 
+			
+		}
+
+		function loadFullName()
+		{
+
+			$.ajax({
+				url: httpIp + '/qs/getfullname',
+				type: 'POST',
+				async: false,
+				timeout: timeOutNum,
+				dataType: 'json',
+				beforeSend:beforeSend, //发送请求
+				complete:complete,//请求完成
+				success: function (data, textStatus, jqXHR) {
+					if (data.result == 1) {
+
+						aonames=data.aos;
+						donames=data.dos;
+						for (var i=0;i<aonames.length;i++) {
+							str="";
+							str = str + "<option value='" + aonames[i][1] + "' ";
+							//if (value==itm[i][0]) str=str+"selected";
+							str = str + ">" + aonames[i][0] + "</option>"
+							$("#newname").append(str);
+						}
+
+					}
+				},
+				error: function (xhr, textStatus) {
+
+				}
+			})
+			//$("#rm2").append(" ddd &nbsp;<input  type=checkbox > </option>&nbsp;&nbsp;");
+			//$("#rm2").append(" ddd &nbsp;<input  type=checkbox > </option>&nbsp;&nbsp;");
+
+		}
+		function saveauthor() {
+			var strs="";
+			for (var i=0;i<100;i++)
+			{
+			  if ($("#ck"+i).prop("checked")) strs=strs+i+",";
+			}
+			strs=strs+"99";
+			$.ajax({
+				url: httpIp + '/qs/set_author',
+				type: 'POST',
+				async: false, 
+				timeout: timeOutNum,
+				data:{devs:strs,uid:nowMode},
+				dataType: 'json',
+				 beforeSend:beforeSend, //发送请求        
+                 complete:complete,//请求完成    
+				success: function (data, textStatus, jqXHR) {
+					if (data.result == 1) {
+					    console.log(data);
+					   alert('提交成功');
+
+					}
+				},
+				error: function (xhr, textStatus) {
+					editHot.loadData([]);
+				}
+			})	
+			//$("#rm2").append(" ddd &nbsp;<input  type=checkbox > </option>&nbsp;&nbsp;"); 
+			//$("#rm2").append(" ddd &nbsp;<input  type=checkbox > </option>&nbsp;&nbsp;"); 
+			
+		}
+
+		function getQuartzDetail(sn,nm) {
+			taskid=sn;
+
+			// $("#authorTitle").html("<font size='" + titleFontSize + "'>" +nm + "  短信权限列表" + "</font>");
+			 $("#authorTitle").html(" " +nm + "任务详情" + "</font>");
+			$.ajax({
+				url: httpIp + '/qs/getQuartzDetail',
+				type: 'POST',
+				async: false, 
+				timeout: timeOutNum,
+				data : {sn :sn,nm:nm},
+				dataType: 'json',
+				 beforeSend:beforeSend, //发送请求        
+                 complete:complete,//请求完成    
+				success: function (data, textStatus, jqXHR) {
+
+					if (data.result == 1) {
+						console.log(data);
+						$("#authorTitle2").html("<font size='" + titleFontSize + "'>"  + "  " + "</font>");
+
+						// $("#authorTitle").html("<font size='" + titleFontSize + "'>" +data.data[0][1] + "  短信权限列表" + "</font>");
+						// $("#authorTitle2").html(" " +data.data[0][1] + " " + "</font>");
+						editData = [];
+
+						editData = JSON.parse(JSON.stringify(data.data));
+						editDataBk2 = JSON.stringify(editData);
+						detailHot.loadData(editData)
+
+					}else
+					{
+						editData = [];
+						detailHot.loadData(editData)
+					}
+				},
+				error: function (xhr, textStatus) {
+					detailHot.loadData([]);
+				}
+			})	
+			//$("#rm2").append(" ddd &nbsp;<input  type=checkbox > </option>&nbsp;&nbsp;"); 
+			//$("#rm2").append(" ddd &nbsp;<input  type=checkbox > </option>&nbsp;&nbsp;"); 
+			
+		}
+		function findSN(sn, newJson) {
+			for (var i = 0; i < newJson.length; i++) {
+				if (newJson[i][0] == sn) {
+					return true;
+				}
+			}
+			return false;
+		}
+		function findNewEdit(sn, newJson) {
+			for (var i = 0; i < newJson.length; i++) {
+				if (newJson[i][0] == sn) {
+					return newJson[i]
+				}
+			}
+			return null
+		}
+
+
+		function findEdit(node, newJson) {
+			for (var i = 0; i < newJson.length; i++) {
+				//console.log("newjson:"+newJson[i].toString());
+				//console.log("node:"+node);
+				if ( node.indexOf(newJson[i].toString())>=0) {
+					return false;
+				}
+			}
+			return true;
+
+		}
+		function allcheck() {
+			for (var i = 0; i < 100; i++) {
+				
+				 $("#ck"+i).prop("checked", true);
+			}
+		}
+		function allnotcheck() {
+			for (var i = 0; i < 100; i++) {
+				
+				 $("#ck"+i).prop("checked", false);
+			}
+		}
+		function notcheck() {
+			for (var i = 0; i < 100; i++) {
+				if ($("#ck"+i).prop("checked")) 
+				{
+                 $("#ck"+i).prop("checked", false);
+                } 
+                else 
+                {
+                 $("#ck"+i).prop("checked",true);        
+                }
+				 //$("#ck"+i).attr("checked", false);
+			}
+		}
+		//$(document).on("click", "#cornedit", function () { showCronEdit(); });
+		$(document).on("click", "#subBtn", function () { submitCell(); });
+		$(document).on("click", "#delBtn", function () { if (editHot.getSelected() != null) {if (window.confirm("确认删除该定时任务?")==true){ editHot.alter('remove_row', editHot.getSelected()[0]); submitCell(); }} });
+
+		$(document).on("click", "#savBtn", function () { saveauthor(); });
+		$(document).on("click", "#deldet", function () { if (detailHot.getSelected() != null) {if (window.confirm("确认删除该控制点?")==true){ detailHot.alter('remove_row', detailHot.getSelected()[0]); submitDetail(); }} });
+		$(document).on("click", "#savdtl", function ()
+		{
+			var val=$("#input").val();
+			if (isEmpty(val) ||(!isNumber(val))) {alert("值不能为空不能为字符!");exit;}
+			var kk = $("#newname").val().split(",")[0];
+			//alert(kk);
+			$.ajax({
+				url: httpIp + '/qs/newDetail',
+				type: 'POST',
+				async: true,
+				data: { task: taskid, kkey:kk,vv:val},
+				timeout: timeOutNum,
+				dataType: 'text',
+				beforeSend: function (xhr) {
+
+				},
+				success: function (data, textStatus, jqXHR) {
+					data = JSON.parse(data)
+					console.log(data)
+					if (data.result == 1) {
+
+						//console.log(data)
+
+
+						alert('提交成功');
+						getQuartzDetail(taskid,"");
+
+
+					}
+					else {
+						alert('提交失败')
+					}
+
+
+				},
+				error: function (xhr, textStatus) {
+					alert('提交失败')
+					console.log(xhr)
+					console.log(textStatus)
+				},
+				complete: function () {
+				}
+			})
+		});
+		/*$(document).on("click", "#allBtn", function () { allcheck(); });
+		$(document).on("click", "#allnotBtn", function () { allnotcheck(); });
+		$(document).on("click", "#notBtn", function () { notcheck(); });*/
+			
+		
+		function submitCell() {
+			
+			editHot.validateCells(function (result, obj) {
+				if (result == true) {
+					var addArr = []
+					var editArr = []
+					var delArr = []
+					var oldJson
+					
+					if (editDataBk == "") {
+						oldJson = []
+					}
+					else {
+						oldJson = JSON.parse(editDataBk)
+					}
+					var newJson = editHot.getData()
+					//console.log(oldJson + "  oldjson ")
+					for (var i = 0; i < oldJson.length; i++) {
+						var sn = oldJson[i][0]
+						
+						var have = findSN(sn, newJson)
+						if (have) {
+							var edited = findEdit(oldJson[i].toString(), newJson)
+							if (edited) {
+								var editNode = findNewEdit(sn, newJson)
+								if (editNode != null) {
+									editArr.push(editNode)
+								}
+							}
+						}
+						else {
+							delArr.push(sn);
+						}
+					}
+
+					for (var j = 0; j < newJson.length; j++) {
+						if (newJson[j][0] == null || newJson[j][0] == "") {
+							addArr.push(newJson[j])
+						}
+					}
+					if (addArr.length == 0 && editArr.length == 0 && delArr.length == 0) {
+						alert('没有更新内容')
+						return;
+					}
+
+					var postObj = {}
+					postObj.addArr = addArr
+					postObj.editArr = editArr
+					postObj.delArr = delArr
+					var postJson = JSON.stringify(postObj)
+					//postJson = postJson.replace(/降至/g, 0).replace(/升至/g, 1);
+					//postJson = jzReplace(postJson)
+					console.log(postObj )
+
+					$.ajax({
+						url: httpIp + '/qs/savejobEdit',
+						type: 'POST',
+						async: true,   
+						data: { jsonStr: postJson, sn: nowPlanSn },
+						timeout: timeOutNum,
+						dataType: 'text',   
+						beforeSend: function (xhr) {
+
+						},
+						success: function (data, textStatus, jqXHR) {
+							data = JSON.parse(data)
+							console.log(data)
+							if (data.result == 1) {
+								
+								//console.log(data)
+								loadPlan(1,"1",0);
+								
+								alert('提交成功')
+								
+							}
+							else {
+								alert('提交失败')
+							}
+
+
+						},
+						error: function (xhr, textStatus) {
+							alert('提交失败')
+							console.log(xhr)
+							console.log(textStatus)
+						},
+						complete: function () {
+						}
+					})
+
+				}
+				else {
+					alert('数据填写错误')
+				}
+			});
+
+		}
+		function submitDetail() {
+
+			detailHot.validateCells(function (result, obj) {
+				if (result == true) {
+					var addArr = []
+					var editArr = []
+					var delArr = []
+					var oldJson
+
+					if (editDataBk2 == "") {
+						oldJson = []
+					}
+					else {
+						oldJson = JSON.parse(editDataBk2)
+					}
+					var newJson = detailHot.getData()
+					//console.log(oldJson + "  oldjson ")
+					for (var i = 0; i < oldJson.length; i++) {
+						var sn = oldJson[i][0]
+
+						var have = findSN(sn, newJson)
+						if (have) {
+							var edited = findEdit(oldJson[i].toString(), newJson)
+							if (edited) {
+								var editNode = findNewEdit(sn, newJson)
+								if (editNode != null) {
+									editArr.push(editNode)
+								}
+							}
+						}
+						else {
+							delArr.push(sn);
+						}
+					}
+
+					for (var j = 0; j < newJson.length; j++) {
+						if (newJson[j][0] == null || newJson[j][0] == "") {
+							addArr.push(newJson[j])
+						}
+					}
+					if (addArr.length == 0 && editArr.length == 0 && delArr.length == 0) {
+						alert('没有更新内容')
+						return;
+					}
+
+					var postObj = {}
+					postObj.addArr = addArr
+					postObj.editArr = editArr
+					postObj.delArr = delArr
+					var postJson = JSON.stringify(postObj)
+					//postJson = postJson.replace(/降至/g, 0).replace(/升至/g, 1);
+					//postJson = jzReplace(postJson)
+					console.log(postObj )
+
+					$.ajax({
+						url: httpIp + '/qs/saveDetailEdit',
+						type: 'POST',
+						async: true,
+						data: { jsonStr: postJson, sn: taskid },
+						timeout: timeOutNum,
+						dataType: 'text',
+						beforeSend: function (xhr) {
+
+						},
+						success: function (data, textStatus, jqXHR) {
+							data = JSON.parse(data)
+							console.log(data)
+							if (data.result == 1) {
+
+								//console.log(data)
+								//loadPlan(today,"1",0);
+								getQuartzDetail(1,"");
+								alert('提交成功')
+
+							}
+							else {
+								alert('提交失败')
+							}
+
+
+						},
+						error: function (xhr, textStatus) {
+							alert('提交失败')
+							console.log(xhr)
+							console.log(textStatus)
+						},
+						complete: function () {
+						}
+					})
+
+				}
+				else {
+					alert('数据填写错误')
+				}
+			});
+
+		}
+		function loadTfPlan(jz,mode, sn) {
+			
+			//dcPlanName = nowZhName + "" + nowPlanName;
+           // console.log(jz+"___"+mode+"___"+sn);
+			$.ajax({
+				url: httpIp + '/qs/getTfData',
+				type: 'POST',
+				async: true,
+				data: { crew: jz, crewLong: mode, pId: sn },
+				timeout: timeOutNum,
+				dataType: 'json',
+				success: function (data, textStatus, jqXHR) {
+					if (data.result == 1) {
+					    //console.log(data);
+						$("#zjTitle").html("<font size='" + titleFontSize + "'>" + data.planJson.jzName + "  历史曲线" + "</font>");
+						
+						tfzjToolTip = data.tooltipArr
+						var info = ""
+						planInfo = data.planJson.infoArr;
+						for (var i = 0; i < data.planJson.infoArr.length; i++) {
+							info += data.planJson.infoArr[i] + "<br>"
+						}
+						destroyChart("");
+						//Chart.defaults.global.pointHitDetectionRadius=1
+						zjChart = new Chart(ctx2, {
+							type: 'line',
+							data:
+							{
+								labels: data.planJson.labels,
+								datasets:
+								[
+									{
+										label: "当日",
+										fill: false,
+										lineTension: 0,
+										backgroundColor: "rgba(255, 99, 132, 0.3)",
+										borderColor: "rgba(255, 99, 132, 1)",
+										borderCapStyle: 'butt',
+										borderDash: [],
+										borderDashOffset: 0.0,
+										borderJoinStyle: 'miter',
+										pointBorderColor: "rgba(255, 99, 132, 1)",
+										pointBackgroundColor: "#fff",
+										pointBorderWidth: 1,
+										pointHoverRadius: 5,
+										pointHoverBackgroundColor: "rgba(255, 99, 132, 1)",
+										pointHoverBorderColor: "rgba(220,220,220,1)",
+										pointHoverBorderWidth: 2,
+										pointRadius: 1,
+										pointHitRadius: 10,
+										data: data.data,
+										spanGaps: true
+									},
+									{
+										label: "昨日",
+										fill: false,
+										lineTension: 0,
+										backgroundColor: "rgba(75,192,192,0.4)",
+										borderColor: "rgba(75,192,192,1)",
+										borderCapStyle: 'butt',
+										borderDash: [],
+										borderDashOffset: 0.0,
+										borderJoinStyle: 'miter',
+										pointBorderColor: "rgba(75,192,192,1)",
+										pointBackgroundColor: "#fff",
+										pointBorderWidth: 1,
+										pointHoverRadius: 5,
+										pointHoverBackgroundColor: "rgba(75,192,192,1)",
+										pointHoverBorderColor: "rgba(220,220,220,1)",
+										pointHoverBorderWidth: 2,
+										pointRadius: 1,
+										pointHitRadius: 10,
+										data: data.planJson.data,
+										spanGaps: true
+									}
+								]
+							},
+							options:
+							{
+								scales:
+								{
+									xAxes: [{
+										ticks: {
+											autoSkip: true
+										}
+									}],
+									yAxes: [{
+										ticks: {
+										    autoSkip: true,
+											beginAtZero: true
+										}
+									}],
+								},
+								tooltips:
+								{
+									callbacks:
+									{
+										label: function (tooltipItem, data) {
+											return tfzjToolTip[tooltipItem.index]
+										}
+									}
+								}
+							}
+						});
+
+						tfPlanToolTip = data.planJson.tooltipArr;
+						//$("#jhInfo").html(info); 
+						planChart = new Chart(ctx1, {
+							type: 'line',
+							data:
+							{
+								labels: data.planJson.labels,
+								datasets:
+								[
+									{
+										label: "计划",
+										fill: false,
+										lineTension: 0,
+										backgroundColor: "rgba(75,192,192,0.4)",
+										borderColor: "rgba(75,192,192,1)",
+										borderCapStyle: 'butt',
+										borderDash: [],
+										borderDashOffset: 0.0,
+										borderJoinStyle: 'miter',
+										pointBorderColor: "rgba(75,192,192,1)",
+										pointBackgroundColor: "#fff",
+										pointBorderWidth: 1,
+										pointHoverRadius: 5,
+										pointHoverBackgroundColor: "rgba(75,192,192,1)",
+										pointHoverBorderColor: "rgba(220,220,220,1)",
+										pointHoverBorderWidth: 2,
+										pointRadius: 1,
+										pointHitRadius: 10,
+										data: data.planJson.data,
+										spanGaps: true
+									}
+								]
+							},
+
+							options:
+							{
+								scales:
+								{
+									xAxes: [{
+										ticks: {
+											autoSkip: true
+
+										}
+									}],
+									yAxes: [{
+										ticks: {
+											beginAtZero: true
+										}
+									}],
+								},
+								tooltips:
+								{
+									callbacks:
+									{
+										label: function (tooltipItem, data) {
+											return tfPlanToolTip[tooltipItem.index]
+										}
+									}
+								}
+							}
+						});
+
+					}
+					else {
+						destroyChart("无匹配数据")
+					}
+				},
+				error: function (xhr, textStatus) {
+					destroyChart("加载失败")
+				}
+			})
+			$("#tab_1").show();
+			$("#tab_2").hide();
+		}
+			$("#searchBtn").click(function () {
+			var dstr =$('#dayInput').val();
+            loadPlan(dstr,tempMode,nowSearch); 
+		})
+		init();
+		 
+		 
+	</script>
+
+</body>
+
+</html>

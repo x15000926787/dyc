@@ -1,0 +1,376 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+ <title>水处理系统监控系统</title>
+ <script src="js/jquery.js"></script>
+<script type="text/javascript"  src="un_0_/setup.js"></script>
+<script type="text/javascript">
+	var  ws;
+	//var url="ws://192.168.3.191:8080/qs/chatSocket?username=dd";
+	var usr = '${sessionScope.username }';
+    var gkey = '${sessionScope.groupKey }';
+	var url="ws://"+ip_addr+":"+port+"/qs/chatSocket?username="+usr+"&gkey="+gkey;
+	console.log(url);
+	//var url="ws://192.168.3.203:8080/qs/chatSocket?username="+usr;
+	window.onload=connect;
+	function connect(){
+
+        $.ajax({
+            url:httpIp + '/qs/getsessions',
+            dataType : "json",
+            type : "POST",
+            success : function(data) {
+                if(data) {
+                    console.log(data);
+                   if (data.result==1)
+                   {
+                       document.getElementsByTagName('b')[0].innerHTML=data.uname;
+                       $('#exit').attr('href',httpIp + '/qs/LogoutServlet');
+                       if (data.leval==1) $("#button1").show();
+                       url="ws://"+ip_addr+":"+port+"/qs/chatSocket?username="+data.uname+"&gkey="+data.gkey;
+                       if ('WebSocket' in window) {
+                           ws = new WebSocket(url);
+                       } else if ('MozWebSocket' in window) {
+                           ws = new MozWebSocket(url);
+                       } else {
+                           alert('WebSocket is not supported by this browser.');
+                           return;
+                       }
+                       ws.onerror = function () {
+                           setMessageInnerHTML("WebSocket连接发生错误");
+                       };
+                       //连接成功建立的回调方法
+                       ws.onopen = function () {
+                           setMessageInnerHTML("WebSocket连接成功");
+                       }
+                       //接收到消息的回调方法
+                       ws.onmessage = function (event) {
+                           //将接收到的二进制数据转为字符串
+                           var unit8Arr = new Uint8Array(event.data) ;
+                           setMessageInnerHTML(byteToString(unit8Arr));
+                       }
+                       //连接关闭的回调方法
+                       ws.onclose = function () {
+                           setMessageInnerHTML("WebSocket连接关闭");
+                       }
+                       //监听窗口关闭事件，当窗口关闭时，主动去关闭websocket连接，防止连接还没断开就关闭窗口，server端会抛异常。
+                       window.onbeforeunload = function () {
+
+                           $.post("LogoutServlet", function (result) {
+                               console.log(result);
+                           });
+                           closeWebSocket();
+                       }
+
+                       function setMessageInnerHTML(innerHTML) {
+                           // alert( innerHTML);
+                       }
+                       //关闭WebSocket连接
+                       function closeWebSocket() {
+                           ws.close();
+                       }
+
+
+
+
+
+                       ws.onmessage=function(event){
+                           // console.log(event.data);
+                           var results=JSON.parse(event.data);
+                           console.log(results);
+
+
+
+
+                           //var yxrd=results.edd;
+                           //console.log(ycrd);
+                           //localStorage.clear();
+                           if (results)
+                           {
+                               for (var key in results)
+                               {
+
+                                   localStorage.setItem(key, results[key]);
+                                   //console.log(ycrd[i]+"-----"+ycrd[i+1]);
+                               }
+
+
+                           }else
+                           {
+                               //ycrd[0]=results.dev;
+                               // ycrd[1]=results.data;
+                               console.log("no data received!");
+                               //localStorage.setItem(results.dev, results.data);
+
+                           }
+
+
+                           //console.log(localStorage);
+                           /*
+                           if(result.alert!=undefined){
+                               $("#content").append(result.alert+"<br/>");
+                           }
+
+                           if(result.names!=undefined){
+                               $("#userList").html("");
+                               $(result.names).each(function(){
+                                   $("#userList").append(this+"<br/>");
+                               });
+                           }
+
+                           if(result.from!=undefined){
+                               $("#content").append(result.from+" "+result.date+
+                                       " 说：<br/>"+result.sendMsg+"<br/>");
+                           }*/
+                           //for (i=0;i<100;i++)
+                           //$("#content").append(localStorage.getItem("data"+i)+"<br/>");
+
+                       };
+                   }
+                   else
+                       {
+                           alert("没登录？");
+                       }
+
+                }else{
+                    alert("something wrong!");
+                }
+            }
+        });
+
+
+
+
+         //
+
+	}
+	
+	function  send(){
+		var value= $("#msg").val();
+		ws.send(value);
+	}
+
+          
+    
+
+</script>
+<link rel="shortcut icon" href="img/favicon-20180913020522331.ico"/>
+    <link rel="shortcut icon" href="un_0_/favicon.ico">
+    <link href="css/bootstrap.min14ed.css?v=3.3.6" rel="stylesheet">
+    <link href="css/font-awesome.min93e3.css?v=4.4.0" rel="stylesheet">
+    <link href="css/animate.min.css" rel="stylesheet">
+    <link href="css/style.min862f.css?v=4.1.0" rel="stylesheet">
+    <link href="css/bootstrsp.ziji.css" rel="stylesheet">
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="fixed-sidebar full-height-layout gray-bg" style="overflow:hidden">
+<h3><b></b>您好，欢迎登录使用！</h3><a href="#" id="exit">注销</a>
+    <div id="wrapper">
+        <!--左侧导航开始-->
+        <nav class="navbar-default navbar-static-side" role="navigation">
+            <div class="nav-close"><i class="fa fa-times-circle"></i>
+            </div>
+            <div class="sidebar-collapse">
+                <ul class="nav" id="side-menu">
+                    <li class="nav-header">
+                        <div class="dropdown profile-element">
+                             <!-- <span class="block m-t-xs">空调管理系统</span>  -->
+                             <span><img src="img/logo.png" /></span>
+                            
+                        </div>
+                        <div class="logo-element">聆风智控
+                        </div>
+                  
+                    </li>
+                    <li class="one">
+                        <a class="J_menuItem" href="#" id="p0">
+                            <span class="box">
+                            <span class="line"></span>
+                            <span class="text">主页</span>
+                            
+                        </span>
+                        </a>
+
+                    </li>
+                    
+                    <li>
+
+                        <a href="#">
+                            <i class="fa fa fa-building"></i>
+                            <span class="nav-label">2F楼</span>
+                            <span class="glyphicon glyphicon-menu-right" style="font-size:13px"></span>
+                        </a>
+                        <ul class="nav nav-second-level">
+                            <li>
+                                <a class="J_menuItem" href=“tabs_panels.html" id="p1">2楼空调</a>
+                            </li>
+                            
+                            
+                             
+                        </ul>
+                    </li>
+                   
+                     <li id="button1" style="display: none">
+                        <a href="#"  onClick="changeSource1()" />
+                             <i class="fa fa fa-clock-o"></i>
+                            <span class="nav-label">定时系统</span>
+                            <span class="glyphicon glyphicon-menu-right" style="font-size:13px"></span>
+                        </a>
+                        <ul class="nav nav-second-level">
+                            
+                             <li>
+                                <a class="J_menuItem" href="#" id="p2">云端定时</a>
+                            </li>
+                            
+                           
+                    
+                    </ul>
+                    </li>
+                    
+                         
+                            <li class="nav-header1">
+                             <div class="dropdown profile-element">
+                                <span class="left-b">
+                                <span class="line-b1"></span>  
+
+                                <span class="text-b">聚鑫提供技术支持</span>  
+
+                                <span class="line-b2"></span> 
+                                 </span>
+                             </div>
+
+                            </li>
+
+                </ul>
+            </div>
+        </nav>
+            
+              <div id="page-wrapper" class="gray-bg dashbard-1" style="height: 68px">
+            <div class="row border-bottom">
+                <nav class="navbar navbar-static-top" role="navigation" style="margin-bottom: 0">
+                    <div class="navbar-header"><a class="navbar-minimalize minimalize-styl-2 btn btn-primary " href="#"><i class="fa fa-bars"></i> </a>
+                      <!--  横向导航开始 -->
+                      <ul>
+                            <li class="biaoti" >
+                                水处理监控系统管理平台
+
+                                    </li>
+                                </ul>
+                            </div>
+                        </nav>
+                    </div>
+                </div>
+                                              
+              
+         
+                   <!--  <div class="navbar-header"><a class="navbar-minimalize minimalize-styl-2 btn btn-primary " href="#"><i class="fa fa-bars"></i> </a></div> -->
+       <!-- 页面引用开始 -->
+<div class="row J_mainContent" id="content-main">
+                <iframe src="un_0_/Page0.htm" id="iframe_a" name="box" style="width:100%;height:92%;padding-left: 0px;" frameborder="0" ></iframe>
+                 
+            </div>
+      
+      
+       <!--  页面引用结束  -->
+ <!-- <div class="Home-page">
+    <img src="img/shouye1.png">
+     
+       
+    </div> -->
+     
+       
+    
+<!--
+    <script src="js/bootstrap.min.js?v=3.3.6"></script>
+     <script src="js/content.min.js?v=1.0.0"></script>
+    <script src="js/plugins/layer/laydate/laydate.js"></script>  
+    <script src="js/plugins/metisMenu/jquery.metisMenu.js"></script>
+    <script src="js/plugins/slimscroll/jquery.slimscroll.min.js"></script>
+    <script src="js/plugins/layer/layer.min.js"></script>
+    <script src="js/hplus.min.js?v=4.1.0"></script>
+    <script type="text/javascript" src="js/contabs.min.js"></script>
+    <script src="js/plugins/pace/pace.min.js"></script>
+    <script src="js/chart.min.js"></script>
+    
+        <script src="js/bootstrap.min.js" type="text/javascript"></script> -->
+        
+       
+   
+   
+   
+   
+   
+       <script type="text/javascript">
+    var url1 = ["shouye.html",
+   "Page9.html",
+   "DS/dss.jsp"];
+        var nowTab  =   1;
+    var nowTab2 =   1;
+    $("span[id^='p']").click(function () {
+        
+        //nowTab = 1;
+        var t = this.id;
+        //
+        t=t.substring(t.indexOf("p")+1);
+        nowTab = t;
+        //alert(t);
+        
+         $("#iframe_a").attr("src",url1[t]) 
+        //if (nowTab<3) nowTab=nowTab-1;
+        //alert(nowTab);
+    });
+    $("a[id^='p']").click(function () {
+        
+        //nowTab = 1;
+        var t = this.id;
+        //
+        t=t.substring(t.indexOf("p")+1);
+        nowTab = t;
+        //alert(t);
+        
+         $("#iframe_a").attr("src",url1[t]) 
+        //if (nowTab<3) nowTab=nowTab-1;
+        //alert(nowTab);
+    });
+    $("span[id^='zhand']").click(function () {
+        
+        //nowTab = 1;
+        var t = this.id;
+        //alert(t);
+        t=t.substring(t.indexOf("d")+1);
+        nowTab2 = t;
+        $("#cont1").hide();
+        $("#iframe_a").attr("src",url3[t-1]) 
+        //$("#iframe_a").attr("src","dl.html") 
+        //if (nowTab<3) nowTab=nowTab-1;
+        //alert(nowTab);
+    });
+    $("span[id^='tongj']").click(function () {
+        
+        //nowTab = 1;
+        var t = this.id;
+        //alert(t);
+        t=t.substring(t.indexOf("j")+1);
+        nowTab2 = t-1;
+        $("#iframe_a").attr("src",url2[t-1]) 
+        $("#cont2").hide();
+        
+    
+    });
+    $("span[id^='lianh']").click(function () {
+        
+        //nowTab = 1;
+        var t = this.id;
+        //alert(t);
+        t=t.substring(t.indexOf("h")+1);
+        nowTab3 = t;
+        $("#iframe_a").attr("src",url4[t-1]) 
+        $("#cont3").hide();
+        
+    
+    });
+    </script>
+</body>
+</html>

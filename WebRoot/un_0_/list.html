@@ -1,0 +1,237 @@
+﻿
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>一览表</title>
+    <!-- Tell the browser to be responsive to screen width -->
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <!-- Bootstrap 3.3.7 -->
+    <link rel="stylesheet" href="../css/bootstrap.min.css">
+    
+    <link rel="stylesheet" href="../css/select2.min.css">
+
+    
+    <link rel="stylesheet" href="../css/AdminLTE.min.css">
+    
+    <link rel="stylesheet" href="../css/bootstrap3-wysihtml5.min.css">
+            
+        <link rel="stylesheet" href="../css/console.css"/>
+    
+    
+    <!--[if lt IE 9]>
+    <link rel="stylesheet" href="http://windlinker.com/css/ie.css"/>
+    <script src="http://windlinker.com/libs/html5shiv/html5shiv.min.js"></script>
+    <![endif]-->
+    <!-- <script src="js/modernizr.js" type="text/javascript"></script>
+
+    <script src="js/echarts.common.min.js"></script> -->
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <!-- Google Font -->
+    <link rel="stylesheet" href="../css/font-googleapis.css">
+   
+</head>
+
+<body class="hold-transition skin-blue sidebar-mini">
+
+
+<div >
+   
+
+<script>
+
+</script>
+        <div >
+            <section class="content-header">
+        <h1>
+            数据显示
+            
+        </h1>
+       
+    </section>
+    
+    <section class="content">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="box box-primary" id="main">
+                    <div class="box-header with-border">
+                        <h3 class="box-title">
+                        
+                        
+                        
+      <form class="form-inline" role="form">
+        <div class="form-group">
+         <label for="f1">类别</label>
+          <select class="form-control" name="" id="sel_prtu">
+                                          
+          </select>
+     </div>
+     <div class="form-group">
+         <label for="f2">时间</label>
+       <input class="form-control"  type="text" id="dateBox"/>
+     </div>
+      <button id="searchBtn" type="button" class="btn btn-success btn-sm">确定</button>
+
+      <!-- <button id="expBtn" type="button" class="btn btn-success btn-sm">导出</button> -->
+</form>
+                           
+                        </h3>
+                    </div>
+                    
+                        
+                    
+                  </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    </div>
+    <div id="showResult" style="position:absolute; left:600px; top:200px;width:180px;height:200px">
+	                  <img src='load.gif' />
+	                </div>
+    </div>
+<script src="setup.js"></script>
+<!-- jQuery 3 -->
+<script src="../js/jquery-2.4.0.min.js"></script>
+<!-- jQuery UI 1.11.4 -->
+<script src="../js/jquery-ui-2.4.0.min.js"></script>
+<!-- Resolve conflict in jQuery UI tooltip with Bootstrap tooltip -->
+<script>
+    $.widget.bridge('uibutton', $.ui.button);
+</script>
+<!-- Bootstrap 3.3.7 -->
+<script src="../js/bootstrap.min.js"></script>
+
+<!-- AdminLTE App -->
+<script src="../js/adminlte.min.js"></script>
+<!-- 日期选择器样式在DateBox/defaultOpts.js下 月份字体颜色在DateBox/DateComponent.js下修改-->
+<script src="../DateBox/required.js" type="text/javascript" charset="utf-8"></script>
+<script>
+var timeOutNum = 100000;
+var d = new Date()
+var last = "{ 'name': 'deyuyi', 'sex': 'man' }"
+var vYear = d.getFullYear()
+var vMon = d.getMonth() + 1
+var vDay = d.getDate()
+var h = d.getHours(); 
+var m = d.getMinutes();
+var tnm = ""; 
+    m = m-(m%5);
+var se = d.getSeconds(); 
+var s=vYear+"-"+(vMon<10 ? "0" + vMon : vMon)+"-"+(vDay<10 ? "0"+ vDay : vDay)+" "+(h<10 ? "0"+ h : h)+":"+(m<10 ? "0" + m : m);
+console.log(s);
+
+requirejs(['DateBox/DateBox'],function(DateBox){
+		new DateBox('dateBox');
+		
+	});
+function beforeSend(XMLHttpRequest){    
+		   // console.log("ddd");
+ 			 $("#showResult").show();    
+			}    
+		function complete(XMLHttpRequest, textStatus){    
+  		$("#showResult").hide();    
+			} 
+function loadprtu() {
+	       // console.log(nowMode);
+			
+			$.ajax({
+				url: httpIp + '/LF/mysqltest',
+				type: 'POST',
+				async: true, 
+				 data: {pno:prono},
+				timeout: timeOutNum,
+				dataType: 'json',
+				 beforeSend:beforeSend, //发送请求        
+                 complete:complete,//请求完成    
+				success: function (data, textStatus, jqXHR) {
+					if (data.result == 1) {
+					  tnm=data.data[0][1]; 
+					  console.log(tnm); 
+					  for(var i = 0; i<data.data.length; i++){
+						
+	                     $("#sel_prtu").append(" <option value='"+data.data[i][0]+"'>"+data.data[i][1]+"</option>");
+						}
+					  // $("#sel_prtu").get(0).selectedIndex=0;
+					 }
+					 loadPlan(1,0);
+					},
+					error: function (xhr, textStatus) {
+						
+					}
+			})
+			
+		} 
+function loadPlan(jz,mode) {
+	       // console.log(nowMode);
+			var dtstr=$("#dateBox").val();
+			var rtuno=$("#sel_prtu").val();
+			var nms=$("#sel_prtu").find("option:selected").text();
+			if (nms.length==0) 
+			{		console.log("ddfd");
+					nms=tnm;
+			}
+			if (rtuno==null) rtuno=0;
+			if (dtstr.length==0) 
+			{
+			  $("#dateBox").val(s);
+			  dtstr = s;
+			}
+			dtstr = dtstr.replace("-","");
+			dtstr = dtstr.replace("-","");
+			dtstr = dtstr.replace(" ","");
+			dtstr = dtstr.replace(":","");
+			console.log(rtuno,dtstr,nms,prono);
+			$.ajax({
+				url: httpIp + '/LF/get_vals',
+				type: 'POST',
+				async: true, 
+				data: { dt: dtstr,nm:nms, dno:rtuno,pno:prono,userId:uid },
+				timeout: timeOutNum,
+				dataType: 'json',
+				 beforeSend:beforeSend, //发送请求        
+                 complete:complete,//请求完成    
+				success: function (data, textStatus, jqXHR) {
+					if (data.result == 1) {
+					 console.log(data);
+					 last=JSON.stringify(data); //将JSON对象转化为JSON字符
+					
+					 $(".box-body").remove();
+					  for(var i = 0; i<data.data4.length; i++){
+
+	                     $("#main").append("<div class=\"box-body\" ><div class=\"scales-container\" ><label class=\"label label-default\" >"+data.data4[i]+"</label><ul class=\"scales\" id=\"cont"+data.data5[i]+"\"></ul></div></div>");
+						}
+					  for(var i = 0; i<data.data.length; i++){
+
+					     $("#cont"+data.data3[i]).append(" <li class=\"item item1\"><div class=\"title\"><span>"+data.data[i]+"</span></div><span class=\"value\">"+data.data2[i]+"</span> </li>");
+						}
+					}
+					},
+					error: function (xhr, textStatus) {
+						
+					}
+			})
+			
+		}
+		$("#searchBtn").click(function () {
+			loadPlan(1,0);
+		});
+		$("#expBtn").click(function () {
+		var dtstr=$("#dateBox").val();
+			var rtuno=$("#sel_prtu").val();
+			window.open("exp_excel.jsp?lb="+rtuno+"&dt="+dtstr);
+		});
+		loadprtu();
+
+</script>
+</body>
+
+</html>

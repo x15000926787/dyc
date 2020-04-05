@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+	<style>
+		.chart-container {
+			height: 330px;
+		}
+
+		.chart-tooltip {
+			position: absolute;
+			display: none;
+			padding: 5px;
+			max-width: 200px;
+			font-size: 12px;
+			text-align: center;
+			color: #fff;
+			background-color: #000;
+			border-radius: 4px;
+			opacity: 0.8;
+		}
+
+		.chart {
+			width: 100%;
+			height: 400px;
+		}
+	</style>
+	<!-- Bootstrap 3.3.6 -->
+	<link rel="stylesheet" href="css/bootstrap.min.css">
+	<link rel="stylesheet" href="dist/css/min.css">
+
+	<link rel="stylesheet" href="dist/css/skins/_all-skins.css">
+	<link rel="stylesheet" href="plugins/datepicker/datepicker3.css">
+	<link rel="stylesheet" type="text/css" href="plugins/datepicker/daterangepicker.css" />
+
+	<link rel="stylesheet" href="css/font-awesome.min.css">
+	<link rel="stylesheet" href="css/ionicons.min.css">
+	<link rel="stylesheet" href="css/handsontable.full.css">
+	<link href="css/bootstrap-datetimepicker.min.css" rel="stylesheet" media="screen">
+   <link rel="stylesheet" href="js/themes/default/style.min.css">
+
+	<script src="plugins/jQuery/jquery-2.2.3.min.js"></script>
+    <script src="js/jstree.min.js"></script>
+	<script src="js/chart.js"></script>
+	<script src="plugins/datepicker/bootstrap-datepicker.js"></script>
+	<script src="plugins/datepicker/locales/bootstrap-datepicker.zh-CN.js"></script>
+	<script type="text/javascript" src="plugins/datepicker/moment.js"></script>
+
+	<script type="text/javascript" src="plugins/datepicker/daterangepicker.js"></script>
+	<script src="js/bootstrap.min.js"></script>
+	<script src="dist/js/app.js"></script>
+
+	<script type="text/javascript" src="js/bootstrap-datetimepicker.js" charset="UTF-8"></script>
+
+	<script src="js/handsontable.full.js"></script>
+     <script src="setup.js"></script>
+	<script src="js/DDoc.js"></script>
+	<script src="js/FileSaver.js"></script>
+	<script src="js/jszip.js"></script>
+
+
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<style type="text/css">
+		#users td, th {
+    			padding: 7px 42px 3px 10px;
+    			color: #000;
+				}
+		#users tr{
+    			background: #e8eff7;
+				}		
+		#users tr:nth-child(odd){
+    			background: #d8e3ef;
+				}
+		#users input{
+    			margin: 4px 0 0 15px;
+				}
+
+	</style>
+</head>
+
+<script type="text/javascript">
+$(function(){
+	$(".format-img img").wrapAll("<ul></ul>");
+	$(".format-img img").each(function(){
+		$(this).wrap('<li></li>');
+	});
+        $(".format-img li:odd").css({background:"#fff"});
+})
+</script>
+<style type="text/css">
+
+body{ background:#343c48;}
+.format-img{min-width:780px;}
+.format-img ul{ margin:0; padding:0; list-style:none; float:left; width:100%; background:#fff; text-align:center;}
+	.format-img ul li{ float:left; width:14.285%;_width:14.28%; line-height:0; padding:15px 0}
+		.format-img ul li img{ border:solid 0px #f08; padding:0px; background:#fff;}
+</style>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+
+<body class="skin-blue layout-top-nav" style="height: auto;overflow-x: hidden;">
+
+
+	<div style="width:90%;margin-left :20px;box-shadow: none">
+		<div class="nav-tabs-custom" style="box-shadow: none;">
+			<ul class="nav nav-tabs" style="border:none">
+								<p>
+
+					<div class="pull-left">
+					 
+						<table border="0" cellspacing="0" cellpadding="0" width="1900"style="margin:-20px 0 0 300px">
+							<tr>
+								<td width="100"; height="100">
+
+
+
+								</td>
+								 <td style="width:300px;">
+								  <label style="font-size:16px;" >选择设备：</label>
+								        <select id="ttp"  style="width:200px;height:40px;font-size:18px;padding:0px 10px 0px 10px;background: #343c48;" onchange="reloadUpDown()">
+										        <option value=-1>所有设备</option>
+												
+										</select>  
+							   </td>
+
+								<td><button id="submit" type="button" class="btn btn-block btn-default " style="width:100px;text-align:center;" align="center">应用</button></td>
+
+							</tr>
+						</table>
+
+					</div>
+
+
+			</ul>
+			<div id="zjTitle" style="background: #2a3039;height: 65px;width: 89.6%;margin: 50px 0 0 44px ;padding:15px 20px">遥测点位限值设置</div>
+
+			<div id="editCell" class="hot handsontable" style="width:1450px;margin: 0px 45px ;font-size:16px;">
+
+			
+			</div>
+
+
+
+		</div>
+
+		<div id="users"  style="width:350px;left:1550px;position: absolute;top:200px;position:absolute; top:0;left:0;">
+			<table border="1" id="tbl-users" style="display:none;">
+				<tr>
+					<th id="authorname">
+
+					</th>
+				</tr>
+				<tr>
+					<td>
+						<input type="button" id="setUserAuthor" style="background: #4499ff;color: #fff;" onclick="setauthor()" value="确定"/>
+						<input type="button" id="cancel" value="取消" onclick="cancel()">
+					</td>
+				</tr>
+			</table>
+		</div>
+
+
+		
+
+
+
+	</div>
+	
+
+	<script type="text/javascript">
+		
+		var nowJz = "all"
+		var nowJzLong = "all"
+		var nowPlanSn = 0;          //
+		var nowZhName = ""
+		var timeOutNum = 100000;
+		var titleFontSize = 5;
+		var autharr = [4,5,6];
+		var valueValidator = function(value, callback) {
+			//console.log(value+'__'+value.length)
+			/*if (!value || 0 === value.length || value.length != 11) {
+				callback(false);
+			} else {
+				callback(true);
+			}*/
+			callback(true);
+		};
+		var columns1 = [
+			{ data: 0, readOnly: true, type: 'text' },
+			{data: 1, readOnly: false, type: 'text', wordWrap: false},
+			{data: 2,type: 'text',validator: valueValidator},
+			{data:3,type: 'text',validator: valueValidator},
+			{data:4,renderer:'html',readonly:true},
+			{data: 5,type: 'text',readonly:true},
+			{data:6,renderer:'html',readonly:true},
+			{data:7,renderer:'html',readonly:true},
+			{data: 8,type: 'text',readonly:false},
+			{data:9,type: 'text',readonly:false},
+			{data:10,type: 'text',readonly:true},
+			{data:11,renderer:'html',readonly:true}];
+		var colHeaders1 = ['序号', '点名', '上限', '下限', '弹窗', '短信','邮件','是否计时','计时条件','保养周期','在线时长','计时清零'];
+		
+		var nowTab = 1;
+		var nowSearch = 0;
+		var nowMode = 1;
+		var tempMode = 1;
+		var timeSearchTemp = "";
+        
+        var now = new Date(); 
+		//alert(now.getDate()+'-'+now.getMonth());  
+		//格式化日，如果小于9，前面补0  
+		var day = ("0" + now.getDate()).slice(-2);  
+		//格式化月，如果小于9，前面补0  
+		var month = ("0" + (now.getMonth() + 1)).slice(-2);  
+		//拼装完整日期格式  
+		var today = now.getFullYear()+"-"+(month)+"-"+(day);  
+		//完成赋值  
+		$('#dayInput2').val(today); 
+       // document.getElementById('dayInput').valueAsDate = new Date();
+       now = new Date();  
+       now.setTime(now.getTime()-24*60*60*1000);
+       
+		//alert(now.getDate()+'-'+now.getMonth());  
+		//格式化日，如果小于9，前面补0  
+		 day = ("0" + now.getDate()).slice(-2);  
+		//格式化月，如果小于9，前面补0  
+		 month = ("0" + (now.getMonth() + 1)).slice(-2);  
+		//拼装完整日期格式  
+		 today = now.getFullYear()+"-"+(month)+"-"+(day) ;  
+		//完成赋值  
+		$('#dayInput').val(today);
+		function cancel(){
+			$('#tbl-users').hide();
+		}
+		function setauthor(){
+			var dd = [];
+			var vv = 1;
+			$("input[id^='chkah']").each(function(){
+				//console.log(this.id);
+				if(this.checked){
+					var id=(this.id.split("_")[1])*1-1;
+                    vv = vv | Math.pow(2,id);
+
+				}
+			});
+			console.log(vv+":"+nowPlanSn+":"+nowTab);
+			editHot.setDataAtCell(nowTab,nowPlanSn,vv);
+			$('#tbl-users').hide();
+		}
+       function gotourl(a){
+        window.location=urlArr[a];
+        }
+		function creaeCheckboxList(jz, mode, sn) {
+
+			$.ajax({
+				url: httpIp + '/LF/getuser',
+				type: 'POST',
+				async: true,
+				timeout: timeOutNum,
+				data: { userId: uid,gky:gkey },
+				dataType: 'json',
+				beforeSend: beforeSend, //发送请求
+				complete: complete, //请求完成
+				success: function(data, textStatus, jqXHR) {
+					console.log(data);
+					if (data.result == 1) {
+						for (i=0;i<data.data.length;i++)
+						{
+							if (data.data[i][0]!=1)
+							{
+								trHTML = "<tr><td>"+data.data[i][1]+"<input type='checkbox' id='chkah_"+data.data[i][0]+"'    onchange='chgalt(this,"+data.data[i][0]+")'</td></tr>";
+								$("#tbl-users tr:eq(0)").after(trHTML);//$("#tbl-users").append(trHTML);
+
+							}
+						}
+
+
+					}
+					else
+					{
+
+					}
+				},
+				error: function(xhr, textStatus) {
+					editHot.loadData([]);
+				}
+			})
+			//$("#rm2").append(" ddd &nbsp;<input  type=checkbox > </option>&nbsp;&nbsp;");
+			//$("#rm2").append(" ddd &nbsp;<input  type=checkbox > </option>&nbsp;&nbsp;");
+
+		}
+		function chgalt(e,r,c){
+			if (!$(e).is(':checked'))
+			{
+
+				editHot.setDataAtCell(r,c,0);
+
+			}else
+				editHot.setDataAtCell(r,c,1);
+		}
+		function reloadUpDown()
+		{
+			var dev = $("#ttp").val();
+			console.log(dev);
+			getUpdown(0, dev);
+		}
+		function initCheckbox(vv)
+		{
+			var ss = vv.toString(2).split("").reverse();
+			console.log(ss);
+
+			$("input[id^='chkah']").prop("checked",false);
+			for (var i=1;i<ss.length;i++)
+			{
+				if (ss[i]=='1')
+				{
+					$("#chkah_"+(i+1)).prop("checked",true);
+				}
+			}
+		}
+		function negativeValueRenderer_user(instance, td, row, col, prop, value, cellProperties) {
+			var id;
+			id = editHot.getDataAtCell(row,0);
+			Handsontable.renderers.TextRenderer.apply(this, arguments);
+			if (row%2==1)
+			{
+				td.style.backgroundColor = '#343c48';
+				//td.style.color = '#3C3C3C';
+			}
+
+			switch(prop) {
+				case 4:
+
+
+					var imgadd;
+
+					//if (str.indexOf("OT")>0 ||str.indexOf("调峰")>0)
+
+					imgadd = document.createElement('IMG');
+					if (value>1){ imgadd.src = "alert.png";
+					   
+					}
+					  
+					else
+						{imgadd.src = "un-alert.png";
+					     
+				}
+					imgadd.width = 18;
+					imgadd.style = 'cursor:pointer;';//鼠标移上去变手型
+					Handsontable.dom.addEvent(imgadd, 'click', function (event) {
+						$("#authorname").html("弹窗");
+						nowPlanSn=col;
+						nowTab = row;
+						$('#tbl-users').show();
+                        initCheckbox(value);
+					});
+
+					Handsontable.dom.empty(td);
+
+					td.appendChild(imgadd);
+					cellProperties.readOnly = true;
+					td.style.textAlign = 'center';//图片居中对齐
+					break;
+				case 5:
+					nowPlanSn=1;
+					var imgadd;
+
+					//if (str.indexOf("OT")>0 ||str.indexOf("调峰")>0)
+
+					imgadd = document.createElement('IMG');
+					if (value>1){
+						imgadd.src = "message.png";
+					    imgadd.class = "tu111" 
+				}
+					
+					else{
+						imgadd.src = "un-message.png";
+					    
+					}
+					imgadd.width = 18;
+					imgadd.style = 'cursor:pointer;';//鼠标移上去变手型
+					Handsontable.dom.addEvent(imgadd, 'click', function (event) {
+						$("#authorname").html("短信");
+						$('#tbl-users').show();
+						nowTab = row;
+						initCheckbox(value);
+						nowPlanSn=col;
+					});
+
+					Handsontable.dom.empty(td);
+
+					td.appendChild(imgadd);
+					cellProperties.readOnly = true;
+					td.style.textAlign = 'center';//图片居中对齐
+
+					break;
+				case 6:
+					nowPlanSn=2;
+					var imgadd;
+
+					//if (str.indexOf("OT")>0 ||str.indexOf("调峰")>0)
+
+					imgadd = document.createElement('IMG');
+					if (value>1){
+						imgadd.src = "email.png";
+					}
+					else{
+						imgadd.src = "un-email.png";
+					    
+					}
+					imgadd.width = 18;
+					imgadd.style = 'cursor:pointer;';//鼠标移上去变手型
+					Handsontable.dom.addEvent(imgadd, 'click', function (event) {
+						$("#authorname").html("邮件");
+						$('#tbl-users').show();
+						nowTab = row;
+						initCheckbox(value);
+						nowPlanSn=col;
+					});
+
+					Handsontable.dom.empty(td);
+
+					td.appendChild(imgadd);
+					cellProperties.readOnly = true;
+					td.style.textAlign = 'center';//图片居中对齐
+
+					break;
+				case 7:
+					var str="<input type='checkbox' id='chktime"+id+"' onchange='chgalt(this,"+row+","+col+")' ";
+					if (value) str = str + " checked ";
+					str = str + "/>";
+
+					td.innerHTML = str;
+					cellProperties.readOnly = true;
+					break;
+				case 8:
+
+					if (editHot.getDataAtCell(row,7)==0) Handsontable.dom.empty(td);
+					break;
+				case 9:
+
+					if (editHot.getDataAtCell(row,7)==0) Handsontable.dom.empty(td);
+					break;
+				case 10:
+
+					if (editHot.getDataAtCell(row,7)==0) Handsontable.dom.empty(td);
+					cellProperties.readOnly = true;
+					break;
+				case 11:
+					Handsontable.renderers.HtmlRenderer.apply(this, arguments);
+					if (editHot.getDataAtCell(row,7)==0) Handsontable.dom.empty(td);
+					cellProperties.readOnly = true;
+					break;
+
+				default:
+					;
+			}
+
+
+		}
+		 document.onclick=function(event)
+        { 
+
+            var event=event || window.event;
+            
+            var aa = event.realTarget;
+			var tg=event.target||event.srcElement;
+			//console.log("你点击的标签名称为："+tg.tagName);
+
+
+           if(tg.tagName!='IMG' && tg.tagName!='INPUT'){
+           	$('#tbl-users').hide();
+
+
+           }
+			if(tg.tagName=='IMG' ){
+				targetX=event.clientX-22; //减去盒子宽度和高度，最终鼠标光标可以定位到图片正中间
+				targetY=event.clientY+20;
+
+
+			}
+
+            
+        }
+        var leaderX=0;
+        var targetX=0;
+        var leaderY=0;
+        var targetY=0;
+        var pic=document.getElementById("users");
+        setInterval(fn,10);
+        function fn()
+        {
+            leaderX=leaderX+(targetX-leaderX);
+            leaderY=leaderY+(targetY-leaderY);
+            pic.style.left=leaderX+"px";
+            pic.style.top=leaderY+"px";
+        }
+		Handsontable.renderers.registerRenderer('userRenderer', negativeValueRenderer_user);
+		editHot = new Handsontable(document.getElementById('editCell'), {
+			columns: columns1,
+			data: [],
+			formulas: true,
+			outsideClickDeselects: false,
+			stretchH: 'all',
+			colHeaders: colHeaders1,
+			rowHeaders: false,
+			fillHandle: false,
+			colWidths: [60,100,80,80,60,60,60,60,60,60,60,60],
+			contextMenu: false,
+			disableVisualSelection: false,
+			className: 'htCenter',
+			enterBeginsEditing: false,
+			multiSelect: true,
+			beforeOnCellMouseDown: function(event, coords) {
+				if (coords.row < 0) {
+					event.stopImmediatePropagation();
+				}
+			},
+			cells: function (row, col, prop) {
+				var cellProperties = {};
+				cellProperties.renderer = "userRenderer";
+				return cellProperties;
+			}
+		});
+		function resettime(saveno)
+		{
+			var msg=confirm("你确定重置该计时点吗？");
+
+			if(msg==true) {
+				$.ajax({
+					url: httpIp + '/LF/resettime',
+					type: 'POST',
+					async: true,
+					data: {key: saveno, tp: 1},
+					timeout: timeOutNum,
+					dataType: 'text',
+
+					success: function (data, textStatus, jqXHR) {
+						data = JSON.parse(data)
+						if (data.result == 1) {
+
+							//console.log(data)
+
+
+							alert('成功')
+
+						} else {
+							alert('失败')
+						}
+
+
+					},
+					error: function (xhr, textStatus) {
+						alert('提交失败')
+						console.log(xhr)
+						console.log(textStatus)
+					},
+					complete: function () {
+					}
+				})
+			}
+		}
+		function getUpdown(rtu, dev) {
+			nowMode = rtu;
+            console.log(dev);
+			$.ajax({
+				url: httpIp + '/LF/loadUpdown',
+				type: 'POST',
+				async: false,
+				timeout: timeOutNum,
+				data: { rtuno: rtu,devno:dev,pno:prono,userId:uid},
+				dataType: 'json',
+				beforeSend: beforeSend, //发送请求
+				complete: complete, //请求完成
+				success: function(data, textStatus, jqXHR) {
+					if (data.result == 1) {
+						console.log(data);
+						$("#zjTitle").html("<font size='" + titleFontSize + "'>" + "  遥测点限值管理" + "</font>");
+						editData = [];
+
+						editData = JSON.parse(JSON.stringify(data.data));
+						editDataBk = JSON.stringify(editData);
+						editHot.loadData(editData);
+
+
+					}
+				},
+				error: function(xhr, textStatus) {
+					editHot.loadData([]);
+				}
+			})
+			//$("#rm2").append(" ddd &nbsp;<input  type=checkbox > </option>&nbsp;&nbsp;");
+			//$("#rm2").append(" ddd &nbsp;<input  type=checkbox > </option>&nbsp;&nbsp;");
+
+		}
+		function findSN(sn, newJson) {
+			for (var i = 0; i < newJson.length; i++) {
+				if (newJson[i][0] == sn) {
+					return true;
+				}
+			}
+			return false;
+		}
+
+		function findNewEdit(sn, newJson) {
+			for (var i = 0; i < newJson.length; i++) {
+				if (newJson[i][0] == sn) {
+					return newJson[i]
+				}
+			}
+			return null
+		}
+
+
+		function findEdit(node, newJson) {
+			for (var i = 0; i < newJson.length; i++) {
+				//console.log("newjson:"+newJson[i].toString());
+				//console.log("node:"+node);
+				if (node.indexOf(newJson[i].toString()) >= 0) {
+					return false;
+				}
+			}
+			return true;
+
+		}
+
+		function reloadAna()
+		{
+
+			$.ajax({
+				url: httpIp + '/LF/sendUpdateCMD',
+				type: 'POST',
+				async: true,
+				data: { key:'anaupdate'},
+				timeout: timeOutNum,
+				dataType: 'text',
+
+				success: function(data, textStatus, jqXHR) {
+					data = JSON.parse(data)
+					if (data.result == 1) {
+
+						//console.log(data)
+
+
+						alert('成功')
+
+					} else {
+						alert('失败')
+					}
+
+
+				},
+				error: function(xhr, textStatus) {
+					alert('提交失败')
+					console.log(xhr)
+					console.log(textStatus)
+				},
+				complete: function() {}
+			})
+		}
+		$(document).on("click", "#subBtn", function() { submitCell(); });
+		$(document).on("click", "#submit", function() { submitCell(); });
+		function submitCell() {
+           // console.log("dddssss");
+			editHot.validateCells(function(result, obj) {
+				if (result == true) {
+					var addArr = [];
+					var editArr = [];
+					var delArr = [];
+					var oldJson;
+
+					if (editDataBk == "") {
+						oldJson = []
+					} else {
+						oldJson = JSON.parse(editDataBk)
+					}
+
+					//editHot.setDataAtCell(0,4,0);
+					/*for (var j = 0; j < editHot.countRows(); j++) {
+
+						if ($("#chkalt"+editHot.getDataAtCell(j,0)).is(':checked'))
+						{
+
+							editHot.setDataAtCell(j,4,1023);
+							console.log($("#chkalt"+editHot.getDataAtCell(j,0)));
+						}
+
+						else
+							editHot.setDataAtCell(j,4,0);
+						console.log(editHot.getDataAtCell(j,4));
+						if ($("#chkmsg"+editHot.getDataAtCell(j,0)).is(':checked'))
+						{
+
+							editHot.setDataAtCell(j,5,1023);
+						}
+
+						else
+							editHot.setDataAtCell(j,5,0);
+
+						if ($("#chkeml"+editHot.getDataAtCell(j,0)).is(':checked'))
+						{
+
+							editHot.setDataAtCell(j,6,1023);
+						}
+
+						else
+							editHot.setDataAtCell(j,6,0);
+
+					}*/
+					var newJson = editHot.getData();
+					console.log(newJson )
+					for (var i = 0; i < oldJson.length; i++) {
+						var sn = oldJson[i][0];
+
+						var have = findSN(sn, newJson);
+						if (have) {
+							var edited = findEdit(oldJson[i].toString(), newJson);
+							if (edited) {
+								var editNode = findNewEdit(sn, newJson);
+								if (editNode != null) {
+									editArr.push(editNode)
+								}
+							}
+						} else {
+							delArr.push(sn);
+						}
+					}
+
+					for (var j = 0; j < newJson.length; j++) {
+						if (newJson[j][0] == null || newJson[j][0] == "") {
+							addArr.push(newJson[j])
+						}
+					}
+					if (addArr.length == 0 && editArr.length == 0 && delArr.length == 0) {
+						alert('没有更新内容');
+						return;
+					}
+
+					var postObj = {};
+					postObj.addArr = addArr;
+					postObj.editArr = editArr;
+					postObj.delArr = delArr;
+					var postJson = JSON.stringify(postObj);
+					//postJson = postJson.replace(/降至/g, 0).replace(/升至/g, 1);
+					//postJson = jzReplace(postJson)
+					console.log(postJson + "  json ")
+
+					$.ajax({
+						url: httpIp + '/LF/saveUpDown',
+						type: 'POST',
+						async: true,
+						data: { jsonStr: postJson, sn: nowPlanSn },
+						timeout: timeOutNum,
+						dataType: 'text',
+
+						success: function(data, textStatus, jqXHR) {
+							data = JSON.parse(data)
+							if (data.result == 1) {
+
+								//console.log(data)
+								getUpdown(0, -1);
+								reloadAna();
+								//alert('提交成功')
+
+							} else {
+								alert('提交失败')
+							}
+
+
+						},
+						error: function(xhr, textStatus) {
+							alert('提交失败')
+							console.log(xhr)
+							console.log(textStatus)
+						},
+						complete: function() {}
+					})
+
+				} else {
+					alert('数据填写错误')
+				}
+			});
+
+		}
+
+        function addsel(){  
+
+            $.ajax({  
+                url:  httpIp + '/LF/loadDevice',
+                dataType : "json",  
+                type : "POST", 
+                data: {dm:prono,gky:gkey},
+                success : function(data) {  
+                    if(data) {
+                      
+                        console.log(data);
+						var results=(data);
+
+						if (results.result==1)
+						{
+
+							for (var key in results)
+							{
+
+								//if(key.indexOf('dev')>0)
+								{
+									//console.info(key);
+									//console.info(results[key].deviceno);
+								}
+								if(results[key].devicenm)	$("#ttp").append("<option value="+results[key].deviceno+">"+results[key].devicenm+"</option>");
+
+							}
+						}
+
+                    }else{  
+                       console.log('ddddssdd');  
+                    }  
+                }  
+            });  
+        }   
+        addsel();
+
+			
+			
+			function beforeSend(XMLHttpRequest){    
+		    //console.log("ddd");
+ 			 $("#showResult").show();    
+			}    
+		function complete(XMLHttpRequest, textStatus){    
+  		$("#showResult").hide();    
+			}  
+			
+		/*function loadPlan() {
+			var dstr =$('#dayInput').val();
+			var dstr2 =$('#dayInput2').val();
+			var ttp  =$('#ttp').val();
+			var ord  =$('#ord').val();
+			$.ajax({
+				url: httpIp + '/LF/getTfPlanAll_evt',
+				type: 'POST',
+				async: true, 
+				data: { crew: dstr, tab: dstr2, pId: ttp,ob:ord,pno:prono },
+				timeout: timeOutNum,
+				dataType: 'json',
+				 beforeSend:beforeSend, //发送请求        
+                 complete:complete,//请求完成    
+				success: function (data, textStatus, jqXHR) {
+					if (data.result == 1) {
+					    $("#zjTitle").html("<font size='" + titleFontSize + "'>" +  "  事件列表" + "</font>");
+					   // console.log(data);
+					    editData = [];
+						editData = JSON.parse(JSON.stringify(data.data));
+						
+						editHot.loadData(editData)
+
+					}
+				},
+				error: function (xhr, textStatus) {
+					editHot.loadData([]);
+				}
+			})	
+		}	*/
+
+			$("#searchBtn").click(function () {
+			var dstr =$('#dayInput').val();
+            loadPlan(); 
+		})
+
+		getUpdown(0, -1);
+		creaeCheckboxList(0,0,0);
+		 
+		 
+		 
+	</script>
+	
+	
+
+
+
+</body>
+
+</html>

@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Arise Admin Dashboard" />
+    <meta name="keywords" content="Admin, Dashboard, Bootstrap3, Sass, transform, CSS3, HTML5, Web design, UI Design, Responsive Dashboard, Responsive Admin, Admin Theme, Best Admin UI, Bootstrap Theme, Themeforest, Bootstrap, C3 Graphs, D3 Graphs, NVD3 Graphs, Admin Skin, Black Admin Dashboard, Grey Admin Dashboard, Dark Admin Dashboard, Simple Admin Dashboard, Simple Admin Theme, Simple Bootstrap Dashboard, Invoice, Tasks, Profile" />
+    <meta name="author" content="Ramji" />
+    <link rel="shortcut icon" href="img/fav.png">
+    <title>聆风智控</title>
+    <!-- Bootstrap CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet" media="screen" />
+    <!-- Main CSS -->
+    <link href="css/main.css" rel="stylesheet" media="screen" />
+    <!-- <index.css> -->
+    <link href="css/index.css" rel="stylesheet" media="screen" />
+    <!-- Ion Icons -->
+    <link href="fonts/icomoon/icomoon.css" rel="stylesheet" />
+    <link href="font/iconfont.css" rel="stylesheet" />
+    <!-- 滑块菜单 css -->
+    <link rel="stylesheet" href="css/font.css">
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Calendar Heatmap频率 CSS -->
+    <link href="css/heatmap/cal-heatmap.css" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="css/style1.css" />
+    <link rel="stylesheet" href="css/handsontable.full.css">
+    <!-- Jquery JS -->
+    
+    <!-- HTML5 shiv and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+            <script src="js/html5shiv.js"></script>
+            <script src="js/respond.min.js"></script>
+        <![endif]-->
+</head>
+
+<body>
+    <!-- 仪表板 Starts -->
+    <div class="dashboard-wrapper">
+        <!-- Container fluid Starts -->
+        <div class="container-fluid">
+            <!-- 选择框 starts-->
+            <div class="row gutter" style="margin:20px 0 0 -93px;">
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                    <div class="panel">
+                        <div class="form-group">
+                            <div class="row gutter">
+                                <!-- <div class="pull-right"> -->
+                                <div id="radio" style="margin-top: 20px;position: absolute;margin-left: 20px;">
+                                    <input type="radio" id="radio1" name="radio" value="0" checked="checked"><label for="radio1">&nbsp;数&nbsp;据&nbsp;</label>
+                                    <input type="radio" id="radio2" name="radio" value="1"><label for="radio2">&nbsp;能&nbsp;耗&nbsp;</label>
+                                </div>
+                            </div>
+                            <ul class="nav nav-tabs" style="border:none">
+                                <div class="pull-right">
+                                    <table border="0" cellspacing="0" cellpadding="0" class="col-md-12" style="position: relative;">
+                                        <tr>
+                                            <td align="right">
+                                                <form class="col-sm-9 form-horizontal m-t">
+                                                    <label class="col-sm-2 control-label" style="margin-left:-320px;width: 100%;position: relative;">选择日期：</label>
+                                                    <input id="dayInput" class=" col-sm-2 laydate-icon form-control layer-date " style="margin-left: -130px;"> <input onclick="setmonth(this)" name="tmon" id="tmon" style="display:none" />
+                                                    <select id="tyear" valign="middle" style="display:none"> </select>
+                                                </form>
+                                            </td>
+                                            <td class="col-md-1">
+                                                <button id="searchBtn" type="button" class="btn btn-default" style="margin: -63px 0 0 -200px;">查询</button>
+                                            </td>
+                                            <td class="col-md-1">
+                                                <!--   <button id="creatDocBtn" type="button" class="btn btn-default" style="margin: -63px 0 0 -160px;">导出</button> -->
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- 选择框 ends-->
+            <!-- 导航内容部分 starts -->
+            <div class="row gutter" style="margin:0px 0 0 -92px;">
+                <!-- 左侧菜单栏 starts-->
+                <div class="col-md-2 col-sm-4 col-xs-12">
+                    <div class="panel height5">
+                        <div class="panel-body">
+                            <div class="totalnavigation">
+                                <ul class="ce" id="lv1">
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 左侧菜单栏 ends-->
+                <!-- 滑块按钮 starts -->
+                <div class="col-lg-10 col-md-9 col-sm-8 col-xs-12">
+                    <div class="panel height4">
+                        <div class="panel-body">
+                            <div class="phone" id="choose">
+                                <div class="page">Home</div>
+                                <nav>
+                                    <div class="wave-wrap">
+                                        <svg version="1.1" id="wave" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 119 26">
+                                            <path class="path" d="M120.8,26C98.1,26,86.4,0,60.4,0C35.9,0,21.1,26,0.5,26H120.8z" />
+                                        </svg>
+                                    </div>
+                                    <ul class="list-wrap" id="aaall0">
+                                        <!--  <li  title="三相电压">
+                                            <i class="iconfont icon-dianyabiao"></i>
+                                        </li>
+                                        <li data-color="#ff6b81" title="三线电压">
+                                            <i class="iconfont icon-dianya2"></i>
+                                        </li>
+                                        <li data-color="#7bed9f" title="三相电流">
+                                            <i class="iconfont icon-dianliu"></i>
+                                        </li> -->
+                                    </ul>
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 滑块按钮 ends -->
+                <!-- 曲线 starts -->
+                <div class="col-lg-10 col-md-9 col-sm-8 col-xs-12">
+                    <div class="panel height4">
+                        <div class="panel-body">
+                            <div class="tab-pane active" id="tab_2" style="height:480px">
+                                <div id="jhTitle"></div>
+                                <div id="planChartDiv" style="width: 850px;">
+                                    <canvas id="planChart"></canvas>
+                                </div>
+                                <br>
+                            </div>
+                            <div class="tab-pane " id="tab_1">
+                                <div id="zjTitle"></div>
+                                <div id="showResult" style="position:absolute; left:600px; margin-top:200px;width:20px;height:200px">
+                                    <img src='img/load.gif' />
+                                </div>
+                                <div id="zjChartDiv" style="width:92%;height:266px;">
+                                    <canvas id="zjChart" style="width: 94%;height: 220px;"></canvas>
+                                </div>
+                                <div id="dlChartDiv" style="width:92%;height:400px;display:none;">
+                                    <canvas id="dlChart" width="1300" height="318" style="margin-top:28px"></canvas>
+                                </div>
+                                <div id="dlmChartDiv" style="width:92%;height:300px;display:none;">
+                                    <canvas id="dlmChart" style="width:92%;height:300px;"></canvas>
+                                </div>
+                                <div id="dlyChartDiv" style="width:92%;height:100%;display:none;">
+                                    <canvas id="dlyChart" style="width:92%;height:300px"></canvas>
+                                </div>
+                                <div id="dlgChartDiv" style="width:92%;height:100%;display:none;">
+                                    <canvas id="dlgChart" style="width:92%;height:300px"></canvas>
+                                </div>
+                                <p id="mxinfo" style="position:absolute; left:10px; top:250px"></p>
+                                <p id="mninfo" style="position:absolute; left:288px; top:250px"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 曲线 ends -->
+                <!-- 表格 starts -->
+                <div class="col-lg-10 col-md-9 col-sm-8 col-xs-12">
+                    <div class="panel height4" style="height: 845px;">
+                        <div class="panel-body">
+                            <div id="zjTitle1"></div>
+                            <!-- <div id="showResult" style="position:absolute; left:600px; top:600px;width:180px;height:200px">
+                                <img src='img/load.gif' />
+                            </div> -->
+                            <div id="editCell" class="hot handsontable" style="height:40px;"></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 表格 ends -->
+            </div>
+            <!-- 导航内容部分 ends -->
+        </div>
+    </div>
+    <!-- Jquery Js -->
+    <script src="js/jquery1.9.1.js"></script>
+    <!-- 曲线 Js -->
+    <script src="js/chart.js"></script>
+    <!-- bootstrap Js -->
+    <script src="js/bootstrap.min.js"></script>
+    <!-- jquery-ui Js -->
+    <script src="js/jquery-ui.js"></script>
+    <!-- 表格 Js -->
+    <script src="js/handsontable.full.js"></script>
+    <!-- 日历 Js -->
+    <script src="js/layer/laydate/laydate.js"></script>
+    <!-- 很重要  不知道干什么的 -->
+    <script src="js/setup.js"></script>
+    <!-- 滑块菜单 Js -->
+    <script src="js/huakuai.js"></script>
+    <script type="text/javascript">
+    var timeOutNum = 100000;
+    var titleFontSize = 5;
+    var columns1 = [{ data: 0, readOnly: true, type: 'text', wordWrap: false }, { data: 1, readOnly: true, type: 'text' }, { data: 2, readOnly: true, type: 'text' }, { data: 3, readOnly: true, type: 'text' }, { data: 4, readOnly: true, type: 'text' }, { data: 5, readOnly: true, type: 'text' }, { data: 6, readOnly: true, type: 'text' }, { data: 7, readOnly: true, type: 'text' }, { data: 8, readOnly: true, type: 'text' }, { data: 9, readOnly: true, type: 'text' }, { data: 10, readOnly: true, type: 'text' }, { data: 11, readOnly: true, type: 'text' }, { data: 12, readOnly: true, type: 'text' }];
+    var colHeaders1 = ['小时', '00', '05', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55'];
+    var tempMode = 1;
+    var nowSearch = 0;
+    var nowType = 1;
+    var p = 8; //p为滑块图标的个数
+    var mytime = 1000;
+    $(function() {
+        $(".thr li").click(function() {
+            $(this).addClass("active");
+            $(this).siblings().removeClass("active");
+        });
+    });
+
+
+
+    var class_arr = new Array("one", "two", "three", "four", "five", "six", "seven");
+    var tree_type = 1; // 1：小项目，没有用到room表;2:大项目，二级菜单是roomname 
+
+    $("#radio").buttonset();
+
+
+    $('input[type=radio]').change(function() {
+
+        // alert(this.value);
+        $(".thr").show();
+    });
+
+
+
+
+    // 曲线一级导航定义开始
+    $(function() {
+
+        //inst.open_node(selectedNode);  
+        //alert(temp);  
+        $.ajax({
+            url: httpIp + '/LF/tree',
+            dataType: "json",
+            type: "POST",
+            success: function(data) {
+                if (data) {
+
+                    console.log(data);
+                    data.data.forEach(function(v) {
+
+                        $("#lv1").append("<li><a class=\"xz\" id=xz" + v[0] + " href=\"#\"> " + v[1] + "</a> <ul class=\"thr\" style=\" \" id=ul" + v[0] + "> </ul></li>");
+
+                    });
+                    console.log($("#lv1") + "DDDDD");
+                } else {
+                    $("#jstree_div").html("暂无数据！");
+                }
+                $("#xz0").click(); //一级导航点击事件
+            }
+        });
+    });
+    // 曲线一级导航定义结束
+    // 曲线二级导航定义开始
+    $("body").on("click", ".xz", function() {
+        var lino = this.id;
+        //console.log(lino); 
+        lino = lino.substr(2); //取id第几个字符开始,此处为从第二个字符开始，起始字符为0
+        var radio_val = $("[name='radio']").filter(":checked").val(); // $("[name='radio']").filter(":checked").attr("id");
+        //console.log(radio_val);
+        $.ajax({
+            url: httpIp + '/LF/tree_2',
+            dataType: "json",
+            data: { dd: radio_val, kk: tree_type, rtu: lino },
+            type: "POST",
+            success: function(data) {
+                if (data) {
+                    console.log("dd");
+                    console.log(data);
+                    $(".thr").hide();
+                    $("#ul" + lino).empty();
+                    $("#ul" + lino).show();
+                    data.data.forEach(function(v) {
+                        $("#ul" + lino).append("<li ><a class=\"mulu\" id=\"mulu" + v[0] + "\" href=\"##\"> " + v[1] + "</a> <ul  id=\"boxscroll" + v[0] + "\"> </ul></li>");
+                    });
+
+                } else {
+                    $("#jstree_div").html("暂无数据！");
+                }
+                $("#mulu0").click(); //二级导航点击事件
+            }
+        });
+    });
+    // 曲线二级导航定义结束
+    // function checkRate(input) {
+    //     var re = /^[0-9]+.?[0-9]*$/;
+    //     //判断字符串是否为数字 //判断正整数 /^[1-9]+[0-9]*]*$/ 
+    //     var nubmer = document.getElementById(input).value;
+
+    //     if (!re.test(nubmer)) {
+    //         alert("请输入数字");
+    //         document.getElementById(input).value = "";
+    //         return false;
+    //     }
+    //     return true;
+    // }
+
+    // 曲线三级导航滑块定义
+    $("body").on("click", ".mulu", function() {
+
+        var nums = this.innerHTML;
+        console.log(nums);
+        /*
+        if (checkRate("itNum")) 
+        {
+           nums = $("#itNum").val();
+          // alert($("#itNum").val());
+        }else
+        {
+           nums=6;
+        }
+         */
+
+        var apdstr = "";
+        var tid = this.id;
+        tid = tid.substr(4); //取id第几个字符开始,此处为从第四个字符开始，起始字符为0
+        var radio_val = $("[name='radio']").filter(":checked").val(); // $("[name='radio']").filter(":checked").attr("id");
+        
+        $.ajax({
+            url: httpIp + '/LF/tree_3',
+            dataType: "json",
+            data: { dd: radio_val, kk: tree_type, rtu: tid, len: nums },
+            type: "POST",
+            success: function(data) {
+                if (data) {
+
+                    console.log(data);
+                    $(".list-wrap").show();
+                    $("#boxscroll" + tid).show();
+                    //data.data.forEach(function(v){
+                    for (var i = 0; i < data.data.length; i++) {
+
+                        var jsonObj = JSON.parse(data.data[i]); //转换为json对象
+                        p = jsonObj.length - 1;
+                        setChartWidth(p); //调取导航滑块的宽度函数
+                        // console.log(i%7);
+                        // console.log(p);
+                        for (var ii = 0; ii < (jsonObj.length - 1) / 2; ii++) {
+                            if (jsonObj[ii * 2 + 1].length > 0)
+                                var abc = ["iconfont icon-dianyabiao", "iconfont icon-dianya2", "iconfont icon-dianliu", "iconfont icon-gongshuaiquxian", "iconfont icon-gongshuaiyinshu","iconfont icon-zhihuigongchang_wugonggongshuai", "iconfont icon-shizaigongshuai", "iconfont icon-pinshuaijiance", "iconfont icon-nenghaojiankong"];
+
+                                apdstr = apdstr + "<li  title=\"" + jsonObj[ii * 2 + 2] + " \" >" + "<i id=\"qq" + jsonObj[ii * 2 + 1] + " \" class=\"" + abc[jsonObj[ii*2+1]%9] + " \"" + ">" + "</i>" + "</li>";
+
+                        }
+
+                    }
+                    // console.log($("#contentscroll"+tid));
+                    $("#aaall0").empty();
+                    $("#aaall0").append(apdstr);
+                    // 调取滑块Js函数开始
+                    var dis = $(".list-wrap li").eq(0);
+
+                    // align the wave
+                    align(dis);
+
+                    $(".list-wrap li").click(function() {
+                        dis = $(this);
+
+                        align(dis);
+
+                    });
+                    // 调取滑块Js函数结束
+                    // 调取曲线和表格函数开始
+                    $(".list-wrap i").click(function() {
+                        console.log(this.id);
+                        var sav = this.id;
+                        sav = sav.substr(2);
+                        loadTfPlan(today, 1, sav);
+
+                        loadPlan(today, 1, sav);
+
+                    });
+                    // 调取曲线和表格函数结束
+                    // 点击三级导航函数
+                    $(".list-wrap i").eq(0).click();
+
+
+                } else {
+                    $("#jstree_div").html("暂无数据！");
+                }
+
+            }
+        });
+    });
+
+
+// 画表格开始
+    function changeCol(col) {
+        console.log(col);
+        editHot.updateSettings({
+            colHeaders: col
+        });
+    }
+
+    editHot = new Handsontable(document.getElementById('editCell'), {
+        columns: columns1,
+        data: [],
+        formulas: true,
+        outsideClickDeselects: false,
+        stretchH: 'all',
+        colHeaders: colHeaders1,
+        rowHeaders: false,
+        fillHandle: false,
+        colWidths: 60,
+
+        contextMenu: false,
+        disableVisualSelection: false,
+        className: 'htCenter',
+        enterBeginsEditing: false,
+        multiSelect: true,
+        beforeOnCellMouseDown: function(event, coords) {
+            if (coords.row < 0) {
+                event.stopImmediatePropagation();
+            }
+        }
+    });
+
+    function loadPlan(jz, mode, sn) {
+        changeCol(eval("colHeaders1"));
+        $("#timetype").hide();
+        $.ajax({
+            url: httpIp + '/LF/getTfPlanAll',
+            type: 'POST',
+            async: true,
+            data: { crew: jz, tab: mode, pId: sn },
+            timeout: timeOutNum,
+            dataType: 'json',
+            // beforeSend:beforeSend, //发送请求        
+            complete: complete, //请求完成    
+            success: function(data, textStatus, jqXHR) {
+                if (data.result == 1) {
+                    $("#zjTitle1").html("<font size='3'>" + data.jzName + "  历史数据" + "</font>");
+                    console.log(data);
+                    editData = [];
+                    editData = JSON.parse(JSON.stringify(data.data));
+
+                    editHot.loadData(editData);
+
+                }
+            },
+            error: function(xhr, textStatus) {
+                editHot.loadData([]);
+            }
+        })
+    }
+    // 画表格结束
+
+    // $("body").on("click", ".mes", function() {
+    //     //$("#myframe").attr("src", 'qs/lsqxsj1.html?qxid='+this.id); 
+    //     $(".list-wrap").hide();
+    //     var value = $("[name='radio']").filter(":checked").val(); // $("[name='radio']").filter(":checked").attr("id");
+
+    //     var tid = this.id
+    //     var dstr = $('#dayInput').val();
+    //     var sav = tid;
+    //     if (value == "0") // 条件       
+    //     {
+    //         loadTfPlan(dstr, 1, sav);
+    //         loadPlan(dstr, 1, sav);
+    //         $("#zjChartDiv").show();
+    //         $("#dlChartDiv").hide();
+    //     } else if (value == "1") //条件2 
+
+    //     {
+    //         loadPlan(dstr, 2, sav);
+    //         loaddlPlan(dstr, 2, sav);
+    //         $("#zjChartDiv").hide();
+    //         $("#dlChartDiv").show();
+    //     }
+    // })
+
+    // 生成日期开始
+    var now = new Date();
+    //alert(now.getDate()+'-'+now.getMonth());  
+    //格式化日，如果小于9，前面补0  
+    var day = ("0" + now.getDate()).slice(-2);
+    //格式化月，如果小于9，前面补0  
+    var month = ("0" + (now.getMonth() + 1)).slice(-2);
+    //拼装完整日期格式  
+    var today = now.getFullYear() + "-" + (month) + "-" + (day);
+    //完成赋值  
+    $('#dayInput').val(today);
+
+
+    //var dstr =$('#dayInput').val();
+
+
+
+
+    $("#tttabSel1").click(function() {
+        tempMode = 1;
+        //console.log(tempMode);
+        $("#jstree_yc").show();
+        $("#jstree_dn").hide();
+        $("#seltd").hide();
+        $("#ptd").hide();
+        $("#seldm").text("请选择日期");
+    });
+
+    $("#tttabSel2").click(function() {
+        tempMode = 2;
+        $("#jstree_dn").show();
+        $("#jstree_yc").hide();
+        $("#seltd").show();
+        $("#ptd").show();
+
+
+    });
+    $("#seltd").change(function() {
+        nowMode = $("#seltd").val();
+        if ($("#seltd").val() == 3) {
+            $("#seldm").text("请选择年份")
+            $("#tyear").show();
+            $("#tmon").hide();
+            $("#dayInput").hide();
+
+        } else if ($("#seltd").val() == 2) {
+            $("#seldm").text("请选择月份")
+            $("#tmon").show();
+            $("#dayInput").hide();
+            $("#tyear").hide();
+
+        } else {
+            $("#seldm").text("请选择日期");
+            $("#tmon").hide();
+            $("#dayInput").show();
+            $("#tyear").hide();
+        }
+
+    });
+// 生成日期结束
+// 画曲线开始
+    function destroyChart(msg) {
+
+        if (zjChart != null) {
+            zjChart.destroy()
+        }
+        $("#zjInfo").html(msg);
+        $("#jhInfo").html(msg);
+    }
+
+    function destroydlChart(msg) {
+
+        if (dlChart != null) {
+            dlChart.destroy()
+        }
+        $("#zjInfo").html(msg);
+        $("#jhInfo").html(msg);
+    }
+
+    //$("#zjInfo").html(msg);
+    //$("#jhInfo").html(msg);
+
+    var zjToolTip = []
+    var ctx2 = document.getElementById("zjChart");
+    var ctx1 = document.getElementById("dlChart").getContext("2d");
+    var ctx3 = document.getElementById("dlmChart").getContext("2d");
+    var ctx4 = document.getElementById("dlyChart").getContext("2d");
+    //document.getElementById("canvas").getContext("2d");
+    var zjChart = null;
+    var dlChart = null;
+    var dlmChart = null;
+    var dlyChart = null;
+
+    var planToolTip = []
+
+    var planChart
+    var tfPlanToolTip
+    var planInfo;
+    var nowPlanName = "";
+    var dcPlanName = "";
+
+    function setChartWidth(n) {
+        var n = p;//声明导航滑块的个数
+        var twidth = n * 7.7;//声明导航滑块总长度
+        var chartWidth = $(window).width() - 300//声明曲线宽度
+        $("#choose").css('width', twidth + '%');//设置导航滑块总宽度
+        $("#choose").css('margin-left', 200 - (n / 2 - 4.5) * 80);//设置导航滑块不同长度margin-left的值
+        $("#planChartDiv").css('width', chartWidth);//设置曲线的宽度
+        $("#zjChartDiv").css('width', chartWidth);//设置曲线的宽度
+        $("#dlChartDiv").css('width', chartWidth);//设置曲线的宽度
+        $("#dlmChartDiv").css('width', chartWidth);//设置曲线的宽度
+        $("#dlyChartDiv").css('width', chartWidth);//设置曲线的宽度
+        $("#planChartDiv").css('height', 246);//设置曲线的高度
+        $("#zjChartDiv").css('height', 246);//设置曲线的高度
+        $("#dlChartDiv").css('height', 246);//设置曲线的高度
+        $("#dlmChartDiv").css('height', 246);//设置曲线的高度
+        $("#dlyChartDiv").css('height', 246);//设置曲线的高度
+        ctx1.width = chartWidth;
+        ctx1.height = 318;
+        ctx2.width = chartWidth;
+        ctx2.height = 318;
+        ctx3.width = chartWidth;
+        ctx3.height = 318;
+        ctx4.width = chartWidth;
+        ctx4.height = 318;
+
+
+    }
+    setChartWidth();//调取函数
+
+    function beforeSend(XMLHttpRequest) {
+
+        $("#showResult").show();
+    }
+
+    function complete(XMLHttpRequest, textStatus) {
+        $("#showResult").hide();
+    }
+
+    function loadTfPlan(jz, mode, sn) {
+        // console.log(mode);
+        $.ajax({
+            url: httpIp + '/LF/getTfData',
+            type: 'POST',
+            async: true,
+            data: { crew: jz, crewLong: mode, pId: sn },
+            timeout: timeOutNum,
+            dataType: 'json',
+            beforeSend: beforeSend, //发送请求        
+            complete: complete, //请求完成    
+            success: function(data, textStatus, jqXHR) {
+                console.log(data);
+                if (data.result == 1) {
+                    dcPlanName = data.planJson.jzName + "历史曲线";
+                    $("#zjTitle").html("<font size='3'>" + data.planJson.jzName + "  历史曲线" + "</font>");
+                    $("#mxinfo").html("<font size='2'>" + data.planJson.mx + "</font>");
+                    $("#mninfo").html("<font size='2'>" + data.planJson.mn + "</font>");
+                    //tfzjToolTip = data.planJson.tooltipArr
+                    var info = ""
+                    planInfo = data.planJson.infoArr;
+                    for (var i = 0; i < data.planJson.infoArr.length; i++) {
+                        info += data.planJson.infoArr[i] + "<br>"
+                    }
+                    destroyChart("");
+                    //Chart.defaults.global.pointHitDetectionRadius=1
+                    zjChart = new Chart(ctx2, {
+                        type: 'line',
+                        data: {
+                            labels: data.planJson.labels,
+                            datasets: [{
+                                    label: data.planJson.jzName,
+                                    fillColor: "rgba(64, 76, 87,0.5)",
+                                    lineTension: 0,
+                                    backgroundColor: "rgba(64, 76, 87, 0.5)",
+                                    borderColor: "rgba(64, 76, 87, 1)",
+
+                                    borderDash: [],
+                                    borderDashOffset: 0.0,
+
+                                    pointBorderColor: "rgba(48, 164, 255, 1)",
+                                    pointBackgroundColor: "#fff",
+                                    pointBorderWidth: 1,
+                                    pointHoverRadius: 5,
+                                    pointHoverBackgroundColor: "rgba(64, 76, 87, 1)",
+                                    pointHoverBorderColor: "rgba(64, 76, 87, 1)",
+                                    pointHoverBorderWidth: 2,
+
+                                    pointRadius: 1,
+                                    pointHitRadius: 10,
+                                    data: data.planJson.data,
+                                    spanGaps: true
+                                },
+
+                                {
+                                    label: "上限",
+                                    fill: false,
+                                    lineTension: 0,
+                                    backgroundColor: "rgba(229, 229, 229, 0.3)",
+                                    borderColor: "rgba(229, 229, 229, 1)",
+                                    borderCapStyle: 'butt',
+                                    borderDash: [],
+                                    borderDashOffset: 0.0,
+                                    borderJoinStyle: 'miter',
+                                    pointBorderColor: "rgba(229, 229, 229, 1)",
+                                    pointBackgroundColor: "#fff",
+                                    pointBorderWidth: 1,
+                                    pointHoverRadius: 5,
+                                    pointHoverBackgroundColor: "rgba(229, 229, 229, 1)",
+                                    pointHoverBorderColor: "rgba(220,220,220,1)",
+                                    pointHoverBorderWidth: 2,
+                                    pointRadius: 1,
+                                    pointHitRadius: 10,
+                                    data: data.planJson.dataup,
+                                    spanGaps: true
+                                },
+                                {
+                                    label: "下限",
+                                    fill: false,
+                                    lineTension: 0,
+
+                                    borderColor: "rgba(158,158,158,1)",
+                                    borderCapStyle: 'butt',
+                                    borderDash: [],
+                                    borderDashOffset: 0.0,
+                                    borderJoinStyle: 'miter',
+                                    pointBorderColor: "rgba(158,158,158,1)",
+                                    pointBackgroundColor: "#fff",
+                                    pointBorderWidth: 1,
+                                    pointHoverRadius: 5,
+                                    pointHoverBackgroundColor: "rgba(158,158,158,1)",
+                                    pointHoverBorderColor: "rgba(220,220,220,1)",
+                                    pointHoverBorderWidth: 2,
+                                    pointRadius: 1,
+                                    pointHitRadius: 10,
+                                    data: data.planJson.datalow,
+                                    spanGaps: true
+                                }
+                            ]
+                        },
+                        options: {
+                            //datasetStrokeWidth : 8,
+                            scales: {
+                                xAxes: [{
+                                    ticks: {
+                                        autoSkip: true
+                                    }
+                                }],
+                                yAxes: [{
+                                    ticks: {
+                                        autoSkip: true,
+                                        beginAtZero: true
+                                    }
+                                }],
+                            },
+                            /*
+                            tooltips:
+                            {
+                                callbacks:
+                                {
+                                    label: function (tooltipItem, data) {
+                                        return tfzjToolTip[tooltipItem.index]
+                                    }
+                                }
+                            }*/
+                        }
+                    });
+
+                    tfPlanToolTip = data.planJson.tooltipArr
+                    //$("#jhInfo").html(info); 
+
+
+                } else {
+                    destroyChart("无匹配数据")
+                }
+            },
+            error: function(xhr, textStatus) {
+                destroyChart("加载失败")
+            }
+        })
+        $("#tab_1").show();
+        $("#tab_2").hide();
+    }
+    $("#searchBtn").click(function() {
+
+        var dstr = $('#dayInput').val();
+        var mstr = $('#tmon').val();
+        var ystr = $('#tyear').val();
+        if (tempMode == 1) {
+            loadTfPlan(dstr, tempMode, nowSearch);
+        } else {
+            if (nowMode == 1) {
+                loaddlPlan(dstr, tempMode, nowSearch);
+                $("#dlChartDiv").show();
+                $("#dlmChartDiv").hide();
+                $("#dlyChartDiv").hide();
+            } else if (nowMode == 2) {
+                loaddlPlan(mstr, tempMode, nowSearch);
+                $("#dlmChartDiv").show();
+                $("#dlChartDiv").hide();
+                $("#dlyChartDiv").hide();
+            } else {
+                loaddlyPlan(mstr, tempMode, nowSearch);
+                $("#dlyChartDiv").show();
+                $("#dlChartDiv").hide();
+                $("#dlmChartDiv").hide();
+            }
+
+        }
+
+    });
+
+    var color = Chart.helpers.color;
+
+    function loaddlPlan(jz, mode, sn) {
+
+
+        console.log(jz + "___" + mode + "___" + sn);
+        $.ajax({
+            url: httpIp + '/LF/getdlData',
+            type: 'POST',
+            async: true,
+            data: { crew: jz, crewLong: mode, pId: sn },
+            timeout: timeOutNum,
+            dataType: 'json',
+            beforeSend: beforeSend, //发送请求        
+            complete: complete, //请求完成    
+            success: function(data, textStatus, jqXHR) {
+
+                if (data.result == 1) {
+                    console.log(data);
+                    dcPlanName = data.planJson.jzName + "历史能耗";
+                    $("#zjTitle").html("<font size='3'>" + data.planJson.jzName + "  历史能耗" + "</font>");
+                    $("#mxinfo").html("<font size='2'>" + data.planJson.mx + "</font>");
+                    $("#mninfo").html("<font size='2'>" + data.mn + "</font>");
+                    tfzjToolTip = data.tooltipArr
+                    var info = ""
+                    planInfo = data.planJson.infoArr;
+                    for (var i = 0; i < data.planJson.infoArr.length; i++) {
+                        info += data.planJson.infoArr[i] + "<br>"
+                    }
+                    destroydlChart("");
+                    //Chart.defaults.global.pointHitDetectionRadius=1
+                    dlChart = new Chart(ctx1, {
+                        type: 'bar',
+                        data: {
+                            labels: ["0点", "1点", "2点", "3点", "4点", "5点", "6点", "7点", "8点", "9点", "10点", "11点", "12点", "13点", "14点", "15点", "16点", "17点", "18点", "19点", "20点", "21点", "22点", "23点"],
+                            datasets: [{
+                                    label: "当天",
+                                    backgroundColor: color(window.chartColors.red).alpha(0.5).rgbString(),
+                                    borderColor: window.chartColors.red,
+                                    borderWidth: 1,
+                                    data: data.planJson.data
+
+                                },
+                                {
+                                    label: "前一天",
+                                    backgroundColor: color(window.chartColors.blue).alpha(0.5).rgbString(),
+                                    borderColor: window.chartColors.red,
+                                    borderWidth: 1,
+                                    data: data.data
+
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: false,
+                            legend: {
+                                position: 'top',
+                            },
+                            title: {
+                                display: false,
+                                text: 'Chart.js Bar Chart'
+                            }
+                        }
+                    });
+
+                    tfPlanToolTip = data.planJson.tooltipArr
+                    //$("#jhInfo").html(info); 
+
+
+                } else {
+                    destroyChart("无匹配数据")
+                }
+            },
+            error: function(xhr, textStatus) {
+                destroyChart("加载失败")
+            }
+        })
+        $("#tab_1").show();
+        $("#tab_2").hide();
+    }
+
+
+
+
+    function delayGetImg() {
+        var doc = new DDoc();
+        var bt = "";
+        var title1 = dcPlanName;
+
+        doc.addParagraph(title1, {
+            font: "宋体",
+            fontSize: "40",
+            bold: true,
+            color: "000000",
+            textAlign: doc.AlignType.Center
+        });
+        doc.newLine();
+
+
+        for (var i = 0; i < 1; i++) {
+            //
+
+
+
+            try {
+                var dcImg = zjChart.toBase64Image()
+                if (dcImg != "") {
+                    doc.addImage(dcImg, 550, 300, {
+                        textAlign: doc.AlignType.Cente
+                    });
+                }
+            } catch (e) {}
+
+
+
+        }
+
+
+
+        doc.generate(title1 + ".doc");
+        // setTimeout(delayClose, 3000)
+    }
+    // 画曲线结束
+    //日期插件开始
+    function getCurMon() {
+        var date = new Date();
+        date.setMonth(date.getMonth());
+        var month = date.getMonth() + 1;
+        var hours = date.getHours();
+        var strDate = date.getDate();
+        if (month >= 1 && month <= 9) {
+            month = "0" + month;
+        }
+        if (strDate >= 0 && strDate <= 9) {
+            strDate = "0" + strDate;
+        }
+        if (hours >= 0 && hours <= 9) {
+            hours = "0" + hours;
+        }
+
+        var currentmon = date.getFullYear() + "-" + month
+        return currentmon;
+    }
+    $("#creatDocBtn").click(function() {
+        delayGetImg();
+    });
+    $("#searchBtn").click(function() {
+        var dstr = $('#dayInput').val();
+        if (nowType == 1) { loadPlan(dstr, tempMode, nowSearch); } else {
+            var aa = $("#ppt").val();
+            loadPlan_dn(dstr, aa, nowSearch)
+        }
+    })
+
+
+
+
+    laydate({ elem: "#dayInput", event: "focus" });
+    var start = {
+        elem: "#start",
+        format: "YYYY/MM/DD hh:mm:ss",
+        min: laydate.now(),
+        max: "2099-06-16 23:59:59",
+        istime: true,
+        istoday: false,
+        choose: function(datas) {
+            end.min = datas;
+            end.start = datas
+        }
+    };
+    var end = {
+        elem: "#end",
+        format: "YYYY/MM/DD hh:mm:ss",
+        min: laydate.now(),
+        max: "2099-06-16 23:59:59",
+        istime: true,
+        istoday: false,
+        choose: function(datas) { start.max = datas }
+    };
+    laydate(start);
+    laydate(end);
+    // 日期插件结束
+    </script>
+    <!--
+    </script>
+</body>
+
+</html>

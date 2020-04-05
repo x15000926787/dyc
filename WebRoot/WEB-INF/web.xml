@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd" version="3.0">
+  <display-name>dl</display-name>
+   <!--  
+  <listener>
+    <listener-class>com.bjsxt.listener.MessageListener</listener-class>
+  </listener>
+   <listener>
+     <listener-class>com.dl.tool.MQTTClientTest</listener-class> 
+  </listener>
+
+  <listener>
+    <listener-class>com.dl.tool.ThreadTimer</listener-class>
+  </listener>
+   -->
+  <servlet>
+    <description></description>
+    <display-name>LoginServlet</display-name>
+    <servlet-name>LoginServlet</servlet-name>
+    <servlet-class>com.bjsxt.servlet.LoginServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>LoginServlet</servlet-name>
+    <url-pattern>/LoginServlet</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
+    <description></description>
+    <display-name>LogoutServlet</display-name>
+    <servlet-name>LogoutServlet</servlet-name>
+    <servlet-class>com.dl.tool.LogoutServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>LogoutServlet</servlet-name>
+    <url-pattern>/LogoutServlet</url-pattern>
+  </servlet-mapping>
+  
+  <welcome-file-list>
+    <welcome-file>login.html</welcome-file>
+  </welcome-file-list>
+  <servlet>
+    <servlet-name>spring</servlet-name>
+    <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+    <load-on-startup>1</load-on-startup>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>spring</servlet-name>
+    <url-pattern>/</url-pattern>
+  </servlet-mapping> 
+  
+  
+  <listener>    
+     <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>    
+  </listener> 
+
+   
+  <listener>
+     <listener-class>com.dl.tool.FirstClass</listener-class> 
+  </listener> 
+  
+  <filter>
+    <filter-name>encodingFilter</filter-name>
+    <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+    <init-param>
+      <param-name>encoding</param-name>
+      <param-value>utf8</param-value>
+    </init-param>
+  </filter>
+  <filter-mapping>
+    <filter-name>encodingFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+  
+  <!-- <filter>
+
+        <filter-name>sessionFilter</filter-name>
+
+        <filter-class>com.dl.tool.SessionFilter</filter-class>
+
+   </filter>
+
+   <filter-mapping>
+
+        <filter-name>sessionFilter</filter-name>
+
+        <url-pattern>/*</url-pattern>
+
+   </filter-mapping>-->
+ 
+
+<!-- session 超时设置 单位：分钟-->
+<session-config>
+      <session-timeout>60</session-timeout>
+</session-config>
+  
+</web-app>

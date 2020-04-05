@@ -1,0 +1,11 @@
+{
+   "alarmbar" : 0,
+   "langid" : 0,
+   "mqtt" : {
+      "disctrl" : 0,
+      "ip" : "121.41.12.110",
+      "port" : 9001,
+      "topic" : "7B74827F1A0D4CC2B1E6A718B98E171B"
+   }
+}
+

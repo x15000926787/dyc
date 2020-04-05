@@ -178,6 +178,7 @@
 
 	opttype=['info','warning','error','danger','success','Sorry!'];
 	var sn = 0;
+	var gk ;
 	var ckball = true;
 	var opt ={
 		elem: "#message",
@@ -220,7 +221,7 @@
      });*/
 	function chgckball()
 	{
-		loadEvt(sn);
+		loadEvt(gk,sn);
 	}
 	function setEvtStat(inf) {
 		console.log(gkey);
@@ -237,7 +238,7 @@
 				console.log(data);
 				if (data.result == 1) {
 
-					loadEvt(sn);
+					loadEvt(gk,sn);
 				}
 				else
 				{
@@ -252,7 +253,7 @@
 		//$("#rm2").append(" ddd &nbsp;<input  type=checkbox > </option>&nbsp;&nbsp;");
 
 	}
-	function loadEvt(a) {
+	function loadEvt(gk,a) {
 
 		var cka =1;
 		if($('#ckball').prop('checked'))
@@ -266,7 +267,7 @@
 			type: 'POST',
 			async: true,
 			timeout: timeOutNum,
-			data: { gky:gkey ,xh:a,ck:cka},
+			data: { gky:gk ,xh:a,ck:cka},
 			dataType: 'json',
 			//beforeSend: beforeSend, //发送请求
 			//complete: complete, //请求完成
@@ -302,7 +303,7 @@
 		}
 		else
 		{
-			loadEvt(sn);
+			loadEvt(gk,sn);
 		}
 	}
 	function askback()
@@ -313,7 +314,7 @@
 
 			$('#pageinfo').text('');
 		}
-		loadEvt(sn);
+		loadEvt(gk,sn);
 	}
 
 	function getOptions() {
@@ -399,14 +400,16 @@
 						setCookie('domain',data.domain);
 						setCookie('gkey',data.gkey);
 						setCookie('leval',data.leval);
-						setCookie('uid',data.uid);
+						setCookie('uid',data.auth);
 						setCookie('uname',data.uname);
+						gk = data.gkey;
 						document.getElementsByTagName('b')[0].innerHTML=data.uname;
+						loadEvt(data.gkey,0);
 						$('#exit').attr('href',httpIp + '/LF/LogoutServlet');
 						$(document).on("click", "#reset", function() { $('#iframe_a').attr('src','reset.html'); });
 						$('#iframe_a').attr('src','svr_'+data.gkey+'/Page'+data.leval+'.htm');
 						url1[4]= "http://"+ip_addr+":"+port+"/LF/svr_" + data.gkey + '/Page' + data.leval + '.htm';
-						url="ws://"+ip_addr+":"+port+"/LF/chatSocket?username="+data.uname+"&gkey="+data.gkey+"&uid="+data.uid;
+						url="ws://"+ip_addr+":"+port+"/LF/chatSocket?username="+data.uname+"&gkey="+data.gkey+"&uid="+data.auth;
 
 						if ('WebSocket' in window) {
 							ws = new WebSocket(url);
@@ -565,7 +568,7 @@
 	$(document).ready(function(){
 		$("#ckball").prop("checked",true);
 		window.onresize = reSetSize;
-		loadEvt(0);
+
 		// 嵌入页面高度自适应 Js starts
 		reSetSize();
 		connect();

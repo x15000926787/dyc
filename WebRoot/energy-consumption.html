@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Arise Admin Dashboard" />
+    <meta name="keywords" content="Admin, Dashboard, Bootstrap3, Sass, transform, CSS3, HTML5, Web design, UI Design, Responsive Dashboard, Responsive Admin, Admin Theme, Best Admin UI, Bootstrap Theme, Themeforest, Bootstrap, C3 Graphs, D3 Graphs, NVD3 Graphs, Admin Skin, Black Admin Dashboard, Grey Admin Dashboard, Dark Admin Dashboard, Simple Admin Dashboard, Simple Admin Theme, Simple Bootstrap Dashboard, Invoice, Tasks, Profile" />
+    <meta name="author" content="Ramji" />
+    <link rel="shortcut icon" href="img/fav.png">
+    <title>聆风智控</title>
+    <!-- Bootstrap CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet" media="screen" />
+    <!-- Main CSS -->
+    <link href="css/main.css" rel="stylesheet" media="screen" />
+    <!-- <index.css> -->
+    <link href="css/index.css" rel="stylesheet" media="screen" />
+    <!-- Ion Icons -->
+    <link href="fonts/icomoon/icomoon.css" rel="stylesheet" />
+    <link href="font/iconfont.css" rel="stylesheet" />
+    <!-- Calendar Heatmap频率 CSS -->
+    <link href="css/heatmap/cal-heatmap.css" rel="stylesheet" />
+    <!-- HTML5 shiv and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+			<script src="js/html5shiv.js"></script>
+			<script src="js/respond.min.js"></script>
+		<![endif]-->
+</head>
+
+<body>
+    <!-- 仪表板 Starts -->
+    <div class="dashboard-wrapper">
+        <!-- Container fluid Starts -->
+        <div class="container-fluid">
+            <!-- 选择框 starts-->
+            <div class="row gutter" style="margin:15px 0 0 -93px;">
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                    <div class="panel">
+                        <div class="form-group">
+                            <div class="row gutter">
+                                <div class="col-md-2">
+                                    <label class="control-label">主站</label>
+                                    <select class="form-control" name="genre">
+                                        <option value="comedy">南楼1#B2高压配电室</option>
+                                        <option value="action">南楼2#天台高压配电室</option>
+                                        <option value="horror">北楼TR1#-TR4#配电室</option>
+                                        <option value="romance">北楼TR5#-TR8#配电室</option>
+                                        <option value="romance">北楼35/10KV高压配电室</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-1">
+                                    <label class="control-label">柜名</label>
+                                    <select class="form-control" name="genre">
+                                        <option value="comedy">LP101-1</option>
+                                        <option value="action">LP101-2</option>
+                                        <option value="horror">LP101-3</option>
+                                        <option value="romance">LP101-4</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-1">
+                                    <button type="submit" class="btn btn-default">确定</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- 选择框 ends-->
+            <!-- 上半部分 starts -->
+            <div class="row gutter" style="margin:0px 0 0 -93px;">
+                <!-- 基本信息 starts -->
+                <div class="col-lg-2 col-md-3 col-sm-4 col-xs-12">
+                    <div class="panel height3">
+                        <div class="panel-heading">
+                            <h4>基本信息</h4>
+                        </div>
+                        <div class="panel-body">
+                            <ul style="width: 100%; font-size: 0.8vw;color: #fff;">
+                                <li class="record-text1">线路名称</li>
+                                <li class="record-text2">A03L45</li>
+                                <li class="text-line"></li>
+                                <li class="record-text1">电压等级</li>
+                                <li class="record-text2">380V/220V</li>
+                                <li class="text-line"></li>
+                                <li class="record-text1">额定电流</li>
+                                <li class="record-text2">125A</li>
+                                <li class="text-line"></li>
+                                <li class="record-text1">额定电容</li>
+                                <li class="record-text2">47.5KVA/27.5KVA</li>
+                                <li class="text-line"></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <!-- 基本信息 ends -->
+                <!-- 电压部分 starts -->
+                <div class="col-lg-5 col-md-9 col-sm-8 col-xs-12">
+                    <div class="panel height3">
+                        <div class="panel-heading">
+                            <h4>电压</h4>
+                        </div>
+                        <div class="panel-body">
+                            <ul class="voltage">
+                                <span class="call-button" style="text-align: center;display: inherit">三相电压</span>
+                                <li>
+                                    <a href="javascript:void(0)">
+                                        <span class="tra-icon">
+                                            <i class="iconfont icon-dianya2 text-blue"></i>
+                                        </span>
+                                        <span class="tra-type">Ua</span>
+                                        <span class="tra-amount text-blue">220</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="javascript:void(0)">
+                                        <span class="tra-icon">
+                                            <i class="iconfont icon-dianya2 text-green"></i>
+                                        </span>
+                                        <span class="tra-type">Ub</span>
+                                        <span class="tra-amount text-green">220</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="javascript:void(0)">
+                                        <span class="tra-icon">
+                                            <i class="iconfont icon-dianya2  text-yellow"></i>
+                                        </span>
+                                        <span class="tra-type">Uc</span>
+                                        <span class="tra-amount text-yellow">220</span>
+                                    </a>
+                                </li>
+                                <li>
+                                </li>
+                            </ul>
+                            <ul class="voltage three-wire-voltage">
+                                <span class="call-button" style="text-align: center;display: inherit">三线电压</span>
+                                <li>
+                                    <a href="javascript:void(0)">
+                                        <span class="tra-icon">
+                                            <i class="iconfont icon-dianya2 text-blue"></i>
+                                        </span>
+                                        <span class="tra-type">Uab</span>
+                                        <span class="tra-amount text-blue">380</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="javascript:void(0)">
+                                        <span class="tra-icon">
+                                            <i class="iconfont icon-dianya2 text-green"></i>
+                                        </span>
+                                        <span class="tra-type">Ubc</span>
+                                        <span class="tra-amount text-green">380</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="javascript:void(0)">
+                                        <span class="tra-icon">
+                                            <i class="iconfont icon-dianya2  text-yellow"></i>
+                                        </span>
+                                        <span class="tra-type">Uca</span>
+                                        <span class="tra-amount text-yellow">380</span>
+                                    </a>
+                                </li>
+                                <li>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <!-- 电压部分 ends -->
+                <!-- 电流部分 starts -->
+                <div class="col-lg-5 col-md-12 col-sm-12 col-xs-12">
+                    <div class="panel height3">
+                        <div class="panel-heading">
+                            <h4>电流</h4>
+                        </div>
+                        <div class="panel-body">
+                        	<span class="call-button" style="text-align: center;display: inherit">三相电流</span>
+                            <div id="gaugecontainer" style="height: 205px;"></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 电流部分 ends -->
+            </div>
+            <!-- 上半部分 ends -->
+            <!-- 中间部分 starts -->
+            <div class="row gutter" style="margin:0px 0 0 -93px;">
+                <!-- 频率部分 starts -->
+                <div class="col-lg-2 col-md-3 col-sm-4 col-xs-12">
+                    <div class="panel height1">
+                        <div class="panel-heading">
+                            <h4>频率</h4>
+                        </div>
+                        <div class="panel-body">
+                            <div class="heatmap">
+                                <h3 class="text-green">50</h3>
+                                <div id="cal-heatmap"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 频率部分 ends -->
+                <!-- 占总电站比值 starts -->
+                <div class="col-lg-2 col-md-3 col-sm-4 col-xs-12">
+                    <div class="panel height1">
+                        <div class="panel-heading">
+                            <h4>占总变电站比值</h4>
+                        </div>
+                        <a href="javascript:void(0)" class="sessions">
+                            <div class="GaugeMeter" id="GaugeMeter_1" data-percent="50" data-size="118" data-width="10" data-stripe="2" data-color="#55899C" data-back="#353c48" data-label="所占比值" data-label_color="#FFFFFF" style="padding-top: 25px;">
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                <!-- 占总电站比值 ends -->
+                <!-- 功率因素 starts -->
+                <div class="col-lg-2 col-md-3 col-sm-4 col-xs-12">
+                    <div class="panel height1">
+                        <div class="panel-heading">
+                            <h4>功率因素</h4>
+                        </div>
+                        <div class="panel-body">
+                            <div id="power-gauge"></div>
+                        </div>
+                        <div class="customer-satisfaction" style="padding-top: 15px;">
+										<i class="icon-thumbs-up"></i>
+										<h2>94%</h2>
+										
+									</div>
+                    </div>
+                </div>
+                <!-- 功率因素 ends -->
+                <!-- 有功功率 无功功率 starts -->
+                <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                    <div class="panel height1">
+                        <div class="panel-heading">
+                            <h4>功率</h4>
+                        </div>
+                        <div class="panel-body" style="padding-top: 0px;">
+                            <ul class="voltage">
+                                <span class="call-button selected" style="text-align: center;display: inherit">有功功率</span>
+                                <li>
+                                    <a href="javascript:void(0)">
+                                        <span class="tra-icon">
+                                            <i class="iconfont icon-gongshuai text-blue"></i>
+                                        </span>
+                                        <span class="tra-type">Pa</span>
+                                        <span class="tra-amount text-blue">35KW</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="javascript:void(0)">
+                                    <span class="tra-icon">
+                                        <i class="iconfont icon-gongshuai text-green"></i>
+                                    </span>
+                                    <span class="tra-type">Pb</span>
+                                    <span class="tra-amount text-green">40KW</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="javascript:void(0)">
+                                        <span class="tra-icon">
+                                            <i class="iconfont icon-gongshuai  text-yellow"></i>
+                                        </span>
+                                        <span class="tra-type">Pc</span>
+                                        <span class="tra-amount text-yellow">45KW</span>
+                                    </a>
+                                </li>
+                                <li>
+                                </li>
+                            </ul>
+                            <ul class="voltage three-wire-voltage">
+                                <span class="call-button" style="text-align: center;display: inherit">无功功率</span>
+                                <li>
+                                    <a href="javascript:void(0)">
+                                        <span class="tra-icon">
+                                            <i class="iconfont icon-v1wugonggonglv01 text-blue"></i>
+                                        </span>
+                                        <span class="tra-type">Qa</span>
+                                        <span class="tra-amount text-blue">20kvar</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="javascript:void(0)">
+                                        <span class="tra-icon">
+                                            <i class="iconfont icon-v1wugonggonglv01 text-green"></i>
+                                        </span>
+                                        <span class="tra-type">Qb</span>
+                                        <span class="tra-amount text-green">26kvar</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="javascript:void(0)">
+                                        <span class="tra-icon">
+                                            <i class="iconfont icon-v1wugonggonglv01  text-yellow"></i>
+                                        </span>
+                                        <span class="tra-type">Qc</span>
+                                        <span class="tra-amount text-yellow">30kvar</span>
+                                    </a>
+                                </li>
+                                <li>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <!-- 有功功率 无功功率 ends -->
+                <!-- 月电量比 starts -->
+                <div class="col-lg-2 col-md-3 col-sm-4 col-xs-12">
+                    <div class="panel height1">
+                        <div class="panel-heading">
+                            <h4>占总变电站比值</h4>
+                        </div>
+                        <ul class="sales-q2" style="padding: 10px 0 0 40px;">
+                            <li class="clearfix">
+                                <div class="month-type warning">上上月</div>
+                                <div class="sale-info">
+                                    <h3>13567kwh<span class="text-yellow"></span></h3>
+                                </div>
+                            </li>
+                            <li class="clearfix">
+                                <div class="month-type info">上月</div>
+                                <div class="sale-info">
+                                    <h3>12356kwh<span class="text-blue"></span></h3>
+                                </div>
+                            </li>
+                            <li class="clearfix">
+                                <div class="month-type">当月</div>
+                                <div class="sale-info">
+                                    <h3>11218kwh<span class="text-red"></span></h3>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- 月电量比 ends -->
+            </div>
+            <!-- 中间部分 ends -->
+            <!-- 下半部分 starts -->
+            <div class="row gutter" style="margin:0px 0 0 -93px;">
+                <!-- 总用电量柱形图部分 starts -->
+                <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                    <div class="panel height3">
+                        <div class="panel-heading">
+                            <h4>总用电量</h4>
+                        </div>
+                        <div class="panel-body">
+                            <div id="bar-container" style="height: 240%;margin-top: -35px; "></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 总用电量柱形图部分 ends -->
+                <!-- 曲线变化部分 starts -->
+                <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                    <div class="panel height3">
+                        <div class="panel-heading">
+                            <h4></h4>
+                        </div>
+                        <div class="panel-body">
+                        	<div class="call-curve">
+                        		<div  id="voltage-container" style="height: 250%"></div>
+                        	</div>
+                        	<div class="call-curve">
+                        		<div id="current-container" style="height: 250%"></div>
+                        	</div>
+                        	<div class="call-curve">
+                        		<div id="meritorious-container" style="height: 250%"></div>
+                        	</div>
+                        	<div class="call-curve">
+                        		<div id="reactive-container" style="height: 250%"></div>
+                        	</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 曲线变化部分 ends -->
+            </div>
+            <!-- 下半部分 ends -->
+        </div>
+        <!-- Container fluid ends -->
+    </div>
+   <!-- 仪表板 ends -->
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="js/jquery.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="js/echart/echarts.min.js"></script>
+    <!-- D3 功率因素JS -->
+    <script src="js/d3/d3.v3.min.js"></script>
+    <script src="js/d3/d3.powergauge.js"></script>
+    <!-- Gauge Meter 占总变电站比值 JS -->
+    <script src="js/gaugemeter/gaugeMeter-2.0.0.min.js"></script>
+    <script src="js/gaugemeter/gaugemeter.custom.js"></script>
+    <!-- Calendar Heatmap 频率 JS -->
+    <script src="js/heatmap/cal-heatmap.min.js"></script>
+    <script src="js/heatmap/cal-heatmap.custom.js"></script>
+    <!-- 电量自己 Js -->
+    <script src="js/energy-consumption.js"></script>
+     <script>
+    $(function() {
+        //获取点击事件的对象
+        $(".panel-body .call-button").click(function() {
+            //获取要显示或隐藏的对象
+            var divShow = $(".panel-body").children('.call-curve');
+            //判断当前对象是否被选中，如果没选中的话进入if循环
+            if (!$(this).hasClass('selected')) {
+                //获取当前对象的索引
+                var index = $(this).index();
+                //当前对象添加选中样式并且其同胞移除选中样式；
+                $(this).addClass('selected').siblings('.call-button').removeClass('selected');
+                //索引对应的div块显示
+                $(divShow[index]).show();
+                //索引对应的div块的同胞隐藏
+                $(divShow[index]).siblings('.call-curve').hide();
+            }
+        });
+    });
+    </script>
+</body>
+
+</html>

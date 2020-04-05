@@ -1,0 +1,415 @@
+﻿<!DOCTYPE html>
+<html lang="zh">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"> 
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>消息通知插件 </title>
+	<link rel="stylesheet" href="css/bootstrap.min.css">
+ 
+	<link href="css/light-theme.min.css" rel="stylesheet">
+	<link href="css/dark-theme.min.css" rel="stylesheet">
+	<link href="css/colored-theme.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="page-content__header">
+            <div>
+                <h2 class="page-content__header-heading">Growl Notifications</h2>
+            </div>
+        </div>
+        <div class="main-container">
+            <div class="row">
+                <div class="col-lg-2">
+                    <div class="for-group">
+                        <label for="notification-position">Choose Position</label>
+                        <select class="form-control" name="position" id="notification-position">
+                            <option value="top-center" selected>Top Center</option>
+                            <option value="bottom-center" selected>Bottom Center</option>
+                            <option value="top-right" selected>Top Right</option>
+                            <option value="bottom-right">Bottom Right</option>
+                            <option value="top-left">Top Left</option>
+                            <option value="bottom-left">Bottom Left</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-lg-2">
+                    <div class="for-group">
+                        <label for="close-timeout">Close Timeout</label>
+                        <select class="form-control" name="position" id="close-timeout">
+                            <option value="0" selected>Disabled</option>
+                            <option value="1000">1 Sec</option>
+                            <option value="3000">3 Sec</option>
+                            <option value="5000">5 Sec</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-lg-2">
+                    <div class="for-group">
+                        <label for="animation">Animation</label>
+                        <select class="form-control" name="position" id="animation">
+                            <option value="none">None</option>
+                            <option value="slide" selected>Slide</option>
+                            <option value="fade">Fade</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-lg-2">
+                    <div class="for-group">
+                        <label for="animation">Show Buttons</label>
+                        <div class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" id="show-buttons">
+                            <label class="custom-control-label" for="show-buttons">Yes/No</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-2">
+                    <div class="for-group">
+                        <label for="animation">Show Progress Bar</label>
+                        <div class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" id="show-progress-bar">
+                            <label class="custom-control-label" for="show-progress-bar">Yes/No</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-5">
+                <div class="col-lg-2">
+                    <button id="show-notification-close-all" class="btn btn-danger">Close All Notifications</button>
+                </div>
+            </div>
+
+            <h2 class="mt-5">Default Notifications</h2>
+            <div class="row">
+                <div class="col-lg-6">
+                    <button id="show-notification-default-simple" class="btn btn-secondary">Show me a notification (Default)</button>
+                    <pre class="mt-4">
+<code class="language-javascript">GrowlNotification.notify({
+  description: 'I am a default notification.',
+}); // or (new GrowlNotification(options)).show();</code>
+</pre>
+
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <button id="show-notification-default-alert" class="btn btn-secondary">Show me a notification (Default)</button>
+                            <pre class="mt-4">
+<code class="language-javascript">GrowlNotification.notify({
+  title: 'Hello!',
+  description: 'I am a default notification.',
+  type: 'alert',
+  position: 'top-right',
+  closeTimeout: 0
+}); // or (new GrowlNotification(options)).show();</code>
+</pre>
+                        </div>
+                        <div class="col-lg-6">
+                            <button id="show-notification-default-success" class="btn btn-outline-success">Show me a notification (Success)</button>
+                            <pre class="mt-4">
+<code class="language-javascript">GrowlNotification.notify({
+  title: 'Well Done!',
+  description: 'You just submit your resume successfully.',
+  type: 'success',
+  position: 'top-right',
+  closeTimeout: 0
+});</code>
+</pre>
+                        </div>
+                    </div>
+                    <div class="row mt-4">
+                        <div class="col-lg-6">
+                            <button id="show-notification-default-error" class="btn btn-outline-danger">Show me a notification (Error)</button>
+                            <pre class="mt-4">
+<code class="language-javascript">GrowlNotification.notify({
+  title: 'Warning!',
+  description: 'The data presentation here can be change.',
+  type: 'error',
+  position: 'top-right',
+  closeTimeout: 0
+});</code>
+</pre>
+                        </div>
+                        <div class="col-lg-6">
+                            <button id="show-notification-default-warning" class="btn btn-outline-warning">Show me a notification (Warning)</button>
+                            <pre class="mt-4">
+<code class="language-javascript">GrowlNotification.notify({
+  title: 'Reminder!',
+  description: 'You have a meeting at 10:30 АМ',
+  type: 'warning',
+  position: position,
+  closeTimeout: closeTimeout
+});</code>
+</pre>
+                        </div>
+                        <!--<div class="col-lg-12">
+                          <button id="show-notification-default-info" class="btn btn-info">Show me a notification (Info)</button>
+                        </div>-->
+                    </div>
+                    <div class="row mt-4">
+                        <div class="col-lg-6">
+                            <button id="show-notification-default-info" class="btn btn-outline-purple">Show me a notification (Info)</button>
+                            <pre class="mt-4">
+<code class="language-javascript">GrowlNotification.notify({
+  title: 'Sorry!',
+  description: 'Could not complete your transaction.',
+  image: 'img/info.png',
+  type: 'info',
+  position: 'top-right,
+  closeTimeout: 0
+});</code>
+</pre>
+                        </div>
+                    </div>
+
+                    <h2 class="mt-5">Notifications with icons</h2>
+
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <button id="show-notification-icon-alert" class="btn btn-secondary">Show me a notification (Default)</button>
+                            <pre class="mt-4">
+<code class="language-javascript">GrowlNotification.notify({
+  title: 'Hello!',
+  description: 'I am a default notification.',
+  type: 'alert',
+  image: 'img/default.png',
+  position: 'top-right',
+  closeTimeout: 0
+});</code>
+</pre>
+                        </div>
+                        <div class="col-lg-6">
+                            <button id="show-notification-icon-success" class="btn btn-outline-success">Show me a notification (Success)</button>
+                            <pre class="mt-4">
+<code class="language-javascript">GrowlNotification.notify({
+  title: 'Well Done!',
+  description: 'You just submit your resume successfully.',
+  image: 'img/success.png',
+  type: 'success',
+  position: 'top-right',
+  closeTimeout: 0
+});</code>
+</pre>
+                        </div>
+                    </div>
+                    <div class="row mt-4">
+                        <div class="col-lg-6">
+                            <button id="show-notification-icon-error" class="btn btn-outline-danger">Show me a notification (Error)</button>
+                            <pre class="mt-4">
+<code class="language-javascript">GrowlNotification.notify({
+  title: 'Warning!',
+  description: 'The data presentation here can be change.',
+  image: 'img/danger.png',
+  type: 'error',
+  position: 'top-right',
+  closeTimeout: 0
+});</code>
+</pre>
+                        </div>
+                        <div class="col-lg-6">
+                            <button id="show-notification-icon-warning" class="btn btn-outline-warning">Show me a notification (Warning)</button>
+                            <pre class="mt-4">
+<code class="language-javascript">GrowlNotification.notify({
+  title: 'Reminder!',
+  description: 'You have a meeting at 10:30 АМ',
+  image: 'img/warning.png',
+  type: 'warning',
+  position: 'top-right',
+  closeTimeout: 0
+});</code>
+</pre>
+                        </div>
+                    </div>
+                    <div class="row mt-4">
+                        <div class="col-lg-6">
+                            <button id="show-notification-icon-info" class="btn btn-outline-purple">Show me a notification (Info)</button>
+                            <pre class="mt-4">
+<code class="language-javascript">GrowlNotification.notify({
+  title: 'Sorry!',
+  description: 'Could not complete your transaction.',
+  image: {
+    visible: true,
+    customImage: 'img/info.png'
+  },
+  type: 'info',
+  position: 'top-right',
+  closeTimeout: 0
+});</code>
+</pre>
+                        </div>
+                    </div>
+
+
+                </div>
+            </div>
+          
+        </div>
+        <script src="js/jquery.js"></script>
+        <script type="text/javascript" src="js/growl-notification.min.js"></script>
+        <script>
+            GrowlNotification.setGlobalOptions({
+                buttons: {
+                    action: {
+                        text: 'Apply'
+                    },
+                    cancel: {
+                        text: 'Dismiss'
+                    }
+                }
+            });
+
+            function getOptions() {
+                var position = 'top-center';
+                var closeTimeout = 1000;   //0,1000,3000,5000
+                var animation = 'slide';
+                var showButtons = false;
+                var showProgressBar = false;
+                var animationOptions = {
+                    open: animation + '-in',
+                    close: animation + '-out'
+                };
+
+                if (animation === 'none') {
+                    animationOptions = {
+                        open: false,
+                        close: false
+                    };
+                }
+                console.log(position);
+                console.log(closeTimeout);
+                console.log(animation);
+                console.log(showButtons);
+                console.log(showProgressBar);
+                return options = {
+                    description: 'I am a default notification',
+                    position: position,
+                    closeTimeout: closeTimeout,
+                    closeWith: ['click'],
+                    animation: animationOptions,
+                    showButtons: showButtons,
+                    buttons: {
+                        action: {
+                            callback: function (notification) {
+                                console.log('action button');
+                            }
+                        }
+                    },
+                    showProgress: showProgressBar
+                };
+            }
+
+            $('#show-notification-default-simple').on('click', function () {
+                GrowlNotification.notify(getOptions());
+            });
+
+            $('#show-notification-default-alert').on('click', function () {
+                var options = getOptions();
+                options.title = 'Hello!';
+                options.description = 'I am a default notification. I am a default notification. I am a default notification. I am a default notification.';
+                options.width = 500;
+                GrowlNotification.notify(options);
+            });
+
+            $('#show-notification-default-success').on('click', function () {
+                var options = getOptions();
+                options.title = 'Well Done!';
+                options.description = 'You just submit your resume successfully.';
+                options.type = 'success';
+                GrowlNotification.notify(options);
+            });
+
+            $('#show-notification-default-error').on('click', function () {
+                var options = getOptions();
+                options.title = 'Warning!';
+                options.description = 'The data presentation here can be change.';
+                options.type = 'error'; // or danger
+                GrowlNotification.notify(options);
+            });
+
+            $('#show-notification-default-warning').on('click', function () {
+                var options = getOptions();
+                options.title = 'Reminder!';
+                options.description = 'You have a meeting at 10:30 АМ';
+                options.type = 'warning';
+                GrowlNotification.notify(options);
+            });
+
+            $('#show-notification-default-info').on('click', function () {
+                var options = getOptions();
+                options.title = 'Sorry!';
+                options.description = 'Could not complete your transaction.';
+                options.type = 'info';
+                //options.image = 'img/info.png';
+                options.image = {
+                    visible: true
+                };
+                GrowlNotification.notify(options);
+            });
+
+            $('#show-notification-icon-alert').on('click', function () {
+                var options = getOptions();
+                options.title = 'Hello!';
+                options.description = 'I am a default notification.';
+                //options.image = 'img/default.png';
+                options.image = {
+                    visible: true
+                };
+                GrowlNotification.notify(options);
+            });
+
+            $('#show-notification-icon-success').on('click', function () {
+                var options = getOptions();
+                options.title = 'Well Done!';
+                options.description = 'You just submit your resume successfully.';
+                //options.image = 'img/success.png';
+                options.image = {
+                    visible: true
+                };
+                options.type = 'success';
+                GrowlNotification.notify(options);
+            });
+
+            $('#show-notification-icon-error').on('click', function () {
+                var options = getOptions();
+                options.title = 'Warning!';
+                options.description = 'The data presentation here can be change.';
+                //options.image = 'img/danger.png';
+                options.image = {
+                    visible: true
+                };
+                options.type = 'danger';
+                GrowlNotification.notify(options);
+            });
+
+            $('#show-notification-icon-warning').on('click', function () {
+                var options = getOptions();
+                options.title = 'Reminder!';
+                options.description = 'You have a meeting at 10:30 АМ';
+                //options.image = 'img/warning.png';
+                options.image = {
+                    visible: true
+                };
+                options.type = 'warning';
+                GrowlNotification.notify(options);
+            });
+
+            $('#show-notification-icon-info').on('click', function () {
+                var options = getOptions();
+                options.title = 'Sorry!';
+                options.description = 'Could not complete your transaction.';
+                options.image = {
+                    visible: true
+                };
+                options.type = 'info';
+
+                GrowlNotification.notify(options);
+            });
+
+            $('#show-notification-close-all').on('click', function () {
+                GrowlNotification.closeAll();
+            });
+
+
+        </script>
+
+</body>
+</html>
