@@ -18,6 +18,9 @@ import java.io.Reader;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 /**
@@ -665,7 +668,7 @@ public class AnaUtil  {
         Calendar c;
         String msg="";
         //String luaStr = null;
-        SimpleDateFormat df,df2,df3;
+        //SimpleDateFormat df,df2,df3;
         //JSONObject  map = null;
         //HashMap<String,Object>  authormap = new HashMap<String,Object>();
         JSONObject  usermap = new JSONObject();
@@ -675,14 +678,15 @@ public class AnaUtil  {
         //map = (HashMap<String,Object>)objana_v.get(key);
         //logger.warn(key+ "：" +vals);
         //logger.warn(map.toString());
-        df = new SimpleDateFormat("YYMMdd");//设置日期格式
-        df2 = new SimpleDateFormat("HHmmss");//设置日期格式
-        df3 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//设置日期格式
+        //df = new SimpleDateFormat("YYMMdd");//设置日期格式
+        //df2 = new SimpleDateFormat("HHmmss");//设置日期格式
+       // df3 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//设置日期格式
         // savet = (df.format(new Date()));// new Date()为获取当前系统时间
-        c = Calendar.getInstance();//可以对每个时间域单独修改
-        dbname = "hevtyc"+(c.get(Calendar.YEAR)%10);
-        dbname2 = "hevt"+(c.get(Calendar.YEAR)%10);
-        int min= c.get(Calendar.HOUR_OF_DAY)*60+c.get(Calendar.MINUTE);
+        LocalDateTime rightnow = LocalDateTime.now();
+
+        dbname = "hevtyc"+(rightnow.getYear()%10);
+        dbname2 = "hevt"+(rightnow.getYear()%10);
+        int min= rightnow.getHour()*60+rightnow.getMinute();
         //logger.warn(msg_author.toString());
         int vv = -2;int ttp=0;
         if (objana_v.containsKey(key))
@@ -721,9 +725,9 @@ public class AnaUtil  {
                         if (vv==1) limit=up;
                         if(vv==-1) limit=down;
                         if (vv==0)
-                            add_red(jdbcTemplate, "INSERT INTO " + dbname + " (ymd,hms,ch,xh,zt,val,readstatus) values (" + df.format(new Date()) + "," + df2.format(new Date()) + "," + rtuno + "," + sn + "," + vv + "," + vals + ",0)");
+                            add_red(jdbcTemplate, "INSERT INTO " + dbname + " (ymd,hms,ch,xh,zt,val,readstatus) values (" + rightnow.format(DateTimeFormatter.ofPattern("YYMMDD")) + "," + rightnow.format(DateTimeFormatter.ofPattern("HHmmss")) + "," + rtuno + "," + sn + "," + vv + "," + vals + ",0)");
                         else
-                            add_red(jdbcTemplate, "INSERT INTO " + dbname + " (ymd,hms,ch,xh,zt,val,tlimit,readstatus) values (" + df.format(new Date()) + "," + df2.format(new Date()) + "," + rtuno + "," + sn + "," + vv + "," + vals +","+limit+ ",0)");
+                            add_red(jdbcTemplate, "INSERT INTO " + dbname + " (ymd,hms,ch,xh,zt,val,tlimit,readstatus) values (" + rightnow.format(DateTimeFormatter.ofPattern("YYMMDD")) + "," + rightnow.format(DateTimeFormatter.ofPattern("HHmmss"))+ "," + rtuno + "," + sn + "," + vv + "," + vals +","+limit+ ",0)");
 
                         //chgtime 字段用来存储当前遥测状态
                         add_red(jdbcTemplate, "UPDATE prtuana SET chgtime=" + vv + " WHERE RTUNO=" + rtuno + " AND SN=" + sn);
@@ -736,7 +740,7 @@ public class AnaUtil  {
                          msg = query_red(jdbcTemplate, "select concat(a.pro_name,b.name,c.roomname,d.devicenm,e.name) msg from project_list a,prtu b,room c,dev_author d,prtuana e where a.pro_id=b.domain and b.rtuno=c.rtuno and c.roomno = d.roomno and d.deviceno=e.deviceno  and e.rtuno=" + rtuno + " and e.sn=" + sn);
                         if (!msg.isEmpty())
                         {
-                                    msg = df3.format(new Date()) + " " + msg;
+                                    msg = rightnow.format(DateTimeFormatter.ofPattern("yyyy-MM-DD HH:mm:ss")) + " " + msg;
                                 switch (vv) {
                                     case -1:
                                         msg = msg + " 越下限。备注：" + vals + "（" + down + "~" + up + "）";
@@ -854,7 +858,7 @@ public class AnaUtil  {
                     try
                     {
 
-                        add_red(jdbcTemplate,"INSERT INTO "+dbname2+" (ymd,hms,ch,xh,event,zt,readstatus) values ("+df.format(new Date())+","+df2.format(new Date())+","+rtuno+","+sn+","+up+","+vals+",0)");
+                        add_red(jdbcTemplate,"INSERT INTO "+dbname2+" (ymd,hms,ch,xh,event,zt,readstatus) values ("+rightnow.format(DateTimeFormatter.ofPattern("YYMMDD"))+","+rightnow.format(DateTimeFormatter.ofPattern("HHmmss"))+","+rtuno+","+sn+","+up+","+vals+",0)");
                         add_red(jdbcTemplate,"UPDATE prtudig SET chgtime="+vals+" where RTUNO="+rtuno+" AND SN="+sn);
 
                         // logger.warn("save hevt:"+df.format(new Date())+","+df2.format(new Date())+","+rtuno+","+sn+","+vv+","+vals);
@@ -875,15 +879,15 @@ public class AnaUtil  {
 
                          msg=query_red(jdbcTemplate,"select concat(a.pro_name,b.name,c.roomname,d.devicenm,e.name,f.e_info,',',f.e_color,',',f.e_stay) msg from project_list a,prtu b,room c,dev_author d,prtudig e,etype_info f where a.pro_id=b.domain and b.rtuno=c.rtuno and c.roomno = d.roomno and d.deviceno=e.deviceno and e.type=f.e_type  and e.rtuno="+rtuno+" and e.sn="+sn+" and f.e_zt="+vals);
                         String[] msgs = msg.split(",");
-                        msg=projectName+df3.format(new Date())+" "+msgs[0];
+                        msg=projectName+rightnow.format(DateTimeFormatter.ofPattern("yyyy-MM-DD HH:mm:ss"))+" "+msgs[0];
                         if (Integer.parseInt(altah) > 0) {
 
                             if (!skt.getSockets().isEmpty())
                                 //skt.broadcast(skt.getSockets(), "{\"gkey\":\""+key.split("\\.")[0]+"\",\"msg\":{\"message\":\"" + msg + "\",\"title\":\"遥测越限\",\"type\":" + ttp + ",\"stay\":5000}}", Integer.parseInt(altah));
 
-                                skt.broadcast(skt.getSockets(), "{\"auth\":\""+altah+"\",\"gkey\":\""+gkey+"\",\"msg\":{\"message\":\""+df3.format(new Date())+" "+msgs[0]+"\",\"title\":\"开关变位\",\"type\":\""+msgs[1]+"\",\"stay\":\""+msgs[2]+"\"}}",Integer.parseInt(altah));
+                                skt.broadcast(skt.getSockets(), "{\"auth\":\""+altah+"\",\"gkey\":\""+gkey+"\",\"msg\":{\"message\":\""+rightnow.format(DateTimeFormatter.ofPattern("yyyy-MM-DD HH:mm:ss"))+" "+msgs[0]+"\",\"title\":\"开关变位\",\"type\":\""+msgs[1]+"\",\"stay\":\""+msgs[2]+"\"}}",Integer.parseInt(altah));
 
-                            logger.info( "send alt_yx_msg :" + msgs[0]);
+                            logger.info( "send alt_yx_msg :" + msgs[0]+"   {\"auth\":\""+altah+"\",\"gkey\":\""+gkey+"\"}");
                             //sendmsg.sendmsg(mobs.substring(1),msg);
                         }
 
@@ -967,15 +971,18 @@ public class AnaUtil  {
 
     synchronized static public void handleTime(String key,String vals,JdbcTemplate jdbcTemplate,ChatSocket skt)  {
         String down,up,limit=" ",dbname,rtuno,sn,msgah,mailah,altah,mobs = "",gkey="";
-        Calendar c;
+       // Calendar c;
         String msg="";
-        //String luaStr = null;
-        SimpleDateFormat df,df2,df3;
 
+        //SimpleDateFormat df,df2,df3;
+        LocalDateTime rightnow = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+        String rnow = rightnow.format(formatter);
         JSONObject  usermap = new JSONObject();
         HashMap<String,Object>  map = new HashMap<String,Object>();
         HashMap<String,Object>  tuser = new HashMap<String,Object>();
-        df3 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//设置日期格式
+       // df3 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//设置日期格式
 
 
         int vv = -2;
@@ -1009,32 +1016,26 @@ public class AnaUtil  {
                     //开始计时
                     ((HashMap<String,String>) objana_v.get(key)).put("timestat","1");
 
-                    ((HashMap<String,String>) objana_v.get(key)).put("checktime",df3.format(new Date()));
-                    add_red(jdbcTemplate,"UPDATE "+dbname+" SET timestat=1 ,checktime='"+df3.format(new Date())+"' where kkey='"+key+"'");
-                    logger.warn("UPDATE "+dbname+" SET timestat=1 ,checktime='"+df3.format(new Date())+"' where kkey='"+key+"'");
+                    ((HashMap<String,String>) objana_v.get(key)).put("checktime",rnow);
+                    add_red(jdbcTemplate,"UPDATE "+dbname+" SET timestat=1 ,checktime='"+rnow+"' where kkey='"+key+"'");
+                    logger.warn("UPDATE "+dbname+" SET timestat=1 ,checktime='"+rnow+"' where kkey='"+key+"'");
                 }
                 else if (!checkcondition(vals,map.get("timecondition").toString()) && Integer.parseInt(map.get("timestat").toString())==1)
                 {
                     //停止计时
 
                     logger.warn(key+" 停止计时 ");
-                    Date Date2 = new Date();
-                    Date toDate2 =null;
-                    try {
-                        toDate2 = df3.parse(map.get("checktime").toString());
-                    }catch (ParseException e)
-                    {
-                        e.printStackTrace();
-                    }
+                    //LocalDateTime Date2 = LocalDateTime.now();
+                    LocalDateTime to2 = LocalDateTime.parse(map.get("checktime").toString(), formatter);
+                    Duration duration = Duration.between(to2,rightnow);
 
-                    long from2 = Date2.getTime();
-                    long to2 = toDate2.getTime();
-                    float hours =  ((from2 - to2) / (1000.00f * 60 * 60));
-                    float tot = hours + Float.parseFloat(map.get("online").toString());
+                    long minutes = duration.toMinutes();//相差的分钟数
+                    //float hours =  ((rightnow.get - to2) / (1000.00f * 60 * 60));
+                    float tot = minutes/60.00f + Float.parseFloat(map.get("online").toString());
                     //logger.warn(df3.format(Date2)+","+df3.format(toDate2)+","+hours);
                     ((HashMap<String,String>) objana_v.get(key)).put("timestat","0");
                     ((HashMap<String,String>) objana_v.get(key)).put("online",""+tot);
-                    ((HashMap<String,String>) objana_v.get(key)).put("checktime",df3.format(new Date()));
+                    ((HashMap<String,String>) objana_v.get(key)).put("checktime",rnow);
                     /**
                      * 设备在线运行时长不发送实时数据，只在网页对应的表格上显示
                      */
@@ -1045,7 +1046,7 @@ public class AnaUtil  {
                     } catch (Exception e) {
                         e.printStackTrace();
                     }*/
-                    add_red(jdbcTemplate,"UPDATE "+dbname+" SET timestat=0 ,checktime='"+df3.format(new Date())+"',online="+tot+" where kkey='"+key+"'");
+                    add_red(jdbcTemplate,"UPDATE "+dbname+" SET timestat=0 ,checktime='"+rnow+"',online="+tot+" where kkey='"+key+"'");
                     if (tot>(Float.parseFloat(map.get("warnline").toString()))*(Integer.parseInt(map.get("warntimes").toString())+1))
                     {
                         /////////////////////////////////
@@ -1257,10 +1258,13 @@ public class AnaUtil  {
 
     synchronized static public void checkTime(String key,String vals,JdbcTemplate jdbcTemplate,ChatSocket skt) throws ParseException {
         String down,up,limit=" ",dbname,rtuno,sn,msgah,mailah,altah,mobs = "",gkey="";
-        Calendar c;
+        LocalDateTime rightnow = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+        String rnow = rightnow.format(formatter);
         String msg="";
         //String luaStr = null;
-        SimpleDateFormat df,df2,df3;
+
 
         JSONObject  usermap = new JSONObject();
         HashMap<String,Object>  map = new HashMap<String,Object>();
@@ -1270,7 +1274,7 @@ public class AnaUtil  {
         //logger.warn(key+ "：" +vals);
         //logger.warn(map.toString());
 
-        df3 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//设置日期格式
+       // df3 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//设置日期格式
 
         //logger.warn(msg_author.toString());
 
@@ -1295,15 +1299,14 @@ public class AnaUtil  {
                 {
 
 
-                    Date Date2 = new Date();
-                    Date toDate2 = df3.parse(map.get("checktime").toString());
-                    long from2 = Date2.getTime();
-                    long to2 = toDate2.getTime();
+                    LocalDateTime to2 = LocalDateTime.parse(map.get("checktime").toString(), formatter);
+                    Duration duration = Duration.between(to2,rightnow);
 
-                    float hours =  ((from2 - to2) / (1000 * 60 * 60));
-                    logger.warn(df3.format(Date2)+","+df3.format(toDate2)+","+hours);
-                    float tot = hours + Float.parseFloat(map.get("online").toString());
-                    ((HashMap<String,String>) objana_v.get(key)).put("checktime",df3.format(new Date()));
+                    long minutes = duration.toMinutes();//相差的分钟数
+                    //float hours =  ((rightnow.get - to2) / (1000.00f * 60 * 60));
+                    float tot = minutes/60.00f + Float.parseFloat(map.get("online").toString());
+
+                    ((HashMap<String,String>) objana_v.get(key)).put("checktime",rnow);
                     ((HashMap<String,String>) objana_v.get(key)).put("online",""+tot);
                     /**
                      * 设备在线运行时长不发送实时数据，只在网页对应的表格上显示
@@ -1315,8 +1318,8 @@ public class AnaUtil  {
                     } catch (Exception e) {
                         e.printStackTrace();
                     }*/
-                    add_red(jdbcTemplate,"UPDATE "+dbname+" SET online="+tot+",checktime='"+df3.format(new Date())+"' where kkey='"+key+"'");
-                    logger.warn("UPDATE "+dbname+" SET online="+tot+",checktime='"+df3.format(new Date())+"' where kkey='"+key+"'");
+                    add_red(jdbcTemplate,"UPDATE "+dbname+" SET online="+tot+",checktime='"+rnow+"' where kkey='"+key+"'");
+                    logger.warn("UPDATE "+dbname+" SET online="+tot+",checktime='"+rnow+"' where kkey='"+key+"'");
                     if (tot>(Float.parseFloat(map.get("warnline").toString()))*(Integer.parseInt(map.get("warntimes").toString())+1))
                     {
                         /////////////////////////////////

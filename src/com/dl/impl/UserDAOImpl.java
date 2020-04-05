@@ -10,9 +10,7 @@ import com.google.common.io.CharStreams;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.IndexedColors;
-import org.apache.poi.xssf.usermodel.*;
+
 import org.joda.time.DateTime;
 import org.joda.time.LocalDateTime;
 import org.joda.time.Period;
@@ -62,67 +60,8 @@ public class UserDAOImpl
 	    }
 	 
 	 
-	public String doUserReg(String uName, String uPwd, String uEmail, String schoolID, String gradeID, String classID, int ran, int dr)
-    throws SQLException
-  {
-    if (findName(uName))
-    {
-      ran++;
-      if (dr == 1)
-      {
-        doUserReg(uName + ran, uPwd, uEmail, schoolID, gradeID, classID, ran, 1);
-        return "";
-      }
-      return "{\"result\":-2}";
-    }
-    if (findEmail(uEmail)) {
-      if (dr == 0) {
-        return "{\"result\":-3}";
-      }
-    }
-    String sql = "insert into user (uName,uPwd,uEmail,regTime,loginTime,uGrade,uClass) values (?,?,?,?,?,?,?,?)";
-    SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-    Connection conn = null;
-    conn = getJdbcTemplate().getDataSource().getConnection();
-    int newID = 0;
-    
-    PreparedStatement ps = conn.prepareStatement("insert into user (uName,uPwd,uEmail,regTime,loginTime,uSchool,uGrade,uClass) values (?,?,?,?,?,?,?,?)", new String[] { "uName", "uPwd", "uEmail", "regTime", "loginTime", "", "uGrade", "uClass" });
-    ps.setString(1, uName);
-    ps.setString(2, uPwd);
-    ps.setString(3, uEmail);
-    ps.setString(4, df.format(new Date()));
-    ps.setString(5, df.format(new Date()));
-    ps.setString(6, schoolID);
-    ps.setInt(7, Integer.parseInt(gradeID));
-    ps.setInt(8, Integer.parseInt(classID));
-    
-    ps.executeUpdate();
-    ResultSet rs = ps.getGeneratedKeys();
-    if (rs.next())
-    {
-      newID = rs.getInt(1);
-      //log(newID);
-    }
-    ps.close();
-    ps = null;
-    rs.close();
-    rs = null;
-    conn.close();
-    conn = null;
-    
-    String sqlT1 = "insert into user_answer1 (uID,qaData) values (?,?)";
-    getJdbcTemplate().update(sqlT1, new Object[] { Integer.valueOf(newID), "1-0-0,2-0-0,3-0-0,4-0-0,5-0-0,6-0-0,7-0-0,8-0-0,9-0-0,10-0-0,11-0-0,12-0-0,13-0-0,14-0-0,15-0-0,16-0-0,17-0-0,18-0-0,19-0-0,20-0-0,21-0-0,22-0-0,23-0-0,24-0-0,25-0-0,26-0-0,27-0-0,28-0-0,29-0-0,30-0-0,31-0-0,32-0-0,33-0-0,34-0-0,35-0-0,36-0-0,37-0-0,38-0-0,39-0-0,40-0-0,41-0-0,42-0-0,43-0-0,44-0-0,45-0-0,46-0-0,47-0-0,48-0-0,49-0-0,50-0-0" });
-    String sqlT2 = "insert into user_answer2 (uID,qaData) values (?,?)";
-    getJdbcTemplate().update(sqlT2, new Object[] { Integer.valueOf(newID), "1-0-0,2-0-0,3-0-0,4-0-0,5-0-0,6-0-0,7-0-0,8-0-0,9-0-0,10-0-0,11-0-0,12-0-0,13-0-0,14-0-0,15-0-0,16-0-0,17-0-0,18-0-0,19-0-0,20-0-0,21-0-0,22-0-0,23-0-0,24-0-0,25-0-0,26-0-0,27-0-0,28-0-0,29-0-0,30-0-0,31-0-0,32-0-0,33-0-0,34-0-0,35-0-0,36-0-0,37-0-0,38-0-0,39-0-0,40-0-0,41-0-0,42-0-0,43-0-0,44-0-0,45-0-0,46-0-0,47-0-0,48-0-0,49-0-0,50-0-0" });
-    String sqlT3 = "insert into user_answer3 (uID,qaData) values (?,?)";
-    getJdbcTemplate().update(sqlT3, new Object[] { Integer.valueOf(newID), "1-0-0,2-0-0,3-0-0,4-0-0,5-0-0,6-0-0,7-0-0,8-0-0,9-0-0,10-0-0,11-0-0,12-0-0,13-0-0,14-0-0,15-0-0,16-0-0,17-0-0,18-0-0,19-0-0,20-0-0,21-0-0,22-0-0,23-0-0,24-0-0,25-0-0,26-0-0,27-0-0,28-0-0,29-0-0,30-0-0,31-0-0,32-0-0,33-0-0,34-0-0,35-0-0,36-0-0,37-0-0,38-0-0,39-0-0,40-0-0,41-0-0,42-0-0,43-0-0,44-0-0,45-0-0,46-0-0,47-0-0,48-0-0,49-0-0,50-0-0" });
-    String sqlT4 = "insert into user_answer4 (uID,qaData) values (?,?)";
-    getJdbcTemplate().update(sqlT4, new Object[] { Integer.valueOf(newID), "1-0-0,2-0-0,3-0-0,4-0-0,5-0-0,6-0-0,7-0-0,8-0-0,9-0-0,10-0-0,11-0-0,12-0-0,13-0-0,14-0-0,15-0-0,16-0-0,17-0-0,18-0-0,19-0-0,20-0-0,21-0-0,22-0-0,23-0-0,24-0-0,25-0-0,26-0-0,27-0-0,28-0-0,29-0-0,30-0-0,31-0-0,32-0-0,33-0-0,34-0-0,35-0-0,36-0-0,37-0-0,38-0-0,39-0-0,40-0-0,41-0-0,42-0-0,43-0-0,44-0-0,45-0-0,46-0-0,47-0-0,48-0-0,49-0-0,50-0-0" });
-    String sqlT5 = "insert into user_answer5 (uID,qaData) values (?,?)";
-    getJdbcTemplate().update(sqlT5, new Object[] { Integer.valueOf(newID), "1-0-0,2-0-0,3-0-0,4-0-0,5-0-0,6-0-0,7-0-0,8-0-0,9-0-0,10-0-0,11-0-0,12-0-0,13-0-0,14-0-0,15-0-0,16-0-0,17-0-0,18-0-0,19-0-0,20-0-0,21-0-0,22-0-0,23-0-0,24-0-0,25-0-0,26-0-0,27-0-0,28-0-0,29-0-0,30-0-0,31-0-0,32-0-0,33-0-0,34-0-0,35-0-0,36-0-0,37-0-0,38-0-0,39-0-0,40-0-0,41-0-0,42-0-0,43-0-0,44-0-0,45-0-0,46-0-0,47-0-0,48-0-0,49-0-0,50-0-0" });
-    
-    return "{\"result\":1}";
-  }
+
+
   
   public String login(String uEmail, String uPwd, boolean reg)
   {
@@ -2481,7 +2420,7 @@ public class UserDAOImpl
         String cka = " ";
         if (ck==1) cka=" and  a.readstatus=0 ";
         String sql = "select concat(get_datestr(a.ymd,a.hms),' ',b.name,' ',d.e_info) text,concat('1,',a.ymd,',',a.hms,',',a.ch,',',a.xh) id,a.readstatus readStatus,d.e_color ecl from hevt0 a,prtudig b,prtu c,etype_info d where b.author_read>0 "+cka+" and  b.type=d.e_type and a.zt=d.e_zt and  a.ch=c.rtuno and a.xh=b.sn and a.ch=b.rtuno   and c.un_x='"+gkey+"' union select concat(get_datestr(a.ymd,a.hms),' ',b.name,' ',concat(CASE WHEN a.zt = -1 THEN 'yxx' WHEN a.zt = 0 THEN 'hf' ELSE 'ysx' END ,'(',a.val,')')) text,concat('2,',a.ymd,',',a.hms,',',a.ch,',',a.xh) id,a.readstatus readStatus,abs(a.zt) ecl from hevtyc0 a,prtuana b,prtu c  where   b.author_read>0 "+cka+" and  a.ch=c.rtuno and a.xh=b.sn and a.ch=b.rtuno  and c.un_x='"+gkey+"' order by text desc LIMIT "+(sn*10)+", 10";
-        //log(sql);
+        log(sql);
         List userData = getJdbcTemplate().queryForList(sql);
         int size = userData.size();
         Map<String, Object> map1 = new HashMap<String, Object>();
@@ -6051,208 +5990,7 @@ log(sql);
       jsonString = JSON.toJSONString(map1);
 	    return jsonString;
 }
-  public String getyTfData(String crew,String crewLong, int pId) throws ParseException
-  {
-	  	int startAddPoint=0;
-	  	int endAddPoint=0;
-	  	String jsonString="";
-	  	String jzName=getJzName(crew);
-	  	java.util.Map<String,Object> map1 = new HashMap<String,Object>() ;
-	    //String sql ="SELECT * from PLAN_GD where M_NAME='"+crew+"' and PLAN_SN="+pId+" order by START_TIME asc";
-	    String sql ="select a.id,c.jz_name jz,b.evt_id evtid,b.info evtinfo,a.s_datetime start_time,a.e_datetime end_time,a.s_power start_p,a.e_power end_p,a.rate rate_p,nvl(a.mark,0) mk from plan_gd a,plan_point b,web_jz c,plan_name d  where b.jz_id=c.sn and  a.point_id=b.id and b.PLAN_ID="+pId+" and jz_name_jc='"+crew+"' and b.plan_id=d.sn and d.p_year=to_number(to_char(a.s_datetime,'yyyy')) order by a.s_datetime";
-	    if(crew.endsWith("all") || crew.endsWith("p_1")|| crew.endsWith("p_2")|| crew.endsWith("p_3")|| crew.endsWith("p_4"))
-	    {
-	    	if(crew.endsWith("all") )
-	    	{
-	    		crew="p_all";
-	    		sql ="SELECT distinct savetime start_time,savetime end_time,val_u start_p,val_u end_p,99 mk from PLAN_POINTS_ALL where  PLAN_SN="+pId+" order by SAVETIME asc";
 
-	    	}else
-	    	{
-	    		sql ="SELECT distinct savetime start_time,savetime end_time,val_t start_p,val_t end_p,99 mk from PLAN_POINTS_ALL where  PLAN_SN="+pId+" and jz_sn in (select sn from web_jz where cm='"+crew+"') order by SAVETIME asc";
-
-	    	}
-	    		    }
-	    //log("chart sql:"+sql);
-	    List userData = getJdbcTemplate().queryForList(sql);
-	    int size=userData.size() ;
-	    String infoArr[ ]=new String[size];
-	    java.util.Map<String,Object> map2 = new HashMap<String,Object>();  
-	    if (size> 0)
-	    {
-	    	 Map startMap = (Map)userData.get(0);
-	    	 Map endMap = (Map)userData.get(size-1);
-			 SimpleDateFormat startSd=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-			 SimpleDateFormat endSd=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-			 double rate=-1;
-			 if(startMap.get("RATE_P")!=null)
-			 {
-				 rate=Double.parseDouble(startMap.get("RATE_P").toString());
-			 }
-			 double startP=Double.parseDouble(startMap.get("START_P").toString());
-			 Date startTime = null;
-			 Date endTime= null;
-			 String startT="";
-			 String endT="";
-			 DateTime dateTime1=null;
-			 DateTime dateTime2=null;
-			 try 
-			 {
-				 startT=startMap.get("START_TIME").toString();
-				 endT=endMap.get("END_TIME").toString();
-				 startTime=startSd.parse(startT);
-				 
-				 endTime=endSd.parse(endT);
-				 
-				 /*if (startT.substring(0,4)!=endT.substring(0,4))
-				 {
-					 endTime = endSd.parse(startT.substring(0,4)+"-12-31 23:59:59"));
-				 }*/
-				  dateTime1 = new DateTime(new SimpleDateFormat("yyyy-MM-dd").parse(startT.substring(0,4)+"-01-01"));
-				  dateTime2 = new DateTime(new SimpleDateFormat("yyyy-MM-dd").parse(startT.substring(0,4)+"-12-31"));
-				  dateTime2 =dateTime2.plusDays(1);
-				  startAddPoint=  intervalTime(dateTime1.toDate(),startTime,15);
-				  endAddPoint=  intervalTime(endTime,dateTime2.toDate(),15);
-				 startT=startT.substring(0, startT.length()-2);
-				 endT=endT.substring(0, endT.length()-2);
-			} catch (ParseException e) {
-				e.printStackTrace();
-			}  
-			 Object[][] xInfo=js(startTime,startMap.get("START_TIME").toString(),endMap.get("END_TIME").toString());
-			 
-			 int maxPoint=  intervalTime(startTime,endTime,15);
-			 //log(startTime);
-			 //log(endTime);
-			 //log(maxPoint+"---"+startAddPoint+"---"+endAddPoint);
-			 maxPoint=maxPoint+startAddPoint+endAddPoint+1;
-		    	DateTime temp=dateTime1;
-				ArrayList xArr=new ArrayList();  
-				String realS="";
-				String realE="";
-				xArr.add(temp.toString(DateTimeFormat.forPattern("MM-dd HH:mm")));
-				realS=temp.toString(DateTimeFormat.forPattern("yyyy-MM-dd HH:mm"));
-				for (int j = 0; j<maxPoint; j++)
-				{
-					temp=temp.plusMinutes(15);
-					xArr.add(temp.toString(DateTimeFormat.forPattern("MM-dd HH:mm")));
-				}
-				log("maxp:"+maxPoint);
-			    Object yArr[ ]=new Object[maxPoint+2];
-			    String tooltipArr[ ]=new String[maxPoint+1];
-		    	for (int t = 0; t<=maxPoint; t++)
-		    	{
-		    		tooltipArr[t]="";
-		    	}
-		    	double yAddS=0;
-		    	double yAddE=0;
-            int oitv1=-1;
-	    	for (int i = 0; i<size; i++)
-	    	{
-	    		Map tfData = (Map)userData.get(i);
-	    		int mk = Integer.parseInt(tfData.get("mk").toString());
-   			 	SimpleDateFormat tempSd=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-   			 	Date tempTime=tempSd.parse(tfData.get("START_TIME").toString());
-   			 	SimpleDateFormat tempSd2=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-   			 	Date tempTime2=tempSd2.parse(tfData.get("END_TIME").toString());;
-   			 	if(i==0)
-   			 	{
-   			 		yAddS=Double.parseDouble(tfData.get("START_P").toString());
-   			 	}
-   			 	if(i== (size-1))
-   			 	{
-   			 		yAddE=Double.parseDouble(tfData.get("END_P").toString());
-   			 	}
-   			 	int itv1=intervalTime(dateTime1.toDate(),tempTime,15);
-   			    int itv2=intervalTime(dateTime1.toDate(),tempTime2,15);
-   			    if (itv2==itv1) itv2=itv2+1;
-   			    //log(itv1);
-   			    try
-   			    {
-   			 	   			 	//log("s0:"+intervalTime(dateTime1.toDate(),tempTime,30)+"--"+tfData.get("START_P").toString());
-   			    //log("s1:"+intervalTime(dateTime1.toDate(),tempTime2,30)+"--"+tfData.get("END_P").toString());
-   			 if (crew.endsWith("all") || crew.endsWith("p_1")|| crew.endsWith("p_2")|| crew.endsWith("p_3")|| crew.endsWith("p_4"))
-   			 {
-   				 if (itv1!=oitv1)
-   				 {
-   					
-   					     oitv1=itv1;
-   				     
-   				 }
-   				 else
-   				 {
-   					 oitv1=itv1+1;
-   				 }
-   				yArr[oitv1]=Double.parseDouble(tfData.get("START_P").toString()); 
-   			 }
-   			 else
-   			 {
-   				yArr[itv1]=Double.parseDouble(tfData.get("START_P").toString());
-   				yArr[itv2]=Double.parseDouble(tfData.get("END_P").toString());
-   			 }
-	    	} catch (Exception e) {
-	    		
-				e.printStackTrace();
-			}  
-   			 if (mk==-1)
-			 	{
-			    	yArr[intervalTime(dateTime1.toDate(),tempTime2,15)+1]=0;
-			 		//log("s1:"+(intervalTime(dateTime1.toDate(),tempTime,30)+2));
-			 	}
-   			 	if (mk==1)
-			 	{
-   			    	yArr[intervalTime(dateTime1.toDate(),tempTime,15)-1]=0;
-   			    	//log("s2:"+(intervalTime(dateTime1.toDate(),tempTime2,30)-1));
-			 	}
-   			 	if(tfData.get("TEXT2")!=null)
-   			 	{
-   			 		tooltipArr[intervalTime(dateTime1.toDate(),tempTime,15)]=tfData.get("TEXT2").toString();
-   		   			infoArr[i]=tfData.get("M_NAME").toString()+"   "+tfData.get("TEXT2").toString();
-   			 	}
-   			 	else
-   			 	{
-   			 		tooltipArr[intervalTime(dateTime1.toDate(),tempTime,15)]="";
-   			 	}
-	    	}
-	    	//for (int add = 0; add<startAddPoint; add++)
-	    	{
-	    		yArr[0]=yAddS;
-	    	}
-	    	//for (int addE = 0; addE<endAddPoint; addE++)
-	    	{
-	    		yArr[maxPoint]=yAddE;
-	    	}
-			 if(rate==0)
-			 {
-				 infoArr=new String[1];
-				 infoArr[0]="该机组不参与此次调峰,保持"+startP+"MW功率运行";
-			 }
-			 //log(xArr);
-			 //log(yArr);
-	    	  map2.put("result",1);  
-	    	  map2.put("data",yArr);  
-	    	  map2.put("tooltipArr",tooltipArr);  
-	    	  map2.put("infoArr",infoArr);  
-	    	  map2.put("labels",xArr);  
-	    	  map2.put("jzName",jzName);  
-	          jsonString = JSON.toJSONString(map2);
-				temp=temp.plusMinutes(15);
-				realE=temp.toString(DateTimeFormat.forPattern("yyyy-MM-dd HH:mm"));
-	          map1 = getTfReal(realS,crewLong, maxPoint+1);
-	          map1.put("planJson", JSON.parse(jsonString));  
-	    }
-	    else
-	    {
-	    	infoArr=new String[1];
-	    	infoArr[0]="该机组不参与此次调峰，已停机。";
-	    	  map2.put("infoArr",infoArr);  
-	    	  map2.put("jzName",jzName);  
-	          jsonString = JSON.toJSONString(map2);
-	          map1.put("planJson", JSON.parse(jsonString));  
-	          map1.put("result", 0);  
-	    }
-        jsonString = JSON.toJSONString(map1);
-	    return jsonString;
-  }
   public String[] jsAddPoint(Date sT, Date eT)
   {
 	  int addTime=2;
@@ -7563,7 +7301,7 @@ log(sql);
   
   public void log(Object msg) 
   {
-	   System.out.println(df.format(new Date())+":"+msg);
+	   System.out.println(LocalDateTime.now().toString()+":"+msg);
 	  
 	 
   }

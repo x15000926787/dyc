@@ -21,6 +21,9 @@ import java.sql.SQLException;
  *@createtime:2019-6-18
  */
 import java.text.SimpleDateFormat;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -43,7 +46,16 @@ import redis.clients.jedis.JedisPoolConfig;
 
 public class TestJedis {
 	public static void main(String[] args) {
-        //新建JSONObject对象
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            LocalDateTime rnow = LocalDateTime.now();
+
+                    LocalDateTime to2 = LocalDateTime.parse("2020-04-01 12:00:00", formatter);
+            Duration duration = Duration.between(to2,rnow);
+
+            long minutes = duration.toMinutes();//相差的分钟数
+
+        System.out.println(minutes);
+       /* //新建JSONObject对象
         JSONObject object1 = new JSONObject();
         
         //1.在JSONObject对象中放入键值对
@@ -119,7 +131,7 @@ public class TestJedis {
         maps.put("dd2", 1);
         object1.put("maps", maps);
         String str11 = object1.toJSONString();
-        System.out.println(str11);
+        System.out.println(str11);*/
     }
 	
 }

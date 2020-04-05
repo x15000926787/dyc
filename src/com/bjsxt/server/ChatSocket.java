@@ -64,7 +64,7 @@ public class ChatSocket {
 		    queryString = session.getQueryString().split("&")[2];
 		    this.uId = queryString.substring(queryString.indexOf("=")+1);;
 			names.add(this.username);
-		    logger.info("欢迎你："+this.username+"("+this.groupKey+")"+session.getId());
+		    logger.info("欢迎你："+this.username+"("+this.groupKey+")"+this.uId);
 			
 			//当websocket客户端连接成功，建立ThreadDemo线程，从实时库取数据
 			/**/
@@ -135,7 +135,7 @@ public class ChatSocket {
 		}
 		else
 		{                                                                   //发送alert message
-			logger.info(msg);
+			//logger.info(msg);
 			for (Iterator iterator = ss.iterator(); iterator.hasNext(); ) {
 				ChatSocket chatSocket = (ChatSocket) iterator.next();
 				try {
@@ -145,11 +145,11 @@ public class ChatSocket {
 						//for (int i=0;i<dd.length;i++){
 
                                     //if (msgmap.containsKey("gkey")) {
-//						logger.warn(chatSocket.groupKey + ":" + msg);
+
 										String s = Integer.toBinaryString(Integer.parseInt((String) msgmap.get("auth")));
 						                char[]  auths= (new StringBuffer(s).reverse()).toString().toCharArray();
-										if (msgmap.get("gkey").toString().matches(chatSocket.groupKey) && auths[Integer.parseInt(chatSocket.uId)]=='1') {
-										//	logger.warn(chatSocket.groupKey + ":" + msg);
+										if (msgmap.get("gkey").toString().matches(chatSocket.groupKey) && auths[Integer.parseInt(chatSocket.uId)-1]=='1') {
+											//logger.warn(chatSocket.groupKey + ":"+chatSocket.uId + ":" + msg);
 											chatSocket.session.getBasicRemote().sendText(msg);
 
 										}

@@ -426,11 +426,11 @@ public class TfController
     {
         Tool.request( user.setEvtStat(info),response);
     }
-  @RequestMapping({"getyTfData"})
+  /*@RequestMapping({"getyTfData"})
   public void getyTfData(String crew,String crewLong, int pId,HttpServletResponse response) throws ParseException
   {
 	    Tool.request( user.getyTfData(crew, crewLong,pId),response);
-  }
+  }*/
   @RequestMapping({"saveTfEdit"})
   public void saveTfEdit(String jsonStr,int sn , HttpServletResponse response) throws ParseException
   {
@@ -713,121 +713,8 @@ public class TfController
 	 String jsonString = JSON.toJSONString(map);
 	  Tool.request( jsonString,response);
   }*/
-  @RequestMapping({"fdjhdcs"})
-  public void fdjhdcs(String crew, String crewLong , int pId, int tab,int mode,String key,HttpServletResponse response) throws ParseException
-  {
 
-	  int num=1;
-	  ArrayList jzArr=new ArrayList();  
-	  ArrayList jzLongArr=new ArrayList();  
-	  ArrayList dataArr=new ArrayList();  
-	  
 
-	  if(crew.endsWith("all"))
-	  {
-		  num=10;
-		  jzArr.add("all");
-		  jzArr.add("Q1-1");
-		  jzArr.add("Q2-1");
-		  jzArr.add("Q2-2"); 
-		  jzArr.add("Q2-3"); 
-		  jzArr.add("Q2-4"); 
-		  jzArr.add("Q3-1");
-		  jzArr.add("Q3-2");
-		  jzArr.add("F1-1");
-		  jzArr.add("F1-2"); 
-
-		  jzLongArr.add("all");
-		  jzLongArr.add("QM_GYD010WZ");
-		  jzLongArr.add("1RCP009VE");
-		  jzLongArr.add("2RCP009VE"); 
-		  jzLongArr.add("3RCP010VE"); 
-		  jzLongArr.add("4RCP010VE");
-		  jzLongArr.add("U1_AI2565");
-		  jzLongArr.add("U2_AI2565");
-		  jzLongArr.add("1GRE012MY_AVALUE_RT");
-		  jzLongArr.add("2GRE012MY_AVALUE_RT"); 
-	  }
-	  else if(crew.endsWith("p_1"))
-	  {
-		  num=2;
-		  jzArr.add("p_1");
-		  jzArr.add("Q1-1");
-		  jzLongArr.add("p_1");
-		  jzLongArr.add("QM_GYD010WZ");
-	  }
-	  else if(crew.endsWith("p_2"))
-	  {
-		  num=5;
-		  jzArr.add("p_2");
-		  jzArr.add("Q2-1");
-		  jzArr.add("Q2-2"); 
-		  jzArr.add("Q2-3"); 
-		  jzArr.add("Q2-4"); 
-		  jzLongArr.add("p_2");
-		  jzLongArr.add("1RCP009VE");
-		  jzLongArr.add("2RCP009VE"); 
-		  jzLongArr.add("3RCP010VE"); 
-		  jzLongArr.add("4RCP010VE");
-	  }
-	  else if(crew.endsWith("p_3"))
-	  {
-		  num=3;
-		  jzArr.add("p_3");
-		  jzArr.add("Q3-1");
-		  jzArr.add("Q3-2");
-		  jzLongArr.add("p_3");
-		  jzLongArr.add("U1_AI2565");
-		  jzLongArr.add("U2_AI2565");
-	  }
-	  else if(crew.endsWith("p_4"))
-	  {
-		  num=3;
-		  jzArr.add("p_4");
-		  jzArr.add("F1-1");
-		  jzArr.add("F1-2"); 
-		  jzLongArr.add("p_4");
-		  jzLongArr.add("1GRE012MY_AVALUE_RT");
-		  jzLongArr.add("2GRE012MY_AVALUE_RT"); 
-	  }
-	  else
-	  {
-		  jzArr.add(crew); 
-		  jzLongArr.add(crewLong);
-	  }
-	  java.util.Map<String,Object> map = new HashMap<String,Object>();  
-	  
-	  if(mode==1)
-	  {
-			for (int i= 0; i<num; i++)
-			{
-				dataArr.add((Map<String,String>)JSON.parse(user.getyTfData(jzArr.get(i).toString(), jzLongArr.get(i).toString(),pId)));
-			}
-			if(num==1)
-			{
-				dataArr.add(null);
-			}
-			map.put("data",dataArr);  
-	  }
-	  else
-	  {
-		  String[] keyArr=key.split("\\|");
-		  String from=keyArr[0];
-		  String to=keyArr[1];
-			for (int i= 0; i<num; i++)
-			{
-				dataArr.add((Map<String,String>)JSON.parse(user.doTfTimeSearch(from,to,jzArr.get(i).toString(), jzLongArr.get(i).toString())));
-			}
-			if(num==1)
-			{
-				dataArr.add(null);
-			}
-			map.put("data",dataArr);  
-	  }
-		map.put("result",1);  
-	 String jsonString = JSON.toJSONString(map);
-	  Tool.request( jsonString,response);
-  }
   public UserDAOImpl getUserDao()
   {
     return this.user;

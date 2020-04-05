@@ -9,6 +9,8 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -75,6 +77,10 @@ public  class saveHistyc implements Job {
 		 String[] dncollist = new String[((int)(maxdnSaveno/200)+1)];
 		 String[] dnvallist = new String[((int)(maxdnSaveno/200)+1)];
 
+		LocalDateTime rightnow = LocalDateTime.now();
+		DateTimeFormatter df = DateTimeFormatter.ofPattern("MMddHHmm");
+		DateTimeFormatter df2 = DateTimeFormatter.ofPattern("yyyyMMddHHmm");
+
 
 
          //logger.info(dzt);
@@ -84,11 +90,11 @@ public  class saveHistyc implements Job {
 			 //sinter_yc =  jedis.keys("*ai*");
 			
 			 
-			 SimpleDateFormat df = new SimpleDateFormat("MMddHHmm");//设置日期格式
-			 SimpleDateFormat df2 = new SimpleDateFormat("yyyyMMddHHmm");//设置日期格式
-			 String savet = (df.format(new Date()));// new Date()为获取当前系统时间
-			 Calendar c = Calendar.getInstance();//可以对每个时间域单独修改
-			 String dbname = "hyc"+(c.get(Calendar.YEAR)%10); 
+			 //SimpleDateFormat df = new SimpleDateFormat("MMddHHmm");//设置日期格式
+			 //SimpleDateFormat df2 = new SimpleDateFormat("yyyyMMddHHmm");//设置日期格式
+			String savet= rightnow.format(df);
+			// Calendar c = Calendar.getInstance();//可以对每个时间域单独修改
+			 String dbname = "hyc"+(rightnow.getYear()%10);
 			 double timechuo = System.currentTimeMillis();
 			 for(int i=0;i<vallist.length;i++)
 			 {
@@ -194,7 +200,7 @@ public  class saveHistyc implements Job {
 
 			 logger.warn("save histyc:"+savet);
 			 //logger.warn(sql);
-			 jedis.set("delay_active",df2.format(new Date()));
+			 jedis.set("delay_active",rightnow.format(df2));
 			 /**
 			  * 历史电量窗口值在hyc里面已经存储过，hdn不再存历史，此表改为存5分钟增量，用mysql定时job实现，每个结算周期算一次。
 
