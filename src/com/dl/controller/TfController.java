@@ -141,6 +141,16 @@ public class TfController
     {
         Tool.request( user.loadDevice(dm,gky),response);
     }
+    @RequestMapping({"ask4data"})
+    public void ask4data(String keys,int len,int type,HttpServletResponse response) throws ParseException
+    {
+        Tool.request( user.ask4data(keys,len,type),response);
+    }
+    @RequestMapping({"ask4dndata"})
+    public void ask4dndata(String keys,int len,int type,HttpServletResponse response) throws ParseException
+    {
+        Tool.request( user.ask4dndata(keys,len,type),response);
+    }
     @RequestMapping({"loadDevice_dig"})
     public void loadDevice_dig(String dm,String gky,HttpServletResponse response) throws ParseException
     {
@@ -372,12 +382,12 @@ public class TfController
 
 	    Tool.request( user.getyPlanAll(sn,jz,tab),response);
   }
-  @RequestMapping({"getTfPlanAllByTime"})
+ /* @RequestMapping({"getTfPlanAllByTime"})
   public void getTfPlanAllByTime(String planTime,String jz,int tab , HttpServletResponse response) throws ParseException
   {
 
 	    Tool.request( user.getTfPlanAllByTime(planTime,jz,tab),response);
-  }
+  }*/
   
   @RequestMapping({"newTfPlan"})
   public void newTfPlan(int year, String pName,HttpServletResponse response) throws ParseException, SQLException
@@ -551,7 +561,7 @@ public class TfController
 	  Tool.request( user.tfExport(sn,tab,mode,from,to),response);
   }
 
-  @RequestMapping({"doinfo"})
+  /*@RequestMapping({"doinfo"})
   public void doinfo(String key, int mode, String crew , String crewLong , HttpServletResponse response) throws ParseException 
   {
 	  
@@ -571,7 +581,7 @@ public class TfController
 		  Tool.request(   user.doTfTimeSearch(from,to,crew,crewLong),response);
 	  }
 	  
-  }
+  }*/
   @RequestMapping({"getmsg"})
   //aid: aids, pid: pids, crew: nowJz, crewLong: nowJzLong 
   public void getmsg(int st, int len, int domain , HttpServletResponse response)
@@ -582,7 +592,7 @@ public class TfController
 	 
 	  
   }
-  @RequestMapping({"doTfSearch"})
+  /*@RequestMapping({"doTfSearch"})
   public void doTfSearch(String key, int mode, String crew , String crewLong , HttpServletResponse response) throws ParseException 
   {
 	  if(mode==1)
@@ -596,7 +606,7 @@ public class TfController
 		  String to=keyArr[1];
 		  Tool.request(   user.doTfTimeSearch(from,to,crew,crewLong),response);
 	  }
-  }
+  }*/
 
  /* @RequestMapping({"tfdcs"})
   public void tfdcs(String crew, String crewLong , int pId, int tab,int mode,String key,HttpServletResponse response) throws ParseException

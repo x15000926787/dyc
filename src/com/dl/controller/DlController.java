@@ -18,11 +18,11 @@ public class DlController
 	  @Autowired
 	  private UserDAOImpl user;
 	  
-	  @RequestMapping({"getdltj"})
+	 /* @RequestMapping({"getdltj"})
 	  public void getdltj(String startNum,String endNum, String startT,String endT , HttpServletResponse response) throws ParseException
 	  {
 		  Tool.request( user.getdltj(startNum,endNum,startT,endT),response);
-	  }
+	  }*/
 	  
 	  
 	  @RequestMapping({"getdlssShowCell"})

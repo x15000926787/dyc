@@ -58,9 +58,9 @@ public class treeController
 	   Tool.request(user.get_tree_2(dd,kk,rtu),response);
   }
   @RequestMapping({"tree_3"})
-  public void get_tree_3(int dd,String kk,String rtu,String len,HttpServletResponse response)
+  public void get_tree_3(int dd,String kk,String rtu,String len,int userId,HttpServletResponse response)
   {
-	   Tool.request(user.get_tree_3(dd,kk,rtu,len),response);
+	   Tool.request(user.get_tree_3(dd,kk,rtu,len,userId),response);
   }
   @RequestMapping({"tree_4"})
   public void get_tree_4(String kk,String rtu,String nm,HttpServletResponse response)
