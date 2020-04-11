@@ -119,7 +119,7 @@
         function connect(){
             //console.log(url);
             $.ajax({
-                url:httpIp + '/LF/getsessions',
+                url:httpIp + 'getsessions',
                 dataType : "json",
                 type : "POST",
                 success : function(data) {
@@ -171,7 +171,7 @@
                 }
                 console.log(oq,eq,uid);
                 $.ajax({
-                    url:httpIp + '/LF/resetpasswd',
+                    url:httpIp + 'resetpasswd',
                     type: 'POST',
                     async: true,
                     data: { op: oq, np: eq ,us:uid},
@@ -223,7 +223,7 @@
             if (ophone!=phone||oemail!=email)
             {
                 $.ajax({
-                    url:httpIp + '/LF/resetphone',
+                    url:httpIp + 'resetphone',
                     type: 'POST',
                     async: true,
                     data: { op: phone, np: email ,us:uid},

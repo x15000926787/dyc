@@ -141,16 +141,31 @@ public class TfController
     {
         Tool.request( user.loadDevice(dm,gky),response);
     }
+    /**
+     * 请求遥测历史数据
+     * @param keys   格式为：un_0_.ai_0,un_0_.ai_1,un_0_.ai_2
+     * @param len    时间长度，天
+     * @param type   1：起始时间为当日零点，2：起始时间为当前时间往前推len*24小时
+     * @return       返回5分钟遥测值
+     */
     @RequestMapping({"ask4data"})
     public void ask4data(String keys,int len,int type,HttpServletResponse response) throws ParseException
     {
         Tool.request( user.ask4data(keys,len,type),response);
     }
+    /**
+     * 请求日电量结算数据
+     * @param keys  格式为：un_0_.ai_0,un_0_.ai_1,un_0_.ai_2
+     * @param len   时间长度，单位：天
+     * @param type  1：包含当天，2：不包含当天
+     * @return      日电量结算值
+     */
     @RequestMapping({"ask4dndata"})
     public void ask4dndata(String keys,int len,int type,HttpServletResponse response) throws ParseException
     {
         Tool.request( user.ask4dndata(keys,len,type),response);
     }
+
     @RequestMapping({"loadDevice_dig"})
     public void loadDevice_dig(String dm,String gky,HttpServletResponse response) throws ParseException
     {

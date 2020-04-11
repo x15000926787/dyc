@@ -125,7 +125,7 @@ extends JdbcDaoSupport{
 		  return jsonString;
 	  }
 	 
-	 public String get_tree_3(int dd ,String kk,String rtu,String len)
+	 public String get_tree_3(int dd ,String kk,String rtu,String len,int userId)
 	  {
 		  String jsonString="";
 		  String  jsonStr = null;
@@ -152,10 +152,10 @@ extends JdbcDaoSupport{
 				// TODO: handle exception
 			}
 		    // king = 1 小项目（三级） ,=2 大项目（四级）
-		    String sql = "select b.devicenm s_name,a.name p_name,a.saveno p_no from  dev_author b,prtuana a,room c where a.deviceno=b.deviceno and b.roomno=c.roomno and c.rtuno="+dd+" and a.deviceno ="+rtu+" order by saveno";
+		    String sql = "select b.devicenm s_name,a.name p_name,a.saveno p_no from  dev_author b,prtuana a,room c where (power(2,"+userId+"-1)&a.author_read)>0 and a.deviceno=b.deviceno and b.roomno=c.roomno and c.rtuno="+dd+" and a.deviceno ="+rtu+" order by saveno";
 		    if (kind == 2)
 		    {
-		    	sql = "select distinct get_subs(name,1) s_name,get_subs(name,0) p_name,saveno p_no from "+thetab+" where roomno="+rtu+" order by saveno";
+		    	sql = "select distinct get_subs(name,1) s_name,get_subs(name,0) p_name,saveno p_no from "+thetab+" where (power(2,"+userId+"-1)&author_read)>0 and roomno="+rtu+" order by saveno";
 		    }else {
 		    	 //map1.put("result",0);  
 			}

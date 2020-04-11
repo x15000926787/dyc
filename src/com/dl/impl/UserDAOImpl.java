@@ -11,11 +11,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import org.joda.time.DateTime;
-import org.joda.time.LocalDateTime;
-import org.joda.time.Period;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import org.joda.time.PeriodType;
-import org.joda.time.format.DateTimeFormat;
 import org.junit.Test;
 import org.quartz.TriggerUtils;
 import org.quartz.impl.triggers.CronTriggerImpl;
@@ -26,7 +25,7 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
+
 import java.awt.*;
 import java.io.*;
 import java.math.BigDecimal;
@@ -36,6 +35,7 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
 import java.util.*;
@@ -499,6 +499,272 @@ public class UserDAOImpl
 	  
 	  return jsonString;
   }
+
+    /**
+     * 请求遥测历史数据
+     * @param keys   格式为：un_0_.ai_0,un_0_.ai_1,un_0_.ai_2
+     * @param len    时间长度，天
+     * @param type   1：起始时间为当日零点，2：起始时间为当前时间往前推len*24小时
+     * @return       返回5分钟遥测值
+     *
+     * 注意：对于起止时间跨年的情况，目前还没有啥好办法，暂时先不考虑，等待以后解决。
+     */
+    public String ask4data(String keys,int len,int type)
+    {
+        String jsonString="{\"result\":0}";
+        String[] savs = keys.split(",");
+        String savenos="";
+        java.util.Map<String,Object> map1 = new HashMap<String,Object>();
+        for (int i=0;i<savs.length;i++)
+        {
+           savenos = savenos+",'"+savs[i]+"'";
+        }
+        if (savenos.length()>0) savenos=savenos.substring(1);
+
+        String sql ="SELECT name,saveno,kkey  from prtuana where kkey in ("+savenos+") order by sn ";
+        List userData = getJdbcTemplate().queryForList(sql);
+        ArrayList arr = new ArrayList();
+        ArrayList key = new ArrayList();
+        int size=userData.size() ;
+        savenos = "";
+        if (size> 0)
+        {
+
+            for (int i = 0; i<size; i++)
+            {
+                //
+                Map listData = (Map)userData.get(i);
+                savenos = savenos + listData.get("saveno").toString()+",";
+                //kv.add(listData.get("name"));
+                arr.add(listData.get("name"));
+                key.add(listData.get("kkey"));
+
+
+            }
+            map1.put("name",arr);
+            map1.put("key",key);
+        }
+        savs = savenos.split(",");
+        int maxgno=-1,mingno=99,saveno;
+        for (int i=0;i<savs.length;i++)
+        {
+            int gno = (Integer.parseInt(savs[i])) / 200;
+           if (gno>maxgno) maxgno= gno;
+           if (gno<mingno) mingno= gno;
+        }
+        int gnos = maxgno-mingno+1;
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMddHHmm");
+        LocalDateTime endtime = LocalDateTime.now();
+
+
+        endtime = endtime.withMinute(endtime.getMinute()-(endtime.getMinute()%5));
+        LocalDateTime starttime = endtime.plusDays(-1*len);
+        if (endtime.getYear()>starttime.getYear())
+        {
+            starttime=starttime.withYear(endtime.getYear()).withMonth(1).withDayOfMonth(1).withHour(0).withMinute(0);
+
+        }
+        if (type==2)
+        {
+            starttime=endtime.withHour(0).withMinute(0);
+        }
+       // String startstr = starttime
+
+
+
+
+                sql = "SELECT * from hyc"+(endtime.getYear()%10)+" where groupno between "+mingno+" and "+maxgno+" and  savetime between "+starttime.format(formatter)+" and "+endtime.format(formatter)+" order by savetime,groupno ";
+logger.warn(sql);
+                userData = getJdbcTemplate().queryForList(sql);
+                size = userData.size();
+                if (size>0) {
+
+                    Object label[] = new Object[size/gnos];
+                    for (int i = 0; i < savs.length; i++) {
+                        saveno = Integer.parseInt(savs[i]);
+                        int gno = (saveno) / 200;
+                        int vno = (saveno) % 200;
+
+                        Object val[] = new Object[size/gnos];
+                        for (int j = 0; j < (size / gnos); j++) {
+                            Map listData = (Map) userData.get(j * gnos + (gno - mingno));
+                           // logger.warn(listData);
+                            if (i==0) label[j] = listData.get("savetime");
+                            val[j] =  listData.get("val"+vno);
+                        }
+                        if (i==0) map1.put("label",label);
+                        map1.put(key.get(i).toString(),val);;
+
+                    }
+                    map1.put("result",1);
+                    //map1.put("data",arr);
+                    jsonString = JSON.toJSONString(map1);
+
+                }
+
+        return jsonString;
+    }
+
+    /**
+     * 请求日电量结算数据
+     * @param keys  格式为：un_0_.ai_0,un_0_.ai_1,un_0_.ai_2
+     * @param len   结算周期个数
+     * @param type  1：天，2：月
+     * @return      电量结算值
+     *
+     * 注意：对于起止时间跨年的情况，目前还没有啥好办法，暂时先不考虑，等待以后解决。
+     */
+    public String ask4dndata(String keys,int len,int type)
+    {
+        String jsonString="{\"result\":0}";
+        String[] savs = keys.split(",");
+        String savenos="",cols="";
+        JSONObject savmap = new JSONObject();
+        java.util.Map<String,Object> map1 = new HashMap<String,Object>();
+        for (int i=0;i<savs.length;i++)
+        {
+            savenos = savenos+",'"+savs[i]+"'";
+        }
+        if (savenos.length()>0) savenos=savenos.substring(1);
+
+        String sql ="SELECT name,saveno,kkey  from prtuana where kkey in ("+savenos+") order by sn ";
+        List userData = getJdbcTemplate().queryForList(sql);
+        ArrayList arr = new ArrayList();
+        ArrayList key = new ArrayList();
+        int size=userData.size() ;
+        int tsav = 0;
+        savenos = "";
+        int maxgno=-1,mingno=99,saveno;
+        HashMap<String,String> sav2key = new HashMap<>();
+        if (size> 0)
+        {
+
+            for (int i = 0; i<size; i++)
+            {
+                //
+                Map listData = (Map)userData.get(i);
+                savenos = savenos + listData.get("saveno").toString()+",";
+                tsav = Integer.parseInt(listData.get("saveno").toString());
+                int gno = (tsav) / 200;
+                int vno = (tsav) % 200;
+                if (gno>maxgno) maxgno= gno;
+                if (gno<mingno) mingno= gno;
+                if (savmap.containsKey(String.valueOf(gno)))
+                {
+                    ((ArrayList)savmap.get(String.valueOf(gno))).add(vno);
+                }else
+                {
+                    ArrayList vals = new ArrayList();
+                    vals.add(vno);
+                    savmap.put(String.valueOf(gno),vals);
+                }
+                arr.add(listData.get("name"));
+                key.add(listData.get("kkey"));
+                sav2key.put(String.valueOf(tsav),listData.get("kkey").toString());
+
+
+            }
+
+        }
+        savs = savenos.split(",");
+
+
+        int gnos = maxgno-mingno+1;
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMddHHmm");
+        LocalDateTime endtime = LocalDateTime.now();
+
+        endtime =endtime.withMinute(endtime.getMinute()-(endtime.getMinute()%5));
+
+
+
+
+        LocalDateTime starttime = endtime.plusDays(-1*(len-1)).withHour(0).withMinute(0);
+        if (type==2)
+        {
+            starttime=endtime.plusMonths(-1*(len-1)).withDayOfMonth(1).withHour(0).withMinute(0);
+
+        }
+        if (endtime.getYear()>starttime.getYear())
+        {
+            starttime=starttime.withYear(endtime.getYear()).withMonth(1).withDayOfMonth(1).withHour(0).withMinute(0);
+
+        }
+
+        // String startstr = starttime
+
+
+
+        Iterator iter = savmap.entrySet().iterator();
+        while (iter.hasNext()) {
+            Map.Entry entry = (Map.Entry) iter.next();
+            //System.out.println(entry.getKey().toString());
+            //System.out.println(entry.getValue().toString());
+            int gno=Integer.parseInt(entry.getKey().toString());
+            for (int s : (ArrayList<Integer>)entry.getValue()) {
+                cols = cols+","+"sum(val"+s+")";
+            }
+            sql = "SELECT floor(savetime/10000) tt "+cols+" from hyc"+(endtime.getYear()%10)+" where groupno = "+entry.getKey().toString()+" and  savetime between "+starttime.format(formatter)+" and "+endtime.format(formatter)+" group by floor(savetime/10000) order by floor(savetime/10000) ";
+            //logger.warn(sql);
+            if (type==2)
+            {
+                sql = "SELECT floor(savetime/1000000) tt "+cols+" from hyc"+(endtime.getYear()%10)+" where groupno = "+entry.getKey().toString()+" and  savetime between "+starttime.format(formatter)+" and "+endtime.format(formatter)+" group by floor(savetime/1000000) order by floor(savetime/1000000) ";
+            }
+            logger.warn(sql);
+            userData = getJdbcTemplate().queryForList(sql);
+            size = userData.size();
+            if (size>0) {
+
+
+                for (int i = 0; i < size; i++) {
+                    Map listData = (Map) userData.get(i);
+                    Set<String> keySet = listData.keySet();
+                    //遍历存放所有key的Set集合
+                    Iterator<String> it =keySet.iterator();
+                    while(it.hasNext()){                         //利用了Iterator迭代器**
+                        //得到每一列
+                        String col = it.next();
+                        //通过key获取对应的value
+                        String value = listData.get(col).toString();
+                        if (i==0)
+                        {
+                             ArrayList stt = new ArrayList();
+                             stt.clear();
+                             stt.add(value);
+                             if(col.matches("tt"))   {
+                                 savmap.put("savetime",stt);
+                             }else
+                             {
+                                 tsav = gno*200+Integer.parseInt(col.replace("sum(val","").replace(")",""));
+                                 savmap.put(sav2key.get(String.valueOf(tsav)),stt);
+                             }
+                        }else
+                        {
+                            if(col.matches("tt"))   {
+                                ((ArrayList)savmap.get("savetime")).add(value);
+                            }else
+                            {
+                                tsav = gno*200+Integer.parseInt(col.replace("sum(val","").replace(")",""));
+                                ((ArrayList)savmap.get(sav2key.get(String.valueOf(tsav)))).add(value);
+                            }
+                        }
+
+                    }
+
+                }
+                savmap.put("name",arr);
+                savmap.put("kkey",key);
+                map1.put("result",1);
+                map1.put("data",savmap);
+                jsonString = JSON.toJSONString(map1);
+
+            }
+
+        }
+
+
+        return jsonString;
+    }
+
   public String getuser(String uid,String gkey)
   {
 	  	String jsonString="{\"result\":0}";
@@ -2746,64 +3012,7 @@ public class UserDAOImpl
 	  return jsonString;
   }
  
-  public String doTfTimeSearch(String from,String to, String crew,String crewLong) throws ParseException 
-  {
-	  String jsonString="{\"result\":0}";
-		String jzName=getJzName(crew);
-	  if(crew.endsWith("all"))
-	  {
-		  crew="p_all";
-		  crewLong="p_all";
-	  }
-	  DateTime  fromTime= new DateTime(new SimpleDateFormat("yyyyMMdd").parse(from));
-	  DateTime  toTime= new DateTime(new SimpleDateFormat("yyyyMMdd").parse(to));
-	  toTime =toTime.plusDays(1);
-	  String toTimeStr=toTime.toString("yyyyMMdd");
-	  String sql =  "select * from PLAN_15M where M_NAME='"+crew+"' and to_char(SAVETIME,'yyyymmdd hh24:mi:ss') BETWEEN '"+from+" 00:00:00' AND '"+toTimeStr+" 00:00:00'  and (to_char(SAVETIME,'miss') = '0000' or to_char(SAVETIME,'miss') = '3000' )";
-	  
-	  
-	  List userData = getJdbcTemplate().queryForList(sql);
-	  java.util.Map<String,Object> map1 = new HashMap<String,Object>();  
-	  java.util.Map<String,Object> map2 = new HashMap<String,Object>();  
-	  if (userData.size() > 0)
-	  {
-			int size = userData.size();
-			Object arr[] = new Object[size];
-			
-		    Object yArr[ ]=new Object[size+1];
-			ArrayList xArr=new ArrayList();  
-		    String infoArr[ ]=new String[size];
-			
-			for (int i = 0; i < size; i++)
-			{
-				Map data = (Map)userData.get(i);
-			 	String time=data.get("SAVETIME").toString();
-			 	
-			 	Double val=Double.parseDouble(data.get("GL").toString());
-			 	xArr.add(time);
-			 	yArr[i]=val;
 
-			}
-	    	  map2.put("result",1);  
-	    	  map2.put("data",yArr);  
-	    	 map2.put("infoArr",infoArr);  
-	    	  map2.put("labels",xArr);  
-	    	  map2.put("jzName",jzName);  
-	          jsonString = JSON.toJSONString(map2);
-	          map1= getTfReal(crewLong,fromTime.toString("yyyy-MM-dd HH:mm"), size);
-	          map1.put("result",1);  
-		      map1.put("planJson", JSON.parse(jsonString));  
-	  }
-	  else
-	  {
-	    	  map2.put("jzName",jzName);  
-	          jsonString = JSON.toJSONString(map2);
-	          map1.put("planJson", JSON.parse(jsonString));  
-	          map1.put("result", 0);  
-	  }
-      jsonString = JSON.toJSONString(map1);
-	  return jsonString;
-  }
   public String doinfo(String key,int mode) 
   {  
 	  String jsonString="{\"result\":0}";
@@ -2864,7 +3073,8 @@ public class UserDAOImpl
         String[] tb = {""," prtuana"," prtudig"};
         String[] keys = {""," saveno="+key," kkey='"+key+"'"};
         LocalDateTime rightnow = LocalDateTime.now();
-        String dtstr = rightnow.toString("yyyy-MM-dd HH:mm:ss");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String dtstr = rightnow.format(formatter);
 
         {
             //String jsonString="{\"result\":0}";
@@ -3159,178 +3369,7 @@ public class UserDAOImpl
 	  return jsonString;
   }
   
-  public String getdltj(String startNum,String endNum, String startT,String endT ) throws ParseException
-  {
-	  String jsonString="";
-	  int dateLen=startT.length();
-	  int jzNum=1;
-	  if(Integer.parseInt(startNum)==1)
-	  {
-		  jzNum=9;
-	  }
-	     String sql = "select * from (SELECT sn,substr(did,1,"+dateLen+") did ,SUM(st) st  FROM H_INC where (sn between "+startNum+" and "+endNum+") and (substr(did,1,"+dateLen+") between "+startT+" and "+endT+") GROUP BY sn,substr(did,1,"+dateLen+")  UNION ALL SELECT sn,'30000000',SUM(st) st FROM H_INC where  (sn between "+startNum+" and "+endNum+") and (substr(did,1,"+dateLen+") between "+startT+" and "+endT+") GROUP BY sn) ORDER BY decode (sn,69,1,77,2,83,3,89,4,95,5,47,6,51,7,169,8,177,9 ),did asc";
-	    List userData = getJdbcTemplate().queryForList(sql);
-	    int allLen=0;
-		SimpleDateFormat sdf =   new SimpleDateFormat( "yyyyMMdd" );
-		SimpleDateFormat sdf2 =   new SimpleDateFormat( "yyyyMM" );
-	    if(dateLen==4)
-	    {
-	    	allLen=Integer.parseInt(endT)-Integer.parseInt(startT)+1;
-	    }
-	    else if(dateLen==6)
-	    {
-			DateTime begin = new DateTime(sdf2.parse( startT ));    
-			DateTime end = new DateTime(sdf2.parse( endT ));    
-			Period p = new Period(begin, end, PeriodType.months());    
-			allLen= p.getMonths()+1;
-	    }
-	    else if(dateLen==8)
-	    {
-			DateTime begin = new DateTime(sdf.parse( startT ));    
-			DateTime end = new DateTime(sdf.parse( endT ));    
-			Period p = new Period(begin, end, PeriodType.days());    
-			allLen= p.getDays()+1;
-	    }
-	    if (userData.size() > 0)
-	    {
-	    	 int size=userData.size();
-	    	 ArrayList xArr=new ArrayList();  
-	    	 Object yArr[ ]=new Object[jzNum];
-	    	 int nowNum=0;
-	    	 int dataOK=0;
-	    	 ArrayList yArr1=new ArrayList();  
-	    	 Map tempMap=new HashMap();  
-	    	 ArrayList xTitleCell=new ArrayList();  
-	    	 xTitleCell.add("");
-	    	 xTitleCell.add("");
-	    	 ArrayList xCell=new ArrayList();  
-	    	 Object yCellArr[ ]=new Object[jzNum+2];
-	    	 int cellLen=0;
-	    	for (int i = 0; i<size; i++)
-	    	{
-	    		Map userMap = (Map)userData.get(i);
-	    		int sn=Integer.valueOf(userMap.get("SN").toString());
-	    		int did=Integer.valueOf(userMap.get("DID").toString());
-	    		double st=Double.parseDouble(userMap.get("ST").toString());
-	    		if(did!=30000000)
-	    		{
-	    			if(dataOK==0)
-	    			{
-		    			xArr.add(did);  
-			   	    	xTitleCell.add(did);
-			   	    	cellLen++;
-	    			}
-	    			yArr1.add(st);  
-		   	    	xCell.add(st);  
-	    		}
-	    		else
-	    		{
-	    			String realSn="";
-	    			String realChang="";
-	    			if(xCell.size()<allLen)
-	    			{
-	    				int addCell=allLen-xCell.size();
-						for (int add = 0; add < addCell; add++)
-						{
-							xCell.add(0);  
-						}
-	    			}
-	    			if(sn==69)
-	    			{
-	    				realSn="一厂1#机组";
-	    				realChang="一厂";
-		    			tempMap.put("backgroundColor", "rgba(255, 99, 132, 0.3)");
-	    			}
-	    			else if(sn==77)
-	    			{
-	    				realSn="二厂1#机组";
-	    				realChang="二厂";
-		    			tempMap.put("backgroundColor", "rgba(54, 162, 235, 0.3)");
-	    			}
-	    			else if(sn==83)
-	    			{
-	    				realSn="二厂2#机组";
-	    				realChang="二厂";
-		    			tempMap.put("backgroundColor", "rgba(255, 206, 86, 0.3)");
-	    			}
-	    			else if(sn==89)
-	    			{
-	    				realSn="二厂3#机组";
-	    				realChang="二厂";
-		    			tempMap.put("backgroundColor", "rgba(75, 192, 192, 0.3)");
-	    			}
-	    			else if(sn==95)
-	    			{
-	    				realSn="二厂4#机组";
-	    				realChang="二厂";
-		    			tempMap.put("backgroundColor", "rgba(153, 102, 255, 0.3)");
-	    			}
-	    			else if(sn==47)
-	    			{
-	    				realSn="三厂1#机组";
-	    				realChang="三厂";
-		    			tempMap.put("backgroundColor", "rgba(255, 159, 64, 0.3)");
-	    			}
-	    			else if(sn==51)
-	    			{
-	    				realSn="三厂2#机组";
-	    				realChang="三厂";
-		    			tempMap.put("backgroundColor", "rgba(255, 0, 168, 0.3)");
-	    			}
-	    			else if(sn==169)
-	    			{
-	    				realSn="方家山1#机组";
-	    				realChang="方家山";
 
-		    			tempMap.put("backgroundColor", "rgba(214, 238, 120, 0.3)");
-	    			}
-	    			else if(sn==177)
-	    			{
-	    				realSn="方家山2#机组";
-	    				realChang="方家山";
-
-		    			tempMap.put("backgroundColor", "rgba(241, 136, 136, 0.3)");
-	    			}
-	    			tempMap.put("label", realSn);
-	    			tempMap.put("data", yArr1);
-	    			yArr[nowNum]=tempMap;
-	    			nowNum++;
-	    			yArr1=new ArrayList();  
-	    			tempMap=new HashMap();  
-	    			if(dataOK==0)
-	    			{
-	    				xTitleCell.add("总计");
-	    				yCellArr[0]=xTitleCell;
-	    				dataOK=1;
-	    			}
-	    			xCell.add(0, realSn.substring(realSn.length()-4));
-	    			xCell.add(0, realChang);
-		   	    	xCell.add(st);  
-	    			yCellArr[nowNum]=xCell;
-	    			xCell=new ArrayList();  
-	    		}
-	    	}
-	    	String[] cellIndex = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "AA", "AB", "AC", "AD", "AE", "AF", "AG", "AH", "AI", "AJ", "AK", "AL", "AM", "AN", "AO", "AP", "AQ", "AR", "AS", "AT", "AU", "AV", "AW", "AX", "AY", "AZ", "BA", "BB", "BC", "BD", "BE", "BF", "BG", "BH", "BI", "BJ", "BK", "BL", "BM", "BN", "BO", "BP", "BQ", "BR", "BS", "BT", "BU", "BV", "BW", "BX", "BY", "BZ", "CA", "CB", "CC", "CD", "CE", "CF", "CG", "CH", "CI", "CJ", "CK", "CL", "CM", "CN", "CO", "CP", "CQ", "CR", "CS", "CT", "CU", "CV"};  
-			xCell.add(0, "总计");
-			xCell.add(0, "");
-	    	for (int j = 0; j<=cellLen; j++)
-	    	{
-	    		xCell.add("=ROUNDDOWN(SUM("+cellIndex[j+2]+"2:"+cellIndex[j+2]+""+(yArr.length+1)+"),2)");  
-	    	}
-			yCellArr[jzNum+1]=xCell;
-	    	  java.util.Map<String,Object> map1 = new HashMap<String,Object>();  
-	          map1.put("datasets",yArr);  
-	          map1.put("xLabel",xArr);  
-	            jsonString = JSON.toJSONString(map1);
-	    	  java.util.Map<String,Object> map2 = new HashMap<String,Object>();  
-	    	  map2.put("data",yCellArr); 
-	    	  map2.put("barData",map1);  
-	    	  map2.put("result",1);  
-	            jsonString = JSON.toJSONString(map2);
-	    }
-	  return jsonString;
-
-  }
   //p_id number,sid number,dt string,sp number,rate number,ep number,et string,pd number,flag number
   public String saveGd(int aid , int pid,String sdt,float sp ,float rate, float ep,String et, float pd, int flag ) throws ParseException, SQLException
   {
@@ -3477,111 +3516,7 @@ public class UserDAOImpl
 	   return jsonString;
   }
   
-	public String getTfPlanAllByTime(String planTime, String jz, int tab) throws ParseException
-	{
-		String jsonString = "";
-		String sql = "";
-		String selMName = "M_NAME='" + jz + "' and";
-		
-	  String[] timeArr=planTime.split("\\|");
-	  String from=timeArr[0];
-	  String to=timeArr[1];
-		  
-	  DateTime  fromTime= new DateTime(new SimpleDateFormat("yyyyMMdd").parse(from));
-	  DateTime  toTime= new DateTime(new SimpleDateFormat("yyyyMMdd").parse(to));
-		if (jz.endsWith("p_1"))
-		{
-			selMName = "M_NAME='Q1-1'  and ";
-		}
-		else if (jz.endsWith("p_2"))
-		{
-			selMName = "(M_NAME='Q2-1' or M_NAME='Q2-2' or  M_NAME='Q2-3' or  M_NAME='Q2-4') and  ";
-		}
-		else if (jz.endsWith("p_3"))
-		{
-			selMName = "(M_NAME='Q3-1' or M_NAME='Q3-2' ) and  ";
-		}
-		else if (jz.endsWith("p_4"))
-		{
-			selMName = "(M_NAME='F1-1' or  M_NAME='F1-2') and  ";
-		}
-		else if (jz.endsWith("all"))
-		{
-			selMName="";
-		}
 
-		if (tab == 1)
-		{
-			 sql ="SELECT * from PLAN where  "+selMName +"  (to_char(START_TIME,'yyyymmdd') BETWEEN '"+fromTime.toString("yyyyMMdd")+"' AND '"+toTime.toString("yyyyMMdd")+"')"+" order by M_NAME asc ,START_TIME asc";
-		}
-		else
-		{
-			 sql ="SELECT * from DL_TJ_DAY where  "+selMName +"  (to_char(DID,'yyyymmdd') BETWEEN '"+fromTime.toString("yyyyMMdd")+"' AND '"+toTime.toString("yyyyMMdd")+"')"+" order by M_NAME asc ,DID asc";
-		}
-	    List userData = getJdbcTemplate().queryForList(sql);
-	    int size=userData.size() ;
-	    String infoArr[ ]=new String[size];
-		Object arr[] = new Object[size];
-	    if (size> 0)
-	    {
-	    	for (int i = 0; i<size; i++)
-	    	{
-				ArrayList xCell = new ArrayList();
-	    		Map planData = (Map)userData.get(i);
-	    	    if(tab==1)
-	    	    {
-					int snNum = Integer.valueOf(planData.get("SN").toString());
-					String mName = planData.get("M_NAME").toString();
-		    		String startT=planData.get("START_TIME").toString().substring(0,planData.get("START_TIME").toString().length()-5);
-		    		String endT=planData.get("END_TIME").toString().substring(0,planData.get("END_TIME").toString().length()-5);
-					double startP = Double.parseDouble(planData.get("START_P").toString());
-					double rate =Double.parseDouble(planData.get("RATE_P").toString());
-					String upDown =planData.get("UP_DOWN").toString().replace("0", "降至").replace("1", "升至");
-					double endP =Double.parseDouble(planData.get("END_P").toString());
-					xCell.add(snNum);
-					xCell.add(mName);
-					xCell.add(startT);
-					xCell.add(startP);
-					xCell.add(rate);
-					xCell.add(upDown);
-					xCell.add(endP);
-					xCell.add(endT);   	
-					if(jz.endsWith("all"))
-					{
-						xCell.add("");
-					}
-					else
-					{
-						xCell.add("<a id='subBtn' href='javascript:void(0);'><span class='fa fa-save'></span></a>&nbsp;&nbsp;&nbsp;&nbsp;<a id='delBtn' href='javascript:void(0);'><span class='glyphicon glyphicon-trash'></span></a>");
-					}
-	    	    }
-	    	    else
-	    	    {
-					String mName = (String )planData.get("M_NAME").toString();
-					String YJH_FDL = (String )planData.get("YJH_FDL").toString();
-					String YJH_SSDL = (String )planData.get("YJH_SSDL").toString();
-					String PLAN_FDL = (String )planData.get("PLAN_FDL").toString();
-					String PLAN_SSDL = (String )planData.get("PLAN_SSDL").toString();
-					String REAL_FDL = (String )planData.get("REAL_FDL").toString();
-					String REAL_SSDL = (String )planData.get("REAL_SSDL").toString();
-					xCell.add(mName);
-					xCell.add(YJH_FDL);
-					xCell.add(YJH_SSDL);
-					xCell.add(PLAN_FDL);
-					xCell.add(PLAN_SSDL);
-					xCell.add(REAL_FDL);
-					xCell.add(REAL_SSDL);
-	    	    }
-				arr[i] = xCell;
-	    	}
-	    }
-		Map<String, Object> map1 = new HashMap<String, Object>();
-		map1.put("data", arr);
-        map1.put("result",1); 
-        
-	    jsonString = JSON.toJSONString(map1);
-		return jsonString;
-	}
 	public String getTfPlanAll(String crew , String tab,int pId,int userId) throws ParseException
 	  {
 		    int gno=0;
@@ -3616,9 +3551,11 @@ public class UserDAOImpl
           gno = (int)sav/200;
           vno = sav % 200;
 		  	dateString = crew.replace('/', '-');
-		  	 DateTime dateTime2 = new DateTime(new SimpleDateFormat("yyyy-MM-dd").parse(dateString));
-		  	 dateString = ""+(dateTime2.getMonthOfYear()*100+dateTime2.getDayOfMonth());
-			  //dateTime2 =dateTime2.plusDays(1);
+          DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+          LocalDateTime dateTime2 = LocalDateTime.parse(dateString, formatter);
+		  	 dateString = ""+(dateTime2.getMonthValue()*100+dateTime2.getDayOfMonth());
+
 		  	java.util.Map<String,Object> map1 = new HashMap<String,Object>() ;
 		  	  sql = "select a.name anm,b.name bnm from prtu a,"+dbnameString2+" b where a.rtuno=b.rtuno and b.saveno="+sav;
 
@@ -3710,8 +3647,11 @@ public class UserDAOImpl
 		  	vno = pId % 200;
 		  	dateString = crew.replace('/', '-');
 		  	dateString2 = dateString;
-		  	 DateTime dateTime2 = new DateTime(new SimpleDateFormat("yyyy-MM-dd").parse(dateString));
-		  	 dateString = ""+(dateTime2.getMonthOfYear()*100+dateTime2.getDayOfMonth());
+
+          DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+          LocalDateTime dateTime2 = LocalDateTime.parse(dateString, formatter);
+          dateString = ""+(dateTime2.getMonthValue()*100+dateTime2.getDayOfMonth());
 			  //dateTime2 =dateTime2.plusDays(1);
 		  	java.util.Map<String,Object> map1 = new HashMap<String,Object>() ;
 		  	String  sql = "select a.name anm,b.name bnm from prtu a,"+dbnameString2+" b where a.rtuno=b.rtuno and b.saveno="+pId; 
@@ -3805,7 +3745,11 @@ public class UserDAOImpl
 		  	dateString = crew.replace('/', '-');
 		  	dateString2 = tab.replace('/', '-');
 			
-		  	 DateTime dateTime2 = new DateTime(new SimpleDateFormat("yyyy-MM-dd").parse(dateString));
+		  	 //DateTime dateTime2 = new DateTime(new SimpleDateFormat("yyyy-MM-dd").parse(dateString));
+          DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+          LocalDateTime dateTime2 = LocalDateTime.parse(dateString, formatter);
+          dateString = ""+(dateTime2.getMonthValue()*100+dateTime2.getDayOfMonth());
 		  	 //dateString = ""+(dateTime2.getMonthOfYear()*100+dateTime2.getDayOfMonth());
 		  	dateString = dateString.replace("-","");
 		  	dateString2 =dateString2.replace("-","");
@@ -3999,8 +3943,13 @@ log(sql);
 		    }	
 	  	
 	  	dateString = crew.replace('/', '-');
-	  	 DateTime dateTime2 = new DateTime(new SimpleDateFormat("yyyy-MM-dd").parse(dateString));
-	  	 dateString = ""+(dateTime2.getYear()*100+dateTime2.getMonthOfYear());
+	  	// DateTime dateTime2 = new DateTime(new SimpleDateFormat("yyyy-MM-dd").parse(dateString));
+	  	// dateString = ""+(dateTime2.getYear()*100+dateTime2.getMonthOfYear());
+
+      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+      LocalDateTime dateTime2 = LocalDateTime.parse(dateString, formatter);
+      dateString = ""+(dateTime2.getYear()*100+dateTime2.getMonthValue());
 		  //dateTime2 =dateTime2.plusDays(1);
 	  	java.util.Map<String,Object> map1 = new HashMap<String,Object>() ;
 	  	  sql = "select hegelv,did,saveno from xiebo_hgl where  did>"+dateString+"00 and did<"+dateString+"99 and saveno in ("+savstr+") order by did,saveno"; 
@@ -4111,8 +4060,12 @@ log(sql);
 		    }	
 	  	
 	  	dateString = crew.replace('/', '-');
-	  	 DateTime dateTime2 = new DateTime(new SimpleDateFormat("yyyy-MM-dd").parse(dateString));
-	  	 dateString = ""+(dateTime2.getYear());
+	  	// DateTime dateTime2 = new DateTime(new SimpleDateFormat("yyyy-MM-dd").parse(dateString));
+	  	// dateString = ""+(dateTime2.getYear());
+      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+      LocalDateTime dateTime2 = LocalDateTime.parse(dateString, formatter);
+      dateString = String.valueOf(dateTime2.getMonthValue());
 		  //dateTime2 =dateTime2.plusDays(1);
 	  	java.util.Map<String,Object> map1 = new HashMap<String,Object>() ;
 	  	  sql = "select val,valtime,did,saveno from dl_max where  did>"+dateString+"0000 and did<"+dateString+"9999 and saveno in ("+savstr+") order by did,saveno"; 
@@ -5104,8 +5057,12 @@ log(sql);
 	  	gno = (int)sav/200;
 	  	vno = sav % 200;
 	  	dateString = crew.replace('/', '-');
-	  	 DateTime dateTime2 = new DateTime(new SimpleDateFormat("yyyy-MM-dd").parse(dateString));
-	  	 dateString = ""+(dateTime2.getMonthOfYear()*100+dateTime2.getDayOfMonth());
+	  	// DateTime dateTime2 = new DateTime(new SimpleDateFormat("yyyy-MM-dd").parse(dateString));
+	  	// dateString = ""+(dateTime2.getMonthOfYear()*100+dateTime2.getDayOfMonth());
+      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+      LocalDateTime dateTime2 = LocalDateTime.parse(dateString, formatter);
+      dateString = ""+(dateTime2.getMonthValue()*100+dateTime2.getDayOfMonth());
 		  //dateTime2 =dateTime2.plusDays(1);
 	  	java.util.Map<String,Object> map1 = new HashMap<String,Object>() ;
 	  	 sql = "select a.name anm,b.name bnm from prtu a,"+dbnameString2+" b where a.rtuno=b.rtuno and b.saveno="+sav;
@@ -5237,8 +5194,12 @@ log(sql);
 	  	gno = (int)pId/200;
 	  	vno = pId % 200;
 	  	dateString = crew.replace('/', '-');
-	  	 DateTime dateTime2 = new DateTime(new SimpleDateFormat("yyyy-MM-dd").parse(dateString));
-	  	 dateString = ""+(dateTime2.getMonthOfYear()*100+dateTime2.getDayOfMonth());
+	  	// DateTime dateTime2 = new DateTime(new SimpleDateFormat("yyyy-MM-dd").parse(dateString));
+	  	// dateString = ""+(dateTime2.getMonthOfYear()*100+dateTime2.getDayOfMonth());
+      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+      LocalDateTime dateTime2 = LocalDateTime.parse(dateString, formatter);
+      dateString = ""+(dateTime2.getMonthValue()*100+dateTime2.getDayOfMonth());
 		  //dateTime2 =dateTime2.plusDays(1);
 	  	java.util.Map<String,Object> map1 = new HashMap<String,Object>() ;
 	  	String  sql = "select a.name anm,b.name bnm from prtu a,"+dbnameString2+" b where a.rtuno=b.rtuno and b.saveno="+pId; 
@@ -5371,8 +5332,12 @@ log(sql);
 	  	gno = (int)pId/200;
 	  	vno = pId % 200;
 	  	dateString = crew.replace('/', '-');
-	  	 DateTime dateTime2 = new DateTime(new SimpleDateFormat("yyyy-MM-dd").parse(dateString));
-	  	 dateString = ""+(dateTime2.getMonthOfYear()*100+dateTime2.getDayOfMonth());
+	  	// DateTime dateTime2 = new DateTime(new SimpleDateFormat("yyyy-MM-dd").parse(dateString));
+	  	// dateString = ""+(dateTime2.getMonthOfYear()*100+dateTime2.getDayOfMonth());
+      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+      LocalDateTime dateTime2 = LocalDateTime.parse(dateString, formatter);
+      dateString = ""+(dateTime2.getMonthValue()*100+dateTime2.getDayOfMonth());
 		  //dateTime2 =dateTime2.plusDays(1);
 	  	java.util.Map<String,Object> map1 = new HashMap<String,Object>() ;
 	  	String  sql = "select a.name anm,b.name bnm from prtu a,"+dbnameString2+" b where a.rtuno=b.rtuno and b.saveno="+pId; 
@@ -5523,8 +5488,12 @@ log(sql);
 	   }
 	   //log("mode:"+mode);
 	  	dateString = crew.replace('/', '-');
-	  	 DateTime dateTime2 = new DateTime(new SimpleDateFormat("yyyy-MM-dd").parse(dateString));
-	  	 dateString = ""+(dateTime2.getMonthOfYear()*100+dateTime2.getDayOfMonth());
+	  	// DateTime dateTime2 = new DateTime(new SimpleDateFormat("yyyy-MM-dd").parse(dateString));
+	  	// dateString = ""+(dateTime2.getMonthOfYear()*100+dateTime2.getDayOfMonth());
+      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+      LocalDateTime dateTime2 = LocalDateTime.parse(dateString, formatter);
+      dateString = ""+(dateTime2.getMonthValue()*100+dateTime2.getDayOfMonth());
 	  	 year = dateTime2.getYear(); 
 	  	if((year%4==0 && year%100 != 0)|| year%400==0 ) 
 		  monthDay[1]++;
@@ -5534,8 +5503,8 @@ log(sql);
 	  	 }
 	  	 else
 	  	 {
-	  		dateString = ""+(dateTime2.getMonthOfYear()*100+1);
-	  		timestring = " and savetime>="+dateString+"0000 and savetime<"+(dateTime2.getMonthOfYear()*100+monthDay[dateTime2.getMonthOfYear()-1])+"9999 ";
+	  		dateString = ""+(dateTime2.getMonthValue()*100+1);
+	  		timestring = " and savetime>="+dateString+"0000 and savetime<"+(dateTime2.getMonthValue()*100+monthDay[dateTime2.getMonthValue()-1])+"9999 ";
 	  	 }
 		  //dateTime2 =dateTime2.plusDays(1);
 	  	java.util.Map<String,Object> map1 = new HashMap<String,Object>() ;
@@ -5802,8 +5771,12 @@ log(sql);
 	   }
 	   //log("mode:"+mode);
 	  	dateString = crew.replace('/', '-');
-	  	 DateTime dateTime2 = new DateTime(new SimpleDateFormat("yyyy-MM-dd").parse(dateString));
-	  	 dateString = ""+(dateTime2.getMonthOfYear()*100+dateTime2.getDayOfMonth());
+	  	// DateTime dateTime2 = new DateTime(new SimpleDateFormat("yyyy-MM-dd").parse(dateString));
+	  	// dateString = ""+(dateTime2.getMonthOfYear()*100+dateTime2.getDayOfMonth());
+      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+      LocalDateTime dateTime2 = LocalDateTime.parse(dateString, formatter);
+      dateString = ""+(dateTime2.getMonthValue()*100+dateTime2.getDayOfMonth());
 	  	 year = dateTime2.getYear(); 
 	  	if((year%4==0 && year%100 != 0)|| year%400==0 ) 
 		  monthDay[1]++;
@@ -5813,7 +5786,7 @@ log(sql);
 	  	 }
 	  	 else
 	  	 {
-	  		dateString = ""+(dateTime2.getMonthOfYear()*100+1);
+	  		dateString = ""+(dateTime2.getMonthValue()*100+1);
 	  		timestring = " and did>="+year+"0000 and did<"+year+"9999 ";
 	  	 }
 		  //dateTime2 =dateTime2.plusDays(1);
@@ -6034,9 +6007,12 @@ log(sql);
 	  	gno = (int)pId/200;
 	  	vno = pId % 200;
 	  	dateString = crew.replace('/', '-');
-	  	 DateTime dateTime2 = new DateTime(new SimpleDateFormat("yyyy-MM-dd").parse(dateString));
-	  	dateString = ""+(dateTime2.getMonthOfYear()*100+dateTime2.getDayOfMonth());
-	  	
+	  	// DateTime dateTime2 = new DateTime(new SimpleDateFormat("yyyy-MM-dd").parse(dateString));
+	  	//dateString = ""+(dateTime2.getMonthOfYear()*100+dateTime2.getDayOfMonth());
+      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+      LocalDateTime dateTime2 = LocalDateTime.parse(dateString, formatter);
+      dateString = ""+(dateTime2.getMonthValue()*100+dateTime2.getDayOfMonth());
 	  	String   sql = "select IFNULL(val"+vno+",0) val,savetime from "+dbnameString+(dateTime2.getYear()%10)+" where   groupno="+gno+" and savetime>="+dateString+"0000 and savetime<"+dateString+"9999 order by savetime"; 
 	  	List userData = getJdbcTemplate().queryForList(sql);
 	  	int size=userData.size() ; 
@@ -6067,7 +6043,7 @@ log(sql);
 	 	    }
 	  	 
 		dateTime2 =dateTime2.plusDays(-1);
-	  	dateString = ""+(dateTime2.getMonthOfYear()*100+dateTime2.getDayOfMonth());
+	  	dateString = ""+(dateTime2.getMonthValue()*100+dateTime2.getDayOfMonth());
 	    sql = "select IFNULL(val"+vno+",0) val,savetime from "+dbnameString+(dateTime2.getYear()%10)+" where   groupno="+gno+" and savetime>="+dateString+"0000 and savetime<"+dateString+"9999 order by savetime";  
 	    
 	   // String sql = "select TAGNAME,SAVETIME,VAL,time4,pointinfo ,to_char(SAVETIME,'mm-dd') fd from REAL_GL left join (SELECT to_char(TB2.TIME1,'yyyymmdd hh24') TIME4, LTRIM(MAX(SYS_CONNECT_BY_PATH(TB2.TEXT1, '<br>')), '<br>') pointInfo FROM (SELECT TB1.TEXT1, TB1.TIME1,ROW_NUMBER() OVER(PARTITION BY to_char(TB1.TIME1,'yyyymmdd hh24') ORDER BY TB1.TEXT1 asc) RN FROM (SELECT POLY_POINT.M_NAME,POLY_POINT.TIME1,to_char(POLY_POINT.TIME1,'yyyy-mm-dd hh24:mi')||' '||POLY_POINT.M_NAME || ','||POLY_CASE.TEXT1 ||',' ||POLY_POINT.TEXT1 TEXT1 FROM POLY_POINT left join POLY_CASE on (POLY_POINT.CASE_SN = POLY_CASE.SN ) WHERE POLY_POINT.M_NAME='"+crew+"' ORDER BY POLY_POINT.TIME1 ASC) tb1) tb2 START WITH RN = 1 CONNECT BY RN - 1 = PRIOR RN　　　 AND to_char(TB2.TIME1,'yyyymmdd hh24') = PRIOR to_char(TB2.TIME1,'yyyymmdd hh24')GROUP BY to_char(TB2.TIME1,'yyyymmdd hh24') ORDER BY to_char(TB2.TIME1,'yyyymmdd hh24') asc) TTT on (to_char(REAL_GL.SAVETIME,'yyyymmdd hh24') =TTT.TIME4) where TAGNAME='"+crew+"' and  (to_char(SAVETIME,'yyyy-mm-dd hh24:mi:ss') BETWEEN '"+startT+"' AND '"+endT+"') and (to_char(SAVETIME,'miss') = '0000' or to_char(SAVETIME,'miss') = '3000')  ORDER BY SAVETIME asc";
@@ -6136,8 +6112,12 @@ log(sql);
 	  	gno = (int)pId/200;
 	  	vno = pId % 200;
 	  	dateString = crew.replace('/', '-');
-	  	 DateTime dateTime2 = new DateTime(new SimpleDateFormat("yyyy-MM-dd").parse(dateString));
-	  	dateString = ""+(dateTime2.getMonthOfYear()*100+dateTime2.getDayOfMonth());
+	  	// DateTime dateTime2 = new DateTime(new SimpleDateFormat("yyyy-MM-dd").parse(dateString));
+	  	//dateString = ""+(dateTime2.getMonthOfYear()*100+dateTime2.getDayOfMonth());
+      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+      LocalDateTime dateTime2 = LocalDateTime.parse(dateString, formatter);
+      dateString = ""+(dateTime2.getMonthValue()*100+dateTime2.getDayOfMonth());
 	  	
 	  	String   sql = "select IFNULL(val"+vno+",0) val,savetime from "+dbnameString+(dateTime2.getYear()%10)+" where   groupno="+gno+" and savetime>="+dateString+"0800 and savetime<"+dateString+"2005 order by savetime"; 
 	  	List userData = getJdbcTemplate().queryForList(sql);
@@ -6169,7 +6149,7 @@ log(sql);
 	 	    }
 	  	 
 		dateTime2 =dateTime2.plusDays(-1);
-	  	dateString = ""+(dateTime2.getMonthOfYear()*100+dateTime2.getDayOfMonth());
+	  	dateString = ""+(dateTime2.getMonthValue()*100+dateTime2.getDayOfMonth());
 	    sql = "select IFNULL(val"+vno+",0) val,savetime from "+dbnameString+(dateTime2.getYear()%10)+" where   groupno="+gno+" and savetime>="+dateString+"0800 and savetime<"+dateString+"2005 order by savetime";  
 	    
 	   // String sql = "select TAGNAME,SAVETIME,VAL,time4,pointinfo ,to_char(SAVETIME,'mm-dd') fd from REAL_GL left join (SELECT to_char(TB2.TIME1,'yyyymmdd hh24') TIME4, LTRIM(MAX(SYS_CONNECT_BY_PATH(TB2.TEXT1, '<br>')), '<br>') pointInfo FROM (SELECT TB1.TEXT1, TB1.TIME1,ROW_NUMBER() OVER(PARTITION BY to_char(TB1.TIME1,'yyyymmdd hh24') ORDER BY TB1.TEXT1 asc) RN FROM (SELECT POLY_POINT.M_NAME,POLY_POINT.TIME1,to_char(POLY_POINT.TIME1,'yyyy-mm-dd hh24:mi')||' '||POLY_POINT.M_NAME || ','||POLY_CASE.TEXT1 ||',' ||POLY_POINT.TEXT1 TEXT1 FROM POLY_POINT left join POLY_CASE on (POLY_POINT.CASE_SN = POLY_CASE.SN ) WHERE POLY_POINT.M_NAME='"+crew+"' ORDER BY POLY_POINT.TIME1 ASC) tb1) tb2 START WITH RN = 1 CONNECT BY RN - 1 = PRIOR RN　　　 AND to_char(TB2.TIME1,'yyyymmdd hh24') = PRIOR to_char(TB2.TIME1,'yyyymmdd hh24')GROUP BY to_char(TB2.TIME1,'yyyymmdd hh24') ORDER BY to_char(TB2.TIME1,'yyyymmdd hh24') asc) TTT on (to_char(REAL_GL.SAVETIME,'yyyymmdd hh24') =TTT.TIME4) where TAGNAME='"+crew+"' and  (to_char(SAVETIME,'yyyy-mm-dd hh24:mi:ss') BETWEEN '"+startT+"' AND '"+endT+"') and (to_char(SAVETIME,'miss') = '0000' or to_char(SAVETIME,'miss') = '3000')  ORDER BY SAVETIME asc";
@@ -6239,10 +6219,14 @@ log(sql);
 	  	vno = pId % 200;
 	  	dateString = crew.replace('/', '-');
 	  	
-	  	 DateTime dateTime2 = new DateTime(new SimpleDateFormat("yyyy-MM-dd").parse(dateString));
+	  	// DateTime dateTime2 = new DateTime(new SimpleDateFormat("yyyy-MM-dd").parse(dateString));
+      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+      LocalDateTime dateTime2 = LocalDateTime.parse(dateString, formatter);
+      dateString = ""+(dateTime2.getMonthValue()*100+dateTime2.getDayOfMonth());
 	  	SimpleDateFormat xDate=new SimpleDateFormat("yyyyMMdd");
 	  	dateTime2 =dateTime2.plusDays(-1);
-	  	dateString = ""+(dateTime2.getMonthOfYear()*100+dateTime2.getDayOfMonth());
+	  	dateString = ""+(dateTime2.getMonthValue()*100+dateTime2.getDayOfMonth());
 	  	
 	  	String   sql = "select sum(IFNULL(val"+vno+",0)) val,floor(savetime/100)*100 savetime from "+dbnameString+" where   groupno="+gno+" and savetime>="+dateString+"0000 and savetime<"+dateString+"9999 group by floor(savetime/100) order by floor(savetime/100)"; 
 	  	log(sql);
@@ -6309,9 +6293,12 @@ log(sql);
 	  	gno = 0;
 	  	vno = 0;
 	  	dateString = crew.replace('/', '-');
-	  	 DateTime dateTime2 = new DateTime(new SimpleDateFormat("yyyy-MM-dd").parse(dateString));
-	  	dateString = ""+(dateTime2.getMonthOfYear()*100+dateTime2.getDayOfMonth());
-	  	
+	  	// DateTime dateTime2 = new DateTime(new SimpleDateFormat("yyyy-MM-dd").parse(dateString));
+	  	//dateString = ""+(dateTime2.getMonthOfYear()*100+dateTime2.getDayOfMonth());
+      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+      LocalDateTime dateTime2 = LocalDateTime.parse(dateString, formatter);
+      dateString = ""+(dateTime2.getMonthValue()*100+dateTime2.getDayOfMonth());
 	  	String   sql = "select IFNULL(val"+vno+",0) val,savetime from "+dbnameString+(dateTime2.getYear()%10)+" where   groupno="+gno+" and savetime>="+dateString+"0000 and savetime<"+dateString+"9999 order by savetime"; 
 	  	List userData = getJdbcTemplate().queryForList(sql);
 	  	int size=userData.size() ; 
@@ -6335,7 +6322,7 @@ log(sql);
 	 	    }
 	  	 
 		dateTime2 =dateTime2.plusDays(-1);
-	  	dateString = ""+(dateTime2.getMonthOfYear()*100+dateTime2.getDayOfMonth());
+	  	dateString = ""+(dateTime2.getMonthValue()*100+dateTime2.getDayOfMonth());
 	    sql = "select IFNULL(val"+vno+",0) val,savetime from "+dbnameString+(dateTime2.getYear()%10)+" where   groupno="+gno+" and savetime>="+dateString+"0000 and savetime<"+dateString+"9999 order by savetime";  
 	    
 	   // String sql = "select TAGNAME,SAVETIME,VAL,time4,pointinfo ,to_char(SAVETIME,'mm-dd') fd from REAL_GL left join (SELECT to_char(TB2.TIME1,'yyyymmdd hh24') TIME4, LTRIM(MAX(SYS_CONNECT_BY_PATH(TB2.TEXT1, '<br>')), '<br>') pointInfo FROM (SELECT TB1.TEXT1, TB1.TIME1,ROW_NUMBER() OVER(PARTITION BY to_char(TB1.TIME1,'yyyymmdd hh24') ORDER BY TB1.TEXT1 asc) RN FROM (SELECT POLY_POINT.M_NAME,POLY_POINT.TIME1,to_char(POLY_POINT.TIME1,'yyyy-mm-dd hh24:mi')||' '||POLY_POINT.M_NAME || ','||POLY_CASE.TEXT1 ||',' ||POLY_POINT.TEXT1 TEXT1 FROM POLY_POINT left join POLY_CASE on (POLY_POINT.CASE_SN = POLY_CASE.SN ) WHERE POLY_POINT.M_NAME='"+crew+"' ORDER BY POLY_POINT.TIME1 ASC) tb1) tb2 START WITH RN = 1 CONNECT BY RN - 1 = PRIOR RN　　　 AND to_char(TB2.TIME1,'yyyymmdd hh24') = PRIOR to_char(TB2.TIME1,'yyyymmdd hh24')GROUP BY to_char(TB2.TIME1,'yyyymmdd hh24') ORDER BY to_char(TB2.TIME1,'yyyymmdd hh24') asc) TTT on (to_char(REAL_GL.SAVETIME,'yyyymmdd hh24') =TTT.TIME4) where TAGNAME='"+crew+"' and  (to_char(SAVETIME,'yyyy-mm-dd hh24:mi:ss') BETWEEN '"+startT+"' AND '"+endT+"') and (to_char(SAVETIME,'miss') = '0000' or to_char(SAVETIME,'miss') = '3000')  ORDER BY SAVETIME asc";

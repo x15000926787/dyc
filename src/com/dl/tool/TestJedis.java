@@ -49,12 +49,14 @@ public class TestJedis {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
             LocalDateTime rnow = LocalDateTime.now();
 
-                    LocalDateTime to2 = LocalDateTime.parse("2020-04-01 12:00:00", formatter);
+                    LocalDateTime to2 = LocalDateTime.parse("2020-04-01 12:12:00", formatter);
+        to2.withHour(0);
+        to2.withMinute(0);
             Duration duration = Duration.between(to2,rnow);
 
             long minutes = duration.toMinutes();//相差的分钟数
 
-        System.out.println(minutes);
+        System.out.println(to2.getMonthValue());
        /* //新建JSONObject对象
         JSONObject object1 = new JSONObject();
         

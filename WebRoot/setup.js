@@ -1,6 +1,7 @@
 		var ip_addr = document.location.hostname;
-		var port = "8081";
-        var httpIp = "http://"+ip_addr+":"+ port;
+		var port = "8080";
+		var path = "dyc"
+        var httpIp = "http://"+ip_addr+":"+ port+"/"+path+"/";
         var timeOutNum=100000;
 		//httpIp = "http://192.168.101.114:8080";
 		//项目号，对应prtu表的domain字段
@@ -13,23 +14,17 @@
 		var saveno = -1;
 		//初始站号，nylb.html一览表初始显示的站点
 		var rtuno = 1;
-		var urlArr = ["http://localhost:8080/Page0.htm",
-		              "http://localhost:8080/Page1.htm",
-		              "http://localhost:8081/qs/lsqx.html",
-		              "http://localhost:8081/qs/lssj.html",
-		              "http://localhost:8081/qs/hevt.html",
-		              "http://localhost:8081/qs/xbfx.html", 
-		              "http://localhost:8081/qs/bbxt.jsp"
-		  ];
-		 var color_arr = ['#31708f','#8a6d3b','#a94442','#843534'];
+
+		//0：开机，运行，1：越限，2：关机，告警,3:error,4:越限恢复
+		 var color_arr = ['#31708f','#8a6d3b','#a94442','#843534','#006633'];
 		var url1 = [
-			httpIp + "/LF/data_demo.html",
-			httpIp + "/LF/list.html",
-			httpIp + "/LF/nupdown_edit.html",
-			httpIp + "/LF/sjjl.html",
+			httpIp + "data_demo.html",
+			httpIp + "list.html",
+			httpIp + "nupdown_edit.html",
+			httpIp + "sjjl.html",
 			"",
-			httpIp + "/LF/authors.html",
-			httpIp + "/LF/dig.html"
+			httpIp + "authors.html",
+			httpIp + "dig.html"
 	];
 		function isNumber(val){
 

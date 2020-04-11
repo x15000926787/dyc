@@ -145,8 +145,8 @@ public  class saveHistyc implements Job {
 										vno = saveno % 200;
 										dncollist[(int) gno] = dncollist[(int) gno] + ",val" + vno;
 										dnvallist[(int) gno] = dnvallist[(int) gno] + "," + vv;
-
-										if (Pattern.matches(patterdt, savet))
+                                        //电量增量每5分钟计算一次，prtupul表的chgtime时标已不需要
+										/*if (Pattern.matches(patterdt, savet))
 										{
 											//此处sql语句待来日优化
 											sql="update prtupul set chgtime="+vv+" where saveno="+saveno;
@@ -158,7 +158,7 @@ public  class saveHistyc implements Job {
 											}catch(Exception e){
 												System.out.println("出错了"+e.toString());
 											}
-										}
+										}*/
 									}
 								} catch (Exception e) {
 									logger.error("pulsaveno:"+key+":" + anamap.toString());
@@ -201,11 +201,10 @@ public  class saveHistyc implements Job {
 			 logger.warn("save histyc:"+savet);
 			 //logger.warn(sql);
 			 jedis.set("delay_active",rightnow.format(df2));
-			 /**
-			  * 历史电量窗口值在hyc里面已经存储过，hdn不再存历史，此表改为存5分钟增量，用mysql定时job实现，每个结算周期算一次。
+
 
 			 //存5分钟电量
-			 dbname = "hdn"+(c.get(Calendar.YEAR)%10);
+			 dbname = "hdn"+(rightnow.getYear()%10);
 
 			 for(int i=0;i<dnvallist.length;i++)
 			 {
@@ -225,7 +224,7 @@ public  class saveHistyc implements Job {
 			 }
 			 logger.warn("save hdn:"+savet);
 			 logger.warn(sql);
-			  */
+
 
             //结算点时间，重新读取anaobj,更新实时数据结构中的电量窗口值
 			if (Pattern.matches(patterdt, savet))

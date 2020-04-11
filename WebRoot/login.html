@@ -82,7 +82,7 @@ function check(form){
 //这里为用ajax获取用户信息并进行验证，如果账户密码不匹配则登录失败，如不需要验证用户信息，这段可不写
     console.log(password,username);
  $.ajax({
-    url : httpIp + '/LF/LoginServlet',// 获取自己系统后台用户信息接口
+    url : httpIp + 'LoginServlet',// 获取自己系统后台用户信息接口
     data :{"password":password,"username":username},
     type : "post",
     dataType: "json",

@@ -231,7 +231,7 @@
         //inst.open_node(selectedNode);  
         //alert(temp);  
         $.ajax({
-            url: httpIp + '/LF/tree',
+            url: httpIp + 'tree',
             dataType: "json",
             type: "POST",
             success: function(data) {
@@ -260,7 +260,7 @@
         var radio_val = $("[name='radio']").filter(":checked").val(); // $("[name='radio']").filter(":checked").attr("id");
         //console.log(radio_val);
         $.ajax({
-            url: httpIp + '/LF/tree_2',
+            url: httpIp + 'tree_2',
             dataType: "json",
             data: { dd: radio_val, kk: tree_type, rtu: lino },
             type: "POST",
@@ -318,7 +318,7 @@
         var radio_val = $("[name='radio']").filter(":checked").val(); // $("[name='radio']").filter(":checked").attr("id");
         
         $.ajax({
-            url: httpIp + '/LF/tree_3',
+            url: httpIp + 'tree_3',
             dataType: "json",
             data: { dd: radio_val, kk: tree_type, rtu: tid, len: nums },
             type: "POST",
@@ -420,7 +420,7 @@
         changeCol(eval("colHeaders1"));
         $("#timetype").hide();
         $.ajax({
-            url: httpIp + '/LF/getTfPlanAll',
+            url: httpIp + 'getTfPlanAll',
             type: 'POST',
             async: true,
             data: { crew: jz, tab: mode, pId: sn },
@@ -612,7 +612,7 @@
     function loadTfPlan(jz, mode, sn) {
         // console.log(mode);
         $.ajax({
-            url: httpIp + '/LF/getTfData',
+            url: httpIp + 'getTfData',
             type: 'POST',
             async: true,
             data: { crew: jz, crewLong: mode, pId: sn },
@@ -788,7 +788,7 @@
 
         console.log(jz + "___" + mode + "___" + sn);
         $.ajax({
-            url: httpIp + '/LF/getdlData',
+            url: httpIp + 'getdlData',
             type: 'POST',
             async: true,
             data: { crew: jz, crewLong: mode, pId: sn },

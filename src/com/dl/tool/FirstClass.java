@@ -192,7 +192,7 @@ public class FirstClass  implements ServletContextListener {
 				}
       */
 		/**
-		 *  添加定时任务是，只携带任务ID作为参数，任务触发时再查询任务清单，2020-03-05修改
+		 *  添加定时任务时，只携带任务ID作为参数，任务触发时再查询任务清单，2020-03-05修改
 		 */
 		/*
 		String sql="select * from timetask_detial order by taskid,id";

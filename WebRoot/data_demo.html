@@ -208,7 +208,7 @@
             //alert(temp);
             console.log(prono);
             $.ajax({
-                url: httpIp + '/LF/tree',
+                url: httpIp + 'tree',
                 data: { pno: prono },
                 dataType: "json",
                 type: "POST",
@@ -236,7 +236,7 @@
             console.log(tree_type,lino);
             $.ajax({
 
-                url: httpIp + '/LF/tree_2',
+                url: httpIp + 'tree_2',
                 dataType: "json",
                 data: { dd: 0, kk: tree_type, rtu: lino },
                 type: "POST",
@@ -292,7 +292,7 @@
             //var radio_val = $("[name='radio']").filter(":checked").val(); // $("[name='radio']").filter(":checked").attr("id");
             console.log(tree_type,tid,nums);
             $.ajax({
-                url: httpIp + '/LF/tree_3',
+                url: httpIp + 'tree_3',
                 dataType: "json",
                 data: { dd: tid.split("_")[0], kk: tree_type, rtu: tid.split("_")[1], len: nums },
                 type: "POST",
@@ -388,7 +388,7 @@
             changeCol(eval("colHeaders1"));
             $("#timetype").hide();
             $.ajax({
-                url: httpIp + '/LF/getTfPlanAll',
+                url: httpIp + 'getTfPlanAll',
                 type: 'POST',
                 async: true,
                 data: { crew: jz, tab: mode, pId: sn ,userId:uid},
@@ -577,7 +577,7 @@
         function loadTfPlan(jz, mode, sn) {
              console.log(uid);
             $.ajax({
-                url: httpIp + '/LF/getTfData',
+                url: httpIp + 'getTfData',
                 type: 'POST',
                 async: true,
                 data: { crew: jz, crewLong: prono, pId: sn ,userId:uid},
@@ -771,7 +771,7 @@
 
             console.log(jz + "___" + mode + "___" + sn);
             $.ajax({
-                url: httpIp + '/LF/getdlData',
+                url: httpIp + 'getdlData',
                 type: 'POST',
                 async: true,
                 data: { crew: jz, crewLong: mode, pId: sn },

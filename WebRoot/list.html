@@ -144,7 +144,7 @@ function loadprtu() {
 	       // console.log(nowMode);
 			
 			$.ajax({
-				url: httpIp + '/LF/mysqltest',
+				url: httpIp + 'mysqltest',
 				type: 'POST',
 				async: true, 
 				 data: {pno:prono},
@@ -191,7 +191,7 @@ function loadPlan(jz,mode) {
 			dtstr = dtstr.replace(":","");
 			console.log(rtuno,dtstr,nms,prono);
 			$.ajax({
-				url: httpIp + '/LF/get_vals',
+				url: httpIp + 'get_vals',
 				type: 'POST',
 				async: true, 
 				data: { dt: dtstr,nm:nms, dno:rtuno,pno:prono,userId:uid },

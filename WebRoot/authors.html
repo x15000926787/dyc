@@ -305,7 +305,7 @@ function negativeValueRenderer_user(instance, td, row, col, prop, value, cellPro
     function loadPlan(jz, mode, sn) {
 
         $.ajax({
-            url: httpIp + '/LF/getuser',
+            url: httpIp + 'getuser',
             type: 'POST',
             async: true,
             timeout: timeOutNum,
@@ -345,7 +345,7 @@ function negativeValueRenderer_user(instance, td, row, col, prop, value, cellPro
     function loadauthor() {
 
         $.ajax({
-            url: httpIp + '/LF/getauthor',
+            url: httpIp + 'getauthor',
             type: 'POST',
             async: false,
             timeout: timeOutNum,
@@ -387,7 +387,7 @@ function negativeValueRenderer_user(instance, td, row, col, prop, value, cellPro
         }
         strs = strs + "99";
         $.ajax({
-            url: httpIp + '/LF/set_author',
+            url: httpIp + 'set_author',
             type: 'POST',
             async: false,
             timeout: timeOutNum,
@@ -417,7 +417,7 @@ function negativeValueRenderer_user(instance, td, row, col, prop, value, cellPro
         // $("#authorTitle").html("<font size='" + titleFontSize + "'>" +nm + "  短信权限列表" + "</font>");
         $("#authorTitle2").html(" " + nm + "  " + "</font>");
         $.ajax({
-            url: httpIp + '/LF/getUserAuthor',
+            url: httpIp + 'getUserAuthor',
             type: 'POST',
             async: false,
             timeout: timeOutNum,
@@ -569,7 +569,7 @@ function negativeValueRenderer_user(instance, td, row, col, prop, value, cellPro
                 console.log(postJson + "  json ")
 
                 $.ajax({
-                    url: httpIp + '/LF/saveyTfEdit',
+                    url: httpIp + 'saveyTfEdit',
                     type: 'POST',
                     async: true,
                     data: { jsonStr: postJson, sn: nowPlanSn ,gky:gkey},

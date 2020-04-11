@@ -253,7 +253,7 @@ body{ background:#343c48;}
 		function creaeCheckboxList(jz, mode, sn) {
 
 			$.ajax({
-				url: httpIp + '/LF/getuser',
+				url: httpIp + 'getuser',
 				type: 'POST',
 				async: true,
 				timeout: timeOutNum,
@@ -499,7 +499,7 @@ body{ background:#343c48;}
 
 			if(msg==true) {
 				$.ajax({
-					url: httpIp + '/LF/resettime',
+					url: httpIp + 'resettime',
 					type: 'POST',
 					async: true,
 					data: {key: saveno, tp: 2},
@@ -570,7 +570,7 @@ body{ background:#343c48;}
 			nowMode = rtu;
             console.log(dev);
 			$.ajax({
-				url: httpIp + '/LF/loadUpdown_dig',
+				url: httpIp + 'loadUpdown_dig',
 				type: 'POST',
 				async: false,
 				timeout: timeOutNum,
@@ -634,7 +634,7 @@ body{ background:#343c48;}
 		{
 
 			$.ajax({
-				url: httpIp + '/LF/sendUpdateCMD',
+				url: httpIp + 'sendUpdateCMD',
 				type: 'POST',
 				async: true,
 				data: { key:'anaupdate'},
@@ -752,7 +752,7 @@ body{ background:#343c48;}
 					console.log(postJson + "  json ")
 
 					$.ajax({
-						url: httpIp + '/LF/saveUpDown_dig',
+						url: httpIp + 'saveUpDown_dig',
 						type: 'POST',
 						async: true,
 						data: { jsonStr: postJson, sn: nowPlanSn },
@@ -792,7 +792,7 @@ body{ background:#343c48;}
         function addsel(){  
 
             $.ajax({  
-                url:  httpIp + '/LF/loadDevice_dig',
+                url:  httpIp + 'loadDevice_dig',
                 dataType : "json",  
                 type : "POST", 
                 data: {dm:prono,gky:gkey},
@@ -842,7 +842,7 @@ body{ background:#343c48;}
 			var ttp  =$('#ttp').val();
 			var ord  =$('#ord').val();
 			$.ajax({
-				url: httpIp + '/LF/getTfPlanAll_evt',
+				url: httpIp + 'getTfPlanAll_evt',
 				type: 'POST',
 				async: true, 
 				data: { crew: dstr, tab: dstr2, pId: ttp,ob:ord,pno:prono },

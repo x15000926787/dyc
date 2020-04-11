@@ -820,7 +820,7 @@ body{ background:#fff;}
 				$("#runTime").empty();
 				$("#cp").html("");
 				$.ajax({
-					url: httpIp + '/qs/getcronstr',
+					url: httpIp + 'getcronstr',
 					type: 'POST',
 					async: true,
 					data: { pno:rlt},
@@ -1170,7 +1170,7 @@ body{ background:#fff;}
 		function loadPlan(jz,mode,sn) {
 			
 			$.ajax({
-				url: httpIp + '/qs/getquartz',
+				url: httpIp + 'getquartz',
 				type: 'POST',
 				async: true, 
 				data: { crew: jz, tab: mode, pId: 1 },
@@ -1205,7 +1205,7 @@ body{ background:#fff;}
 		function loadEtype() {
 			
 			$.ajax({
-				url: httpIp + '/qs/getetype',
+				url: httpIp + 'getetype',
 				type: 'POST',
 				async: false, 
 				timeout: timeOutNum,
@@ -1233,7 +1233,7 @@ body{ background:#fff;}
 		{
 
 			$.ajax({
-				url: httpIp + '/qs/getfullname',
+				url: httpIp + 'getfullname',
 				type: 'POST',
 				async: false,
 				timeout: timeOutNum,
@@ -1271,7 +1271,7 @@ body{ background:#fff;}
 			}
 			strs=strs+"99";
 			$.ajax({
-				url: httpIp + '/qs/set_author',
+				url: httpIp + 'set_author',
 				type: 'POST',
 				async: false, 
 				timeout: timeOutNum,
@@ -1301,7 +1301,7 @@ body{ background:#fff;}
 			// $("#authorTitle").html("<font size='" + titleFontSize + "'>" +nm + "  短信权限列表" + "</font>");
 			 $("#authorTitle").html(" " +nm + "任务详情" + "</font>");
 			$.ajax({
-				url: httpIp + '/qs/getQuartzDetail',
+				url: httpIp + 'getQuartzDetail',
 				type: 'POST',
 				async: false, 
 				timeout: timeOutNum,
@@ -1404,7 +1404,7 @@ body{ background:#fff;}
 			var kk = $("#newname").val().split(",")[0];
 			//alert(kk);
 			$.ajax({
-				url: httpIp + '/qs/newDetail',
+				url: httpIp + 'newDetail',
 				type: 'POST',
 				async: true,
 				data: { task: taskid, kkey:kk,vv:val},
@@ -1501,7 +1501,7 @@ body{ background:#fff;}
 					console.log(postObj )
 
 					$.ajax({
-						url: httpIp + '/qs/savejobEdit',
+						url: httpIp + 'savejobEdit',
 						type: 'POST',
 						async: true,   
 						data: { jsonStr: postJson, sn: nowPlanSn },
@@ -1598,7 +1598,7 @@ body{ background:#fff;}
 					console.log(postObj )
 
 					$.ajax({
-						url: httpIp + '/qs/saveDetailEdit',
+						url: httpIp + 'saveDetailEdit',
 						type: 'POST',
 						async: true,
 						data: { jsonStr: postJson, sn: taskid },
@@ -1645,7 +1645,7 @@ body{ background:#fff;}
 			//dcPlanName = nowZhName + "" + nowPlanName;
            // console.log(jz+"___"+mode+"___"+sn);
 			$.ajax({
-				url: httpIp + '/qs/getTfData',
+				url: httpIp + 'getTfData',
 				type: 'POST',
 				async: true,
 				data: { crew: jz, crewLong: mode, pId: sn },

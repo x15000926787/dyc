@@ -219,6 +219,29 @@
              {text: "message6", id: 6, readStatus: 0}];
          MessagePlugin.init(opt);
      });*/
+
+	$(function() {
+
+	$.ajax({
+		url: httpIp + 'ask4dndata',
+		data: { keys: 'un_0_.ai_0,un_0_.ai_1,un_0_.ai_2,un_0_.ai_3',len:2,type:1 },
+		dataType: "json",
+		type: "POST",
+		success: function(data) {
+
+			if (data.result==1) {
+				console.log(data);
+				datamap = (data.data);
+
+				console.log(datamap['un_0_.ai_0']);
+
+			} else {
+				$("#jstree_div").html("暂无数据！");
+			}
+		}
+	});
+	});
+
 	function chgckball()
 	{
 		loadEvt(gk,sn);
@@ -226,7 +249,7 @@
 	function setEvtStat(inf) {
 		console.log(gkey);
 		$.ajax({
-			url: httpIp + '/LF/setEvtStat',
+			url: httpIp + 'setEvtStat',
 			type: 'POST',
 			async: true,
 			timeout: timeOutNum,
@@ -263,7 +286,7 @@
 		//console.log(cka);
 		//console.log(a);
 		$.ajax({
-			url: httpIp + '/LF/loadEvt',
+			url: httpIp + 'loadEvt',
 			type: 'POST',
 			async: true,
 			timeout: timeOutNum,
@@ -381,7 +404,7 @@
 	function connect(){
 		//console.log(url);
 		$.ajax({
-			url:httpIp + '/LF/getsessions',
+			url:httpIp + 'getsessions',
 			dataType : "json",
 			type : "POST",
 			success : function(data) {
@@ -405,11 +428,11 @@
 						gk = data.gkey;
 						document.getElementsByTagName('b')[0].innerHTML=data.uname;
 						loadEvt(data.gkey,0);
-						$('#exit').attr('href',httpIp + '/LF/LogoutServlet');
+						$('#exit').attr('href',httpIp + 'LogoutServlet');
 						$(document).on("click", "#reset", function() { $('#iframe_a').attr('src','reset.html'); });
 						$('#iframe_a').attr('src','svr_'+data.gkey+'/Page'+data.leval+'.htm');
 						url1[4]= "http://"+ip_addr+":"+port+"/LF/svr_" + data.gkey + '/Page' + data.leval + '.htm';
-						url="ws://"+ip_addr+":"+port+"/LF/chatSocket?username="+data.uname+"&gkey="+data.gkey+"&uid="+data.auth;
+						url="ws://"+ip_addr+":"+port+"/"+path+"/chatSocket?username="+data.uname+"&gkey="+data.gkey+"&uid="+data.auth;
 
 						if ('WebSocket' in window) {
 							ws = new WebSocket(url);
@@ -532,9 +555,9 @@
 						var returned = confirm("没登录吗？");
 						if(returned){
 
-                          window.location.href = "http://"+ip_addr+":"+port+"/LF/login.html";
+                          window.location.href = "http://"+ip_addr+":"+port+"/"+path+"/login.html";
 						}else{
-                          window.location.href = "http://"+ip_addr+":"+port+"/LF/login.html";
+                          window.location.href = "http://"+ip_addr+":"+port+"/"+path+"/login.html";
 						}
 					}
 

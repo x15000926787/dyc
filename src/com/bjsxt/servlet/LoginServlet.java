@@ -3,6 +3,7 @@ package com.bjsxt.servlet;
 import com.dl.impl.UserDAOImpl;
 import com.dl.tool.DBConnection;
 import com.dl.tool.Tool;
+import org.apache.logging.log4j.LogManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.servlet.ServletException;
@@ -14,6 +15,7 @@ import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.logging.Logger;
 
 /**
  * Servlet implementation class LoginServlet
@@ -22,7 +24,8 @@ public class LoginServlet extends HttpServlet   {
 	@Autowired
 	private UserDAOImpl user;
 	private static final long serialVersionUID = 1L;
-	public static final String CONTENT_TYPE="text/html;charset=utf-8";   
+	public static final String CONTENT_TYPE="text/html;charset=utf-8";
+	private static final org.apache.logging.log4j.Logger logger = LogManager.getLogger(LoginServlet.class);
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -64,6 +67,7 @@ public class LoginServlet extends HttpServlet   {
 		//System.out.println(rand);
 		//System.out.println(imagerand);
 		String sql="select a.name,a.passwd,a.id,a.gkey,a.leval,a.phone,a.email,b.domain,a.auth from msg_user a,prtu b where a.gkey=b.un_x and  a.name=? and a.passwd=?";
+		//logger.warn(sql);
 		//if(rand.equalsIgnoreCase(imagerand)){
 			try{
 				pstmt=dbcon.setPreparedStatement(sql);

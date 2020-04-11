@@ -75,10 +75,12 @@ public  class checkOnlineTime implements Job {
 			 for(String key : save_set)
 			 {
 
-                 vv = jedis.get(key+"_.value");
-				 logger.info(key+":"+vv);
-                 if (!vv.isEmpty())
+
+
+                 if (jedis.exists(key+"_.value"))
 				 {
+					 vv = jedis.get(key+"_.value");
+					 //logger.info(key+":"+vv);
 					 myana.checkTime(key,vv,dbcon.jdbcTemplate,ckt);
 
 				 }

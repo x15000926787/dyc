@@ -17,7 +17,6 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.sql.SQLException;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -510,13 +509,13 @@ public class AnaUtil  {
      */
     synchronized static public String query_red(JdbcTemplate jdbcTemplate,String sql)
     {
-        String msg=null;
+        String msg="信息表错误";
 
 
         //logger.warn(sql);
         try{
             List userData = jdbcTemplate.queryForList(sql);
-
+            if(!userData.isEmpty())
             msg= ((HashMap)userData.get(0)).get("msg").toString();
         }catch(Exception e){
             logger.error("出错了:"+sql+":"+e.toString());
@@ -725,9 +724,9 @@ public class AnaUtil  {
                         if (vv==1) limit=up;
                         if(vv==-1) limit=down;
                         if (vv==0)
-                            add_red(jdbcTemplate, "INSERT INTO " + dbname + " (ymd,hms,ch,xh,zt,val,readstatus) values (" + rightnow.format(DateTimeFormatter.ofPattern("YYMMDD")) + "," + rightnow.format(DateTimeFormatter.ofPattern("HHmmss")) + "," + rtuno + "," + sn + "," + vv + "," + vals + ",0)");
+                            add_red(jdbcTemplate, "INSERT INTO " + dbname + " (ymd,hms,ch,xh,zt,val,readstatus) values (" + rightnow.format(DateTimeFormatter.ofPattern("YYMMdd")) + "," + rightnow.format(DateTimeFormatter.ofPattern("HHmmss")) + "," + rtuno + "," + sn + "," + vv + "," + vals + ",0)");
                         else
-                            add_red(jdbcTemplate, "INSERT INTO " + dbname + " (ymd,hms,ch,xh,zt,val,tlimit,readstatus) values (" + rightnow.format(DateTimeFormatter.ofPattern("YYMMDD")) + "," + rightnow.format(DateTimeFormatter.ofPattern("HHmmss"))+ "," + rtuno + "," + sn + "," + vv + "," + vals +","+limit+ ",0)");
+                            add_red(jdbcTemplate, "INSERT INTO " + dbname + " (ymd,hms,ch,xh,zt,val,tlimit,readstatus) values (" + rightnow.format(DateTimeFormatter.ofPattern("YYMMdd")) + "," + rightnow.format(DateTimeFormatter.ofPattern("HHmmss"))+ "," + rtuno + "," + sn + "," + vv + "," + vals +","+limit+ ",0)");
 
                         //chgtime 字段用来存储当前遥测状态
                         add_red(jdbcTemplate, "UPDATE prtuana SET chgtime=" + vv + " WHERE RTUNO=" + rtuno + " AND SN=" + sn);
@@ -740,7 +739,7 @@ public class AnaUtil  {
                          msg = query_red(jdbcTemplate, "select concat(a.pro_name,b.name,c.roomname,d.devicenm,e.name) msg from project_list a,prtu b,room c,dev_author d,prtuana e where a.pro_id=b.domain and b.rtuno=c.rtuno and c.roomno = d.roomno and d.deviceno=e.deviceno  and e.rtuno=" + rtuno + " and e.sn=" + sn);
                         if (!msg.isEmpty())
                         {
-                                    msg = rightnow.format(DateTimeFormatter.ofPattern("yyyy-MM-DD HH:mm:ss")) + " " + msg;
+                                    msg = rightnow.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) + " " + msg;
                                 switch (vv) {
                                     case -1:
                                         msg = msg + " 越下限。备注：" + vals + "（" + down + "~" + up + "）";
@@ -858,7 +857,7 @@ public class AnaUtil  {
                     try
                     {
 
-                        add_red(jdbcTemplate,"INSERT INTO "+dbname2+" (ymd,hms,ch,xh,event,zt,readstatus) values ("+rightnow.format(DateTimeFormatter.ofPattern("YYMMDD"))+","+rightnow.format(DateTimeFormatter.ofPattern("HHmmss"))+","+rtuno+","+sn+","+up+","+vals+",0)");
+                        add_red(jdbcTemplate,"INSERT INTO "+dbname2+" (ymd,hms,ch,xh,event,zt,readstatus) values ("+rightnow.format(DateTimeFormatter.ofPattern("YYMMdd"))+","+rightnow.format(DateTimeFormatter.ofPattern("HHmmss"))+","+rtuno+","+sn+","+up+","+vals+",0)");
                         add_red(jdbcTemplate,"UPDATE prtudig SET chgtime="+vals+" where RTUNO="+rtuno+" AND SN="+sn);
 
                         // logger.warn("save hevt:"+df.format(new Date())+","+df2.format(new Date())+","+rtuno+","+sn+","+vv+","+vals);
@@ -879,13 +878,13 @@ public class AnaUtil  {
 
                          msg=query_red(jdbcTemplate,"select concat(a.pro_name,b.name,c.roomname,d.devicenm,e.name,f.e_info,',',f.e_color,',',f.e_stay) msg from project_list a,prtu b,room c,dev_author d,prtudig e,etype_info f where a.pro_id=b.domain and b.rtuno=c.rtuno and c.roomno = d.roomno and d.deviceno=e.deviceno and e.type=f.e_type  and e.rtuno="+rtuno+" and e.sn="+sn+" and f.e_zt="+vals);
                         String[] msgs = msg.split(",");
-                        msg=projectName+rightnow.format(DateTimeFormatter.ofPattern("yyyy-MM-DD HH:mm:ss"))+" "+msgs[0];
+                        msg=projectName+rightnow.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))+" "+msgs[0];
                         if (Integer.parseInt(altah) > 0) {
 
                             if (!skt.getSockets().isEmpty())
                                 //skt.broadcast(skt.getSockets(), "{\"gkey\":\""+key.split("\\.")[0]+"\",\"msg\":{\"message\":\"" + msg + "\",\"title\":\"遥测越限\",\"type\":" + ttp + ",\"stay\":5000}}", Integer.parseInt(altah));
 
-                                skt.broadcast(skt.getSockets(), "{\"auth\":\""+altah+"\",\"gkey\":\""+gkey+"\",\"msg\":{\"message\":\""+rightnow.format(DateTimeFormatter.ofPattern("yyyy-MM-DD HH:mm:ss"))+" "+msgs[0]+"\",\"title\":\"开关变位\",\"type\":\""+msgs[1]+"\",\"stay\":\""+msgs[2]+"\"}}",Integer.parseInt(altah));
+                                skt.broadcast(skt.getSockets(), "{\"auth\":\""+altah+"\",\"gkey\":\""+gkey+"\",\"msg\":{\"message\":\""+rightnow.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))+" "+msgs[0]+"\",\"title\":\"开关变位\",\"type\":\""+msgs[1]+"\",\"stay\":\""+msgs[2]+"\"}}",Integer.parseInt(altah));
 
                             logger.info( "send alt_yx_msg :" + msgs[0]+"   {\"auth\":\""+altah+"\",\"gkey\":\""+gkey+"\"}");
                             //sendmsg.sendmsg(mobs.substring(1),msg);
