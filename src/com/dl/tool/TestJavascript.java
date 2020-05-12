@@ -9,7 +9,7 @@
 package com.dl.tool;
 
 /**
- *@class_name：TestJedis
+ *@class_name：TestJavascript
  *@comments:
  *@param:
  *@return: 
@@ -34,15 +34,14 @@ public class TestJavascript {
         try{
             BufferedReader br = new BufferedReader(new FileReader(System.getProperty("user.dir")+"/src/zjdy.txt"));//构造一个BufferedReader类来读取文件
             String s = null;
-            System.out.println("ddd");
+            //System.out.println("ddd");
             while((s = br.readLine())!=null){//使用readLine方法，一次读一行
-                //result.append(System.lineSeparator()+s);
-                System.out.println(s);
                 String[] calc=s.split("=");
-                System.out.println(calc);
-                String[] vals=calc[1].split("\\{|\\}");
-                Pattern p = Pattern.compile("Fun[^\\}]+");
-                Matcher m = p.matcher(s);//strTmp替换成你的字符串
+                //System.out.println(calc);
+
+
+                Pattern p = Pattern.compile("val\\{[^\\}]+");
+                Matcher m = p.matcher(calc[1]);//strTmp替换成你的字符串
                 while (m.find()) {
                     System.out.println("find: "+m.group(0));
                 }
@@ -54,7 +53,6 @@ public class TestJavascript {
             e.printStackTrace();
         }
             try
-
             {
                     ScriptEngine engine = (new ScriptEngineManager()).getEngineByName("JavaScript");
                     List<Object> imgList = Arrays.asList(1,2,3);

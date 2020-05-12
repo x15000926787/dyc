@@ -10,11 +10,6 @@ import com.google.common.io.CharStreams;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import org.joda.time.PeriodType;
 import org.junit.Test;
 import org.quartz.TriggerUtils;
 import org.quartz.impl.triggers.CronTriggerImpl;
@@ -25,7 +20,6 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import javax.servlet.http.HttpServletRequest;
-
 import java.awt.*;
 import java.io.*;
 import java.math.BigDecimal;
@@ -35,6 +29,7 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
@@ -81,7 +76,7 @@ public class UserDAOImpl
 	  before5 = before5.substring(2);
 	  
 	    String sql = "select b.ymd*1000000+b.hms qaData from etype_info a,hevt"+(beforeD.getYear()%10)+" b,prtudig c,project_info d where b.ch=c.rtuno and b.xh=c.sn and c.sound=1 and a.s_type = 1 and  a.e_type=b.EVENT and b.ymd*1000000+b.hms>d.curevttime and d.id=1  and a.e_zt=b.zt  order by ymd,hms desc limit 1 ";
-	    log(sql);
+	    logger.warn(sql);
 	    List userData = getJdbcTemplate().queryForList(sql);
 	    java.util.Map<String,Object> map1 = new HashMap<String,Object>();  
 	    
@@ -142,7 +137,7 @@ public class UserDAOImpl
       int len = oldArr.length;
       
       String newData = "";
-      //log("old arr" + len);
+      //logger.warn("old arr" + len);
       for (int i = 0; i < len; i++)
       {
         String[] temp = oldArr[i].split("-");
@@ -157,7 +152,7 @@ public class UserDAOImpl
           newData = newData + temp[0] + "-" + temp[1] + "-" + temp[2];
         }
       }
-     // log(newData);
+     // logger.warn(newData);
       int backR = 0;
       String aBackSql = "update user_answer" + aNum + " set qaData='" + newData + "' where uID=\t" + uid;
       backR = getJdbcTemplate().update(aBackSql);
@@ -186,7 +181,7 @@ public class UserDAOImpl
    * @date 2018-3-29
    */
   public  void startProgram(String programPath,String programName) throws IOException {  
-	    log("启动应用程序：" + programPath);  
+	    logger.warn("启动应用程序：" + programPath);  
 	    if (StringUtils.isNotBlank(programPath)) {  
 	        try {  
 	           // String programName = programPath.substring(programPath.lastIndexOf("/") + 1, programPath.lastIndexOf("."));  
@@ -200,12 +195,12 @@ public class UserDAOImpl
 	            pBuilder.start();  
 	        } catch (Exception e) {  
 	            e.printStackTrace();  
-	            log("应用程序：" + programPath + "不存在！");  
+	            logger.warn("应用程序：" + programPath + "不存在！");  
 	        }  
 	    }  
 	}  
   public  void startProc(String processName,String para) throws IOException { 
-       log("启动应用程序：" + processName);  
+       logger.warn("启动应用程序：" + processName);  
        try {  
            Runtime r = Runtime.getRuntime();  
            String[] cmd = new String[5];  
@@ -225,7 +220,7 @@ public class UserDAOImpl
            //Process p = Runtime.getRuntime().exec("calc.exe"); //直接运行计算器  
            BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));  
            while((line=br.readLine()) != null){  
-               System.out.println(line);  
+               logger.warn(line);  
                //p.waitFor();  
            }  
        } catch (IOException e) {  
@@ -236,13 +231,13 @@ public class UserDAOImpl
   
   
   public static void startProc_n(String processName,String para) { 
-	  System.out.println("启动dd应用程序：" + processName);  
+	  logger.warn("启动dd应用程序：" + processName);  
       if (StringUtils.isNotBlank(processName)) {  
           try {  
               Desktop.getDesktop().open(new File(processName));  
           } catch (Exception e) {  
               e.printStackTrace();  
-              System.out.println("应用程序：" + processName + "不存在！");  
+              logger.warn("应用程序：" + processName + "不存在！");  
           }  
       }   
  }
@@ -256,7 +251,7 @@ public class UserDAOImpl
    */
   
   public  void killProc(String processName) throws IOException, InterruptedException {  
-	  System.out.println("关闭应用程序：" + processName);  
+	  logger.warn("关闭应用程序：" + processName);  
       if (StringUtils.isNotBlank(processName)) {  
           executeCmd("taskkill /F /IM " + processName);  
       } 
@@ -267,12 +262,12 @@ public class UserDAOImpl
 	  String str = strcmd;
 	  if (strcmd.length()==0) str = "";
       Process p = Runtime.getRuntime().exec("cmd /c start cmd.exe /c " + strcmd+" "); 
-      log(strcmd);
+      logger.warn(strcmd);
       BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));   
       String readLine = br.readLine();   
       while (readLine != null) { 
           readLine = br.readLine(); 
-          System.out.println(readLine); 
+         // logger.warn(readLine);
       } 
       if(br!=null){ 
           br.close(); 
@@ -292,7 +287,7 @@ public class UserDAOImpl
    */
   
   public  String executeCmd(String command) throws IOException, InterruptedException {  
-	  log("Execute command :" + command);  
+	  logger.warn("Execute command :" + command);  
 	  int exitVal; 
       Runtime runtime = Runtime.getRuntime();  
       Process process = runtime.exec("cmd /c " + command); 
@@ -306,7 +301,7 @@ public class UserDAOImpl
       String line = null;  
       StringBuilder build = new StringBuilder();  
       while ((line = br.readLine()) != null) {  
-    	  log(line);  
+    	  logger.warn(line);  
           build.append(line);  
       } 
       java.util.Map<String,Object> map1 = new HashMap<String,Object>(); 
@@ -390,7 +385,7 @@ public class UserDAOImpl
           map1.put("result",1);
       } catch (Exception e) {
           // TODO: handle exception
-    	  log("杀死程序"+procName+"失败。。。");  
+    	  logger.warn("杀死程序"+procName+"失败。。。");  
     	  map1.put("result",0); 
       }
       }
@@ -406,7 +401,7 @@ public class UserDAOImpl
     	 // startProgram(url+procName,procName);
       } catch (Exception e) {
           // TODO: handle exception
-    	   log("重启"+procName+"程序失败。。。"); 
+    	   logger.warn("重启"+procName+"程序失败。。。"); 
     	  jsonString=("重启"+procName+"程序失败。。。");  
       }
       }
@@ -499,17 +494,46 @@ public class UserDAOImpl
 	  
 	  return jsonString;
   }
+    public String getrooms(String pno)
+    {
+        String jsonString="{\"result\":0}";
+        String sql ="SELECT roomno,roomname from room where rtuno="+pno+" order by roomno asc";
+        logger.warn(sql);
+        List userData = getJdbcTemplate().queryForList(sql);
+        int size=userData.size() ;
+        if (size> 0)
+        {
+            Object arr[] = new Object[size];
+            for (int i = 0; i<size; i++)
+            {
+                ArrayList kv = new ArrayList();
+                Map listData = (Map)userData.get(i);
+                kv.add(listData.get("roomno"));
+                kv.add(listData.get("roomname"));
+                arr[i]=kv;
 
+
+            }
+            java.util.Map<String,Object> map1 = new HashMap<String,Object>();
+            map1.put("result",1);
+            map1.put("data",arr);
+            jsonString = JSON.toJSONString(map1);
+        }
+
+
+        return jsonString;
+    }
     /**
      * 请求遥测历史数据
      * @param keys   格式为：un_0_.ai_0,un_0_.ai_1,un_0_.ai_2
      * @param len    时间长度，天
-     * @param type   1：起始时间为当日零点，2：起始时间为当前时间往前推len*24小时
+     * @param type   1：起始时间为当日零点，2：起始时间为当前时间往前推len*24小时,已弃用
+     * @param dtstr  取数日期
      * @return       返回5分钟遥测值
      *
-     * 注意：对于起止时间跨年的情况，目前还没有啥好办法，暂时先不考虑，等待以后解决。
+     *
      */
-    public String ask4data(String keys,int len,int type)
+    public String ask4data(String keys,int len,int type,String dtstr)
     {
         String jsonString="{\"result\":0}";
         String[] savs = keys.split(",");
@@ -574,7 +598,7 @@ public class UserDAOImpl
 
 
                 sql = "SELECT * from hyc"+(endtime.getYear()%10)+" where groupno between "+mingno+" and "+maxgno+" and  savetime between "+starttime.format(formatter)+" and "+endtime.format(formatter)+" order by savetime,groupno ";
-logger.warn(sql);
+//logger.warn(sql);
                 userData = getJdbcTemplate().queryForList(sql);
                 size = userData.size();
                 if (size>0) {
@@ -604,7 +628,612 @@ logger.warn(sql);
 
         return jsonString;
     }
+    public String sendDevice(String dnm)
+    {
+        String jsonString="{\"result\":0}";
+        String[] savs = dnm.split(",");
+        String savenos="";
+        java.util.Map<String,Object> map1 = new HashMap<String,Object>();
+       /* for (int i=0;i<savs.length;i++)
+        {
+            savenos = savenos+",'"+savs[i]+"'";
+        }
+        if (savenos.length()>0) savenos=savenos.substring(1);*/
+        //SELECT a.name name,a.saveno saveno,a.kkey kkey  from prtuana a,dev_author b,room c where a.deviceno=b.deviceno and a.rtuno=c.rtuno  and b.roomno=c.roomno and b.domain=c.rtuno and c.rtuno=1 and c.roomno=1 and b.deviceno=31 and a.type=2  order by a.sn
+        String sql ="SELECT a.name name,a.type tp,a.kkey kkey  from prtuana a,dev_author b,room c where a.deviceno=b.deviceno and a.rtuno=c.rtuno and b.roomno=c.roomno and b.domain=c.rtuno and c.rtuno="+savs[0]+" and c.roomno="+savs[1]+" and b.deviceno="+savs[2]+"  order by a.sn ";
+        //logger.warn(sql);
+        List userData = getJdbcTemplate().queryForList(sql);
 
+        int size=userData.size() ;
+        savenos = "";
+        if (size> 0)
+        {
+
+            for (int i = 0; i<size; i++)
+            {
+                //
+                Map listData = (Map)userData.get(i);
+                //savenos = savenos + listData.get("saveno").toString()+",";
+                //kv.add(listData.get("name"));
+                //trr.add(listData.get("tp"));
+                //arr.add(listData.get("name"));
+                //key.add(listData.get("kkey"));
+                if (map1.containsKey(listData.get("tp").toString()))
+                {
+                    //logger.warn("1");
+                    ((ArrayList)map1.get(listData.get("tp").toString())).add(listData.get("kkey").toString());
+                }else
+                {
+                    //logger.warn("2");
+                    ArrayList key = new ArrayList();
+                    key.add(listData.get("kkey").toString());
+                    map1.put(listData.get("tp").toString(),key);
+                }
+
+            }
+
+            map1.put("result",1);
+            //map1.put("data",arr);
+            jsonString = JSON.toJSONString(map1);
+
+        }
+
+        return jsonString;
+    }
+
+    public String askDevice(String dnm)
+    {
+        String jsonString="{\"result\":0}";
+        String[] savs = dnm.split(",");
+        String savenos="";
+        java.util.Map<String,Object> map1 = new HashMap<String,Object>();
+       /* for (int i=0;i<savs.length;i++)
+        {
+            savenos = savenos+",'"+savs[i]+"'";
+        }
+        if (savenos.length()>0) savenos=savenos.substring(1);*/
+        //SELECT a.name name,a.saveno saveno,a.kkey kkey  from prtuana a,dev_author b,room c where a.deviceno=b.deviceno and a.rtuno=c.rtuno  and b.roomno=c.roomno and b.domain=c.rtuno and c.rtuno=1 and c.roomno=1 and b.deviceno=31 and a.type=2  order by a.sn
+        String sql ="SELECT a.name name,a.type tp,a.kkey kkey  from prtuana a,dev_author b,room c where a.deviceno=b.deviceno and a.rtuno=c.rtuno and b.roomno=c.roomno and b.domain=c.rtuno and c.rtuno="+savs[0]+" and c.roomno="+savs[1]+" and b.deviceno="+savs[2]+"  order by a.sn ";
+        //logger.warn(sql);
+        List userData = getJdbcTemplate().queryForList(sql);
+        ArrayList trr = new ArrayList();
+        ArrayList arr = new ArrayList();
+        ArrayList key = new ArrayList();
+        int size=userData.size() ;
+        savenos = "";
+        if (size> 0)
+        {
+
+            for (int i = 0; i<size; i++)
+            {
+                //
+                Map listData = (Map)userData.get(i);
+                //savenos = savenos + listData.get("saveno").toString()+",";
+                //kv.add(listData.get("name"));
+                trr.add(listData.get("tp"));
+                arr.add(listData.get("name"));
+                key.add(listData.get("kkey"));
+                /*if (map1.containsKey(listData.get("tp").toString()))
+                {
+                    logger.warn("1");
+                    ((ArrayList)map1.get(listData.get("tp").toString())).add(listData.get("kkey").toString());
+                }else
+                {
+                    logger.warn("2");
+                    ArrayList key = new ArrayList();
+                    key.add(listData.get("kkey").toString());
+                    map1.put(listData.get("tp").toString(),key);
+                }*/
+
+            }
+
+            map1.put("result",1);
+            map1.put("key",key);
+            map1.put("type",trr);
+            map1.put("name",arr);
+            jsonString = JSON.toJSONString(map1);
+
+        }
+
+        return jsonString;
+    }
+    /**
+     *
+     *      * 请求遥测历史数据 根据设备号
+     *      * @param deviceno   设备号 rtuno,roomno,deviceno
+     *      * @param len    时间长度，天
+     *      * @param dtype  数据类型，详见ana_type表
+     *      * @param type   1：起始时间为当日零点，2：起始时间为当前时间往前推len*24小时
+     *      * @return       返回5分钟遥测值
+     *
+     *
+     * 注意：对于起止时间跨年的情况，目前还没有啥好办法，暂时先不考虑，等待以后解决。
+     */
+    public String ask4devdata(String deviceno,int len,int dtype,int type,String dtstr)
+    {
+        String jsonString="{\"result\":0}";
+        String[] savs = deviceno.split(",");
+        String savenos="";
+
+        java.util.Map<String,Object> map1 = new HashMap<String,Object>();
+        DateTimeFormatter df3 = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        Object xArr[][]=new Object[3][288];
+        Object yArr[][]=new Object[3][288];
+        Object tArr[]=new Object[288];
+        for (int i=0;i<288;i++)
+        {
+            xArr[0][i]="";
+            xArr[1][i]="";
+            xArr[2][i]="";
+            yArr[0][i]=0;
+            yArr[1][i]=0;
+            yArr[2][i]=0;
+            tArr[i]="";
+        }
+        /*if (savenos.length()>0) savenos=savenos.substring(1);*/
+        //SELECT a.name name,a.saveno saveno,a.kkey kkey  from prtuana a,dev_author b,room c where a.deviceno=b.deviceno and a.rtuno=c.rtuno  and b.roomno=c.roomno and b.domain=c.rtuno and c.rtuno=1 and c.roomno=1 and b.deviceno=31 and a.type=2  order by a.sn
+        String sql ="SELECT a.name name,a.saveno saveno,a.kkey kkey  from prtuana a,dev_author b,room c where a.deviceno=b.deviceno and a.rtuno=c.rtuno and b.roomno=c.roomno and b.domain=c.rtuno and c.rtuno="+savs[0]+" and c.roomno="+savs[1]+" and b.deviceno="+savs[2]+" and a.type="+dtype+" order by a.sn ";
+        //logger.warn(sql);
+        if (dtype==1) sql ="SELECT a.name name,d.saveno saveno,a.kkey kkey  from prtuana a,dev_author b,room c,prtupul d where a.kkey=d.kkey and a.deviceno=b.deviceno and a.rtuno=c.rtuno and b.roomno=c.roomno and b.domain=c.rtuno and c.rtuno="+savs[0]+" and c.roomno="+savs[1]+" and b.deviceno="+savs[2]+" and a.type="+dtype+" order by a.sn ";
+        List userData = getJdbcTemplate().queryForList(sql);
+        ArrayList arr = new ArrayList();
+        ArrayList key = new ArrayList();
+        int size=userData.size() ;
+        savenos = "";
+        if (size> 0)
+        {
+
+            for (int i = 0; i<size; i++)
+            {
+                //
+                Map listData = (Map)userData.get(i);
+                savenos = savenos + listData.get("saveno").toString()+",";
+                //kv.add(listData.get("name"));
+                arr.add(listData.get("name"));
+                key.add(listData.get("kkey"));
+
+
+            }
+            map1.put("name",arr);
+            map1.put("key",key);
+logger.warn((savenos));
+        savs = savenos.split(",");
+        int maxgno=-1,mingno=99,saveno;
+        for (int i=0;i<savs.length;i++)
+        {
+            int gno = (Integer.parseInt(savs[i])) / 200;
+            if (gno>maxgno) maxgno= gno;
+            if (gno<mingno) mingno= gno;
+        }
+        int gnos = maxgno-mingno+1;
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMdd");
+        DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+
+
+        LocalDateTime starttime = LocalDateTime.parse(dtstr+"000000",df);
+        //LocalDateTime endtime = starttime.plusDays(1);
+
+
+
+        //LocalDateTime starttime = endtime.plusDays(-1*len);
+        /*if (endtime.getYear()>starttime.getYear())
+        {
+            starttime=starttime.withYear(endtime.getYear()).withMonth(1).withDayOfMonth(1).withHour(0).withMinute(0);
+
+        }
+        if (type==2)
+        {
+            starttime=endtime.withHour(0).withMinute(0);
+        }*/
+        // String startstr = starttime
+
+           // starttime=starttime.withYear(2020).withMonth(4).withDayOfMonth(1).withHour(0).withMinute(0);
+          //  endtime=starttime.withYear(2020).withMonth(4).withDayOfMonth(2).withHour(0).withMinute(0);
+
+
+        sql = "SELECT * from hyc"+(starttime.getYear()%10)+" where groupno between "+mingno+" and "+maxgno+" and  savetime between "+starttime.format(formatter)+"0000 and "+starttime.format(formatter)+"2400 order by savetime,groupno ";
+        if (dtype==1) sql = "SELECT * from hdz"+(starttime.getYear()%10)+" where groupno between "+mingno+" and "+maxgno+" and  savetime between "+starttime.format(formatter)+"0000 and "+starttime.format(formatter)+"2400 order by savetime,groupno ";
+            logger.warn(sql);
+        userData = getJdbcTemplate().queryForList(sql);
+
+        size = userData.size();
+        int tt = 0;
+        if (size>0) {
+
+
+            for (int i = 0; i < savs.length; i++) {
+                saveno = Integer.parseInt(savs[i]);
+                int gno = (saveno) / 200;
+                int vno = (saveno) % 200;
+
+
+                for (int j = 0; j < (size / gnos); j++) {
+                    Map listData = (Map) userData.get(j * gnos + (gno - mingno));
+                    sql =listData.get("savetime").toString().replace(".0","");
+                    tt = Integer.parseInt(sql.substring(sql.length()-4));
+                    tt = ((tt/100))*12+(tt%100)/5;
+                    if (i==0) tArr[tt] = sql;
+                    try {
+                        xArr[i][tt] =  listData.get("val"+vno).toString();
+                        yArr[i][tt] =  listData.get("val"+vno);
+                    }catch (Exception e)
+                    {
+                        xArr[i][tt] =  "";
+                        yArr[i][tt] =  0;
+                    }
+
+                }
+
+
+            }
+            map1.put("label",tArr);
+            map1.put("lines",yArr);
+            int tsize = key.size();
+
+            if(tsize<4 && tsize>0)
+            {
+
+                for (int i=0;i<tsize;i++)
+                {
+
+                    Object trr[] = new Object[24];
+                    for (int k = 0; k<24; k++)
+                    {
+
+                        ArrayList xCell = new ArrayList();
+                        xCell.add(""+k+":00");
+                        for (int j = 0; j<12; j++)
+                        {
+                            xCell.add(xArr[i][k*12+j]);
+
+                        }
+
+                        trr[k] = xCell;
+                    }
+                    map1.put("table"+i, trr);
+                }
+            }
+
+
+            sql = "SELECT a.maxv,a.maxt,a.minv,a.mint,b.kkey from everyday a,prtuana b where a.saveno=b.saveno and a.saveno in ("+savenos+"-99) and  a.tdate =str_to_date('"+df3.format(starttime)+"','%Y-%m-%d') order by b.kkey ";
+            //logger.warn(sql);
+            userData = getJdbcTemplate().queryForList(sql);
+            size = userData.size();
+            if (size>0) {
+
+                for (int i = 0; i < size; i++) {
+                    Map listData = (Map)userData.get(i);
+                    map1.put(listData.get("kkey")+"_.info", listData);
+                }
+            }
+            //map1.put("data",arr);
+            jsonString = JSON.toJSONString(map1);
+            map1.put("result",1);
+
+        }
+        }
+
+        return jsonString;
+    }
+    /**
+     *
+     *      * 组合查询
+     *      * @param deviceno
+     *      * @param len    时间长度，天,当前默认一次只查询一天
+     *      * @param dtstr  日期 格式：2020-05-01
+     *      * @return       返回5分钟组合值
+     *
+     *
+     * 注意：对于起止时间跨年的情况，目前还没有啥好办法，暂时先不考虑，等待以后解决。
+     *
+     */
+    public String ask4uniondata(String deviceno,int len,String dtstr)  {
+        String jsonString="{\"result\":0}";
+        ScriptEngineManager manager = new ScriptEngineManager();
+        ScriptEngine engine = manager.getEngineByName("js");
+        JSONObject datamap = new JSONObject();
+        JSONObject paramap = new JSONObject();
+        java.util.Map<String,Object> map1 = new HashMap<String,Object>();
+        DateTimeFormatter df3 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMddHHmm");
+        String type="",rate="";
+        LocalDateTime starttime = LocalDateTime.parse(dtstr+" 00:00:00",df3);
+        LocalDateTime endtime = starttime.plusDays(1);
+        Object xArr[]=new Object[288];
+        Object yArr[]=new Object[288];
+        Object tArr[]=new Object[288];
+        Object calc[]=new Object[288];
+        for (int i=0;i<288;i++)
+        {
+            xArr[i]="";
+
+            yArr[i]=0;
+            tArr[i]="";
+            calc[i]="";
+        }
+        /*if (savenos.length()>0) savenos=savenos.substring(1);*/
+        //SELECT a.name name,a.saveno saveno,a.kkey kkey  from prtuana a,dev_author b,room c where a.deviceno=b.deviceno and a.rtuno=c.rtuno  and b.roomno=c.roomno and b.domain=c.rtuno and c.rtuno=1 and c.roomno=1 and b.deviceno=31 and a.type=2  order by a.sn
+        String sql ="select * from unionsel a,unionsel_detail b where a.id=b.uid and a.id ="+deviceno+" order by a.id,b.id ";
+        List userData = getJdbcTemplate().queryForList(sql);
+
+        int size=userData.size(),tt=0 ;
+
+        if (size> 0) {
+
+            for (int i = 0; i < size; i++) {
+
+                Map listData = (Map) userData.get(i);
+                if (paramap.containsKey("savelist")) {
+                    ((ArrayList) paramap.get("savelist")).add(listData.get("saveno").toString());
+                    ((ArrayList) paramap.get("ratelist")).add(listData.get("rate").toString());
+                } else {
+                    ArrayList savelist = new ArrayList();
+                    ArrayList ratelist = new ArrayList();
+                    savelist.add(listData.get("saveno").toString());
+                    ratelist.add(listData.get("rate").toString());
+
+                    paramap.put("savelist", savelist);
+                    paramap.put("ratelist", ratelist);
+                    //tmap.put("type", listData.get("type").toString());
+                    type=listData.get("type").toString();
+
+                }
+            }
+            //jsonString = paramap.toJSONString();
+        }
+        int maxgno=-1,mingno=99,saveno;
+        double maxv=-999999,minv=999999;
+        String maxt="",mint="";
+        for (int i=0;i<((ArrayList)paramap.get("savelist")).size();i++)
+        {
+            int gno = (Integer.parseInt(((ArrayList) paramap.get("savelist")).get(i).toString())) / 200;
+            if (gno>maxgno) maxgno= gno;
+            if (gno<mingno) mingno= gno;
+        }
+        int gnos = maxgno-mingno+1;
+        if (type.matches("0"))
+            sql = "SELECT * from hyc"+(starttime.getYear()%10)+" where  groupno between "+mingno+" and "+maxgno+"  and  savetime between "+starttime.format(formatter)+" and "+endtime.format(formatter)+" order by savetime,groupno ";
+        else
+            sql = "SELECT * from hdz"+(starttime.getYear()%10)+" where  groupno between "+mingno+" and "+maxgno+"  and  savetime between "+starttime.format(formatter)+" and "+endtime.format(formatter)+" order by savetime,groupno ";
+
+        logger.warn(sql);
+        userData = getJdbcTemplate().queryForList(sql);
+        size = userData.size();
+        if (size>0) {
+            for (int i=0;i<((ArrayList)paramap.get("savelist")).size();i++)
+            {
+                saveno = (Integer.parseInt(((ArrayList) paramap.get("savelist")).get(i).toString())) ;
+                int gno = (saveno) / 200;
+                int vno = (saveno) % 200;
+
+
+                for (int j = 0; j < (size / gnos); j++) {
+                    Map listData = (Map) userData.get(j * gnos + (gno - mingno));
+                    sql =listData.get("savetime").toString().replace(".0","");
+                    tt = Integer.parseInt(sql.substring(sql.length()-4));
+                    tt = ((tt/100))*12+(tt%100)/5;
+                    if (i==0) tArr[tt] = sql;
+                    try {
+                        calc[tt] = calc[tt]+"+("+listData.get("val"+vno).toString()+")*("+((ArrayList) paramap.get("ratelist")).get(i).toString()+")";
+                        //yArr[tt] = yArr[tt]+","+listData.get("val"+vno).toString()+"*"+((ArrayList) paramap.get("ratelist")).get(i).toString();
+                    }catch (Exception e)
+                    {
+
+                    }
+
+                }
+
+            }
+
+
+            for (int i=0;i<288;i++)
+            {
+                if(calc[i].toString().length()>0) {
+                    try {
+                        Double result = (Double) engine.eval(calc[i].toString());
+                        xArr[i] = new Formatter().format("%.2f", result).toString();
+                        yArr[i] = xArr[i];
+                        if (result > maxv) {
+                            maxv = result;
+                            maxt = tArr[i].toString();
+                        }
+                        if (result < minv) {
+                            minv = result;
+                            mint = tArr[i].toString();
+                        }
+                    } catch (ScriptException e) {
+                        logger.warn(calc[i].toString());
+                    } catch (Exception e) {
+
+                    }
+                }
+
+
+            }
+
+
+            Object trr[] = new Object[24];
+            for (int k = 0; k<24; k++)
+            {
+
+                ArrayList xCell = new ArrayList();
+                xCell.add(""+k+":00");
+                for (int j = 0; j<12; j++)
+                {
+                    xCell.add(xArr[k*12+j]);
+
+                }
+
+                trr[k] = xCell;
+            }
+            map1.put("table", trr);
+            map1.put("line",yArr);
+            map1.put("maxv",maxv);
+            map1.put("maxt",maxt);
+            map1.put("minv",minv);
+            map1.put("mint",mint);
+            map1.put("result",1);
+            //map1.put("data",arr);
+            jsonString = JSON.toJSONString(map1);
+
+        }
+
+
+
+
+
+        return jsonString;
+    }
+    /**
+     *
+     *      * 请求遥测历史数据 根据设备号
+     *      * @param deviceno   设备号 rtuno,roomno,deviceno
+     *      * @param len    时间长度，天
+     *      * @param dtype  数据类型，详见ana_type表
+     *      * @param type   1：起始时间为当日零点，2：起始时间为当前时间往前推len*24小时
+     *      * @return       返回xiaoshi平均值
+     *
+     *
+     * 注意：对于起止时间跨年的情况，目前还没有啥好办法，暂时先不考虑，等待以后解决。
+     */
+    public String ask4devavgdata(String deviceno,int len,int dtype,int type)
+    {
+        String jsonString="{\"result\":0}";
+        String[] savs = deviceno.split(",");
+        String savenos="",tlebal="";
+        java.util.Map<String,Object> map1 = new HashMap<String,Object>();
+
+
+       /* for (int i=0;i<savs.length;i++)
+        {
+            savenos = savenos+",'"+savs[i]+"'";
+        }
+        if (savenos.length()>0) savenos=savenos.substring(1);*/
+        //SELECT a.name name,a.saveno saveno,a.kkey kkey  from prtuana a,dev_author b,room c where a.deviceno=b.deviceno and a.rtuno=c.rtuno  and b.roomno=c.roomno and b.domain=c.rtuno and c.rtuno=1 and c.roomno=1 and b.deviceno=31 and a.type=2  order by a.sn
+        String sql ="SELECT a.name name,a.saveno saveno,a.kkey kkey  from prtuana a,dev_author b,room c where a.deviceno=b.deviceno and a.rtuno=c.rtuno and b.roomno=c.roomno and b.domain=c.rtuno and c.rtuno="+savs[0]+" and c.roomno="+savs[1]+" and b.deviceno="+savs[2]+" and a.type="+dtype+" order by a.sn ";
+        //logger.warn(sql);
+        List userData = getJdbcTemplate().queryForList(sql);
+        ArrayList arr = new ArrayList();
+        ArrayList key = new ArrayList();
+        ArrayList<String> lebal = new ArrayList();
+        int size=userData.size() ;
+        savenos = "";
+        if (size> 0)
+        {
+
+            for (int i = 0; i<size; i++)
+            {
+                //
+                Map listData = (Map)userData.get(i);
+                savenos = savenos + listData.get("saveno").toString()+",";
+                //kv.add(listData.get("name"));
+                arr.add(listData.get("name"));
+                key.add(listData.get("kkey"));
+
+
+            }
+            map1.put("name",arr);
+            map1.put("key",key);
+            //logger.warn(savenos);
+            savs = savenos.split(",");
+            int maxgno=-1,mingno=99,saveno;
+            for (int i=0;i<savs.length;i++)
+            {
+                int gno = (Integer.parseInt(savs[i])) / 200;
+                if (gno>maxgno) maxgno= gno;
+                if (gno<mingno) mingno= gno;
+            }
+            int gnos = maxgno-mingno+1;
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMddHHmm");
+            LocalDateTime endtime = LocalDateTime.now();
+
+
+            endtime = endtime.withMinute(endtime.getMinute()-(endtime.getMinute()%5));
+            LocalDateTime starttime = endtime.plusDays(-1*len);
+            if (endtime.getYear()>starttime.getYear())
+            {
+                starttime=starttime.withYear(endtime.getYear()).withMonth(1).withDayOfMonth(1).withHour(0).withMinute(0);
+
+            }
+            if (type==2)
+            {
+                starttime=endtime.withHour(0).withMinute(0);
+            }
+            // String startstr = starttime
+
+            //starttime=starttime.withYear(2020).withMonth(4).withDayOfMonth(1).withHour(0).withMinute(0);
+            //endtime=starttime.withYear(2020).withMonth(4).withDayOfMonth(2).withHour(0).withMinute(0);
+
+
+            sql = "SELECT * from hyc"+(endtime.getYear()%10)+" where groupno between "+mingno+" and "+maxgno+" and  savetime between "+starttime.format(formatter)+" and "+endtime.format(formatter)+" order by savetime,groupno ";
+
+            //logger.warn(sql);
+            userData = getJdbcTemplate().queryForList(sql);
+            size = userData.size();
+            if (size>0) {
+
+               // Object label[] = new Object[size/gnos];
+                for (int i = 0; i < savs.length; i++) {
+                    saveno = Integer.parseInt(savs[i]);
+                    int gno = (saveno) / 200;
+                    int vno = (saveno) % 200;
+                    java.util.Map<String,Object> data = new HashMap<String,Object>();
+                    java.util.Map<String,Object> avgdata = new HashMap<String,Object>();
+                    Object val[] = new Object[size/gnos];
+                    //logger.warn(saveno);
+                    for (int j = 0; j < (size / gnos); j++) {
+                        Map listData = (Map) userData.get(j * gnos + (gno - mingno));
+                        // logger.warn(listData);
+                        tlebal = String.valueOf(Integer.parseInt(listData.get("savetime").toString().replace(".0",""))%10000/100);
+                        if (i==0)
+                        {
+
+                            if (!lebal.contains(tlebal)) lebal.add(tlebal);
+                        }
+                        if (!data.containsKey(tlebal))
+                        {
+                            ArrayList savarr = new ArrayList();
+                            savarr.add(listData.get("val"+vno));
+                            data.put(tlebal, savarr);
+                        }else
+                        {
+                            ((ArrayList)data.get(tlebal)).add(listData.get("val"+vno)) ;
+                        }
+                        //val[j] =  listData.get("val"+vno);
+                    }
+                    //logger.warn(data);
+                    if (i==0) map1.put("label",lebal);
+
+                    for (String ll: lebal)
+                    {
+                        float total=0.0f;
+                        ArrayList trr =(ArrayList)data.get(ll);
+                        for( int ii=0;ii<trr.size();ii++){
+                            try {
+                                total += Float.parseFloat(trr.get(ii).toString());
+                            }catch (Exception e)
+                            {
+                                total += 0;
+                            }
+
+                        }
+                       // logger.warn(ll+":"+total+":"+trr.size());
+                        float avg = total/trr.size();
+                        avgdata.put(ll,avg);
+
+                    }
+                    map1.put(key.get(i).toString(),avgdata);
+
+                }
+                map1.put("result",1);
+                //map1.put("data",arr);
+                jsonString = JSON.toJSONString(map1);
+
+            }
+        }
+
+        return jsonString;
+    }
     /**
      * 请求日电量结算数据
      * @param keys  格式为：un_0_.ai_0,un_0_.ai_1,un_0_.ai_2
@@ -617,9 +1246,11 @@ logger.warn(sql);
     public String ask4dndata(String keys,int len,int type)
     {
         String jsonString="{\"result\":0}";
+        //logger.warn(keys);
         String[] savs = keys.split(",");
         String savenos="",cols="";
         JSONObject savmap = new JSONObject();
+        JSONObject datamap = new JSONObject();
         java.util.Map<String,Object> map1 = new HashMap<String,Object>();
         for (int i=0;i<savs.length;i++)
         {
@@ -627,7 +1258,8 @@ logger.warn(sql);
         }
         if (savenos.length()>0) savenos=savenos.substring(1);
 
-        String sql ="SELECT name,saveno,kkey  from prtuana where kkey in ("+savenos+") order by sn ";
+        String sql ="SELECT name,saveno,kkey  from prtupul where kkey in ("+savenos+") order by sn ";
+        //logger.warn(sql);
         List userData = getJdbcTemplate().queryForList(sql);
         ArrayList arr = new ArrayList();
         ArrayList key = new ArrayList();
@@ -666,10 +1298,11 @@ logger.warn(sql);
             }
 
         }
-        savs = savenos.split(",");
+        //logger.warn(savmap.toString());
+        //savs = savenos.split(",");
 
 
-        int gnos = maxgno-mingno+1;
+        //int gnos = maxgno-mingno+1;
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMddHHmm");
         LocalDateTime endtime = LocalDateTime.now();
 
@@ -697,19 +1330,20 @@ logger.warn(sql);
         Iterator iter = savmap.entrySet().iterator();
         while (iter.hasNext()) {
             Map.Entry entry = (Map.Entry) iter.next();
-            //System.out.println(entry.getKey().toString());
-            //System.out.println(entry.getValue().toString());
+            //logger.warn(entry.getKey().toString());
+            //logger.warn(entry.getValue().toString());
+            cols="";
             int gno=Integer.parseInt(entry.getKey().toString());
             for (int s : (ArrayList<Integer>)entry.getValue()) {
-                cols = cols+","+"sum(val"+s+")";
+                cols = cols+","+"ifnull(sum(val"+s+"),0)";
             }
-            sql = "SELECT floor(savetime/10000) tt "+cols+" from hyc"+(endtime.getYear()%10)+" where groupno = "+entry.getKey().toString()+" and  savetime between "+starttime.format(formatter)+" and "+endtime.format(formatter)+" group by floor(savetime/10000) order by floor(savetime/10000) ";
+            sql = "SELECT floor(savetime/10000) tt "+cols+" from hdz"+(endtime.getYear()%10)+" where groupno = "+entry.getKey().toString()+" and  savetime between "+starttime.format(formatter)+" and "+endtime.format(formatter)+" group by floor(savetime/10000) order by floor(savetime/10000) ";
             //logger.warn(sql);
             if (type==2)
             {
-                sql = "SELECT floor(savetime/1000000) tt "+cols+" from hyc"+(endtime.getYear()%10)+" where groupno = "+entry.getKey().toString()+" and  savetime between "+starttime.format(formatter)+" and "+endtime.format(formatter)+" group by floor(savetime/1000000) order by floor(savetime/1000000) ";
+                sql = "SELECT floor(savetime/1000000) tt "+cols+" from hdz"+(endtime.getYear()%10)+" where groupno = "+entry.getKey().toString()+" and  savetime between "+starttime.format(formatter)+" and "+endtime.format(formatter)+" group by floor(savetime/1000000) order by floor(savetime/1000000) ";
             }
-            logger.warn(sql);
+            //logger.warn(sql);
             userData = getJdbcTemplate().queryForList(sql);
             size = userData.size();
             if (size>0) {
@@ -731,34 +1365,35 @@ logger.warn(sql);
                              stt.clear();
                              stt.add(value);
                              if(col.matches("tt"))   {
-                                 savmap.put("savetime",stt);
+                                 datamap.put("savetime",stt);
                              }else
                              {
-                                 tsav = gno*200+Integer.parseInt(col.replace("sum(val","").replace(")",""));
-                                 savmap.put(sav2key.get(String.valueOf(tsav)),stt);
+                                 tsav = gno*200+Integer.parseInt(col.replace("ifnull(sum(val","").replace("),0)",""));
+                                 datamap.put(sav2key.get(String.valueOf(tsav)),stt);
                              }
                         }else
                         {
                             if(col.matches("tt"))   {
-                                ((ArrayList)savmap.get("savetime")).add(value);
+                                ((ArrayList)datamap.get("savetime")).add(value);
                             }else
                             {
-                                tsav = gno*200+Integer.parseInt(col.replace("sum(val","").replace(")",""));
-                                ((ArrayList)savmap.get(sav2key.get(String.valueOf(tsav)))).add(value);
+                                tsav = gno*200+Integer.parseInt(col.replace("ifnull(sum(val","").replace("),0)",""));
+                                ((ArrayList)datamap.get(sav2key.get(String.valueOf(tsav)))).add(value);
                             }
                         }
 
                     }
 
                 }
-                savmap.put("name",arr);
-                savmap.put("kkey",key);
-                map1.put("result",1);
-                map1.put("data",savmap);
-                jsonString = JSON.toJSONString(map1);
+                datamap.put("name",arr);
+                datamap.put("kkey",key);
+
 
             }
-
+            map1.put("result",1);
+            map1.put("data",datamap);
+            jsonString = JSON.toJSONString(map1);
+            //logger.warn(datamap.toJSONString());
         }
 
 
@@ -771,7 +1406,7 @@ logger.warn(sql);
         //String gkey = (String) httpSession.getAttribute("groupKey");
         //String uid = (String) httpSession.getAttribute("LOGIN_SUCCESS");
 	  	String sql ="SELECT * from msg_user where gkey = '"+gkey+"' order by id";
-	  	 log(uid);
+	  	 logger.warn(uid);
 	    List userData = getJdbcTemplate().queryForList(sql);
 	    int size=userData.size() ;
 	    if (size> 0)
@@ -781,7 +1416,7 @@ logger.warn(sql);
 	    	{
 				ArrayList kv = new ArrayList();
 	    		Map listData = (Map)userData.get(i);
-	    		kv.add(listData.get("auth"));
+	    		kv.add(listData.get("id"));
 	    		kv.add(listData.get("name"));
 	    		kv.add(listData.get("phone"));
                 kv.add(listData.get("phonevalid"));
@@ -812,12 +1447,13 @@ logger.warn(sql);
     {
         String jsonString="{\"result\":0}";
 
-        String sql ="SELECT * from prtuana ";
-        if (dev!=-1) sql = sql+" where deviceno="+dev;
-        else sql=sql+" where rtuno in (select rtuno from prtu where domain="+pno+")";
-
-        sql= sql +"  and (power(2,"+userId+"-1)&author_read)>0 order by sn";
-       // log("aaa:"+sql);
+        String sql ="SELECT * from prtuana a,room b,dev_author c";
+         sql = sql+" where b.rtuno=a.rtuno and b.roomno=c.roomno and c.domain=a.rtuno and c.deviceno=a.deviceno and b.roomno="+dev;
+        if (pno!=-1) sql=sql+" and  a.rtuno in (select rtuno from prtu where domain="+pno+") ";
+        else
+            sql=sql+" and  a.rtuno ="+rtu;
+        sql= sql +"  and (power(2,"+userId+"-1)&a.author_read)>0 order by a.sn";
+        logger.warn("aaa:"+sql);
         List userData = getJdbcTemplate().queryForList(sql);
         int size=userData.size() ;
         if (size> 0)
@@ -828,7 +1464,7 @@ logger.warn(sql);
                 ArrayList kv = new ArrayList();
                 Map listData = (Map)userData.get(i);
                 kv.add(listData.get("saveno"));
-                kv.add(listData.get("name"));
+                kv.add(listData.get("devicenm")+" "+listData.get("name"));
                 kv.add(listData.get("upperlimit"));
                 kv.add(listData.get("lowerlimit"));
                 kv.add(listData.get("author_alert"));
@@ -857,12 +1493,13 @@ logger.warn(sql);
     {
         String jsonString="{\"result\":0}";
 
-        String sql ="SELECT * from prtudig ";
-        if (dev!=-1) sql = sql+" where deviceno="+dev;
-        else sql=sql+" where rtuno in (select rtuno from prtu where domain="+pno+")";
-
-        sql= sql +"  and (power(2,"+userId+"-1)&author_read)>0 order by sn";
-        // log("aaa:"+sql);
+        String sql ="SELECT * from prtudig a,room b,dev_author c";
+        sql = sql+" where b.rtuno=a.rtuno and b.roomno=c.roomno and c.domain=a.rtuno and c.deviceno=a.deviceno and b.roomno="+dev;
+        if (pno!=-1) sql=sql+" and  a.rtuno in (select rtuno from prtu where domain="+pno+") ";
+        else
+            sql=sql+" and  a.rtuno ="+rtu;
+        sql= sql +"  and (power(2,"+userId+"-1)&a.author_read)>0 order by a.sn";
+         logger.warn("aaa:"+sql);
         List userData = getJdbcTemplate().queryForList(sql);
         int size=userData.size() ;
         if (size> 0)
@@ -873,7 +1510,7 @@ logger.warn(sql);
                 ArrayList kv = new ArrayList();
                 Map listData = (Map)userData.get(i);
                 kv.add(listData.get("kkey"));
-                kv.add(listData.get("name"));
+                kv.add(listData.get("devicenm")+" "+listData.get("name"));
                /* kv.add(listData.get("upperlimit"));
                 kv.add(listData.get("lowerlimit"));*/
                 kv.add(listData.get("author_alert"));
@@ -905,7 +1542,7 @@ logger.warn(sql);
 	  String jsonString="";
 	  String rtuString="";
 	  	String sql ="SELECT rtuno,name p_name from prtu where ananum>0 and domain="+pno+" order by rtuno asc";
-	  	log("sql"+sql);	
+	  	logger.warn("sql"+sql);	
 	    List userData = getJdbcTemplate().queryForList(sql);
 	    int size=userData.size() ;
 	    if (size> 0)
@@ -943,7 +1580,7 @@ logger.warn(sql);
 	  	}else {
 	  		sql = "select get_subs(name,0) p_name,saveno rtuno from prtuana where rtuno="+dn+" and name like '"+nm+"%' order by saveno";
 		}
-	  	log(sql);		
+	  	logger.warn(sql);		
 	    List userData = getJdbcTemplate().queryForList(sql);
 	    int size=userData.size() ;
 	    if (size> 0)
@@ -1070,7 +1707,7 @@ logger.warn(sql);
 	    List userData = getJdbcTemplate().queryForList(sql);
 	    int size=userData.size() ;
 	    if (size> 0)
-	    	//log(size);
+	    	//logger.warn(size);
 	    {
 			
 	    	for (int i = 0; i<size; i++)
@@ -1080,7 +1717,7 @@ logger.warn(sql);
 	    		
 	    		
 	    		rtuString = "{\"value\":\""+listData.get("rtuno")+"\",\"name\":\""+listData.get("name")+"\"}";
-	    		//log(rtuString);
+	    		//logger.warn(rtuString);
 	    		if (i==0)
 	    		{
 	    		  jsonString = rtuString;
@@ -1113,7 +1750,7 @@ logger.warn(sql);
 	    List userData = getJdbcTemplate().queryForList(sql);
 	    int size=userData.size() ;
 	    if (size> 0)
-	    	//log(size);
+	    	//logger.warn(size);
 	    {
 			
 	    	for (int i = 0; i<size; i++)
@@ -1123,7 +1760,7 @@ logger.warn(sql);
 	    		
 	    		
 	    		rtuString = "{\"value\":\""+listData.get("sn")+"\",\"name\":\""+listData.get("name")+"\"}";
-	    		//log(rtuString);
+	    		//logger.warn(rtuString);
 	    		if (i==0)
 	    		{
 	    		  jsonString = rtuString;
@@ -1156,7 +1793,7 @@ logger.warn(sql);
 	    List userData = getJdbcTemplate().queryForList(sql);
 	    int size=userData.size() ;
 	    if (size> 0)
-	    	//log(size);
+	    	//logger.warn(size);
 	    {
 			
 	    	for (int i = 0; i<size; i++)
@@ -1166,7 +1803,7 @@ logger.warn(sql);
 	    		
 	    		
 	    		rtuString = "{\"value\":\""+listData.get("sn")+"\",\"name\":\""+listData.get("name")+"\"}";
-	    		//log(rtuString);
+	    		//logger.warn(rtuString);
 	    		if (i==0)
 	    		{
 	    		  jsonString = rtuString;
@@ -1199,7 +1836,7 @@ logger.warn(sql);
 	    List userData = getJdbcTemplate().queryForList(sql);
 	    int size=userData.size() ;
 	    if (size> 0)
-	    	//log(size);
+	    	//logger.warn(size);
 	    {
 			
 	    	for (int i = 0; i<size; i++)
@@ -1209,7 +1846,7 @@ logger.warn(sql);
 	    		
 	    		
 	    		rtuString = "{\"value\":\""+listData.get("sn")+"\",\"name\":\""+listData.get("name")+"\"}";
-	    		//log(rtuString);
+	    		//logger.warn(rtuString);
 	    		if (i==0)
 	    		{
 	    		  jsonString = rtuString;
@@ -1239,7 +1876,7 @@ logger.warn(sql);
 	  	}else {
 	  		sql = "select get_subs(name,0) p_name,saveno rtuno  from prtupul where rtuno="+dn+" and name like '%"+nm+"%' order by saveno";
 		}
-	  	log(sql);		
+	  	logger.warn(sql);		
 	    List userData = getJdbcTemplate().queryForList(sql);
 	    int size=userData.size() ;
 	    if (size> 0)
@@ -1263,7 +1900,7 @@ logger.warn(sql);
 	    }
 	  
 	  	 jsonString="["+jsonString+"]"; 	
-	  //log(jsonString);
+	  //logger.warn(jsonString);
 	  
 	  return jsonString;
   }
@@ -1336,7 +1973,7 @@ logger.warn(sql);
 		 	Date tempTime2=sd2.parse(endTime);
 		 	
 			 int gapDate= (int) (( tempTime2.getTime()-tempTime1.getTime())/(1000*60*60*24));
-			 //log(gapDate);
+			 //logger.warn(gapDate);
 			 Object[][] dateArr=new Object[ gapDate][2];
 			 SimpleDateFormat xDate=new SimpleDateFormat("yy-MM-dd");
 	    	for (int i = 0; i<gapDate; i++)
@@ -1398,9 +2035,9 @@ logger.warn(sql);
 	  	int rows=0;
 	  	long c1=0;
 	  	long c2=0;
+        String vv = "";
 
-
-      //System.out.println(dt);
+      //logger.warn(dt);
 	  	List<String> disno = new ArrayList<String>();
 	  	List<String> disnm = new ArrayList<String>();
 	  	//FileOutputStream os = new FileOutputStream("C://exp/exp_"+devno+"_"+dt+".xlsx");
@@ -1475,8 +2112,8 @@ logger.warn(sql);
 	  	}else {
 	  		sql = "select get_subs(name,0) p_name,saveno rtuno from prtuana where rtuno="+dn+" and name like '%"+nm+"%' order by saveno";
 		}*/
-	  	String sql ="SELECT distinct b.devicenm dis from  prtuana a,dev_author b,room c where (power(2,"+userId+"-1)&a.author_read)>0 and  a.deviceno=b.deviceno and c.roomno =b.roomno and c.rtuno="+devno+" order by   b.devicenm ";
-      log(sql);
+	  	String sql ="SELECT distinct b.devicenm dis,b.deviceno dno from  prtuana a,dev_author b,room c where (power(2,"+userId+"-1)&a.author_read)>0 and a.rtuno=c.rtuno and  a.deviceno=b.deviceno and c.roomno =b.roomno and b.domain=c.rtuno and c.roomno="+pno+" and c.rtuno="+devno+" order by   b.devicenm ";
+      logger.warn(sql);
 	  	List userData = getJdbcTemplate().queryForList(sql);
 	    int size=userData.size() ;
 	    Object arrdis[] = new Object[size];
@@ -1489,7 +2126,7 @@ logger.warn(sql);
 	    	{	
 	    		Map listData = (Map)userData.get(i);
 	    		disnm.add(listData.get("dis").toString());
-	    		devnm=listData.get("dis").toString().replace("#", "").replace("(", "").replace(")", "");
+	    		devnm=listData.get("dno").toString();
 	    		disno.add(devnm);	
 	    		arrdis[i]=disnm.get(i);
 	    		arrdis2[i]=disno.get(i);
@@ -1499,8 +2136,8 @@ logger.warn(sql);
 	    		
 	    	}	 
 	     }
-	    sql ="SELECT count(*) cnt, b.devicenm  from prtuana a,dev_author b,room c where (power(2,"+userId+"-1)&a.author_read)>0 and a.deviceno=b.deviceno and c.roomno =b.roomno and c.rtuno="+devno+" group by   b.devicenm ";
-      log(sql);
+	    sql ="SELECT count(*) cnt, b.devicenm  from prtuana a,dev_author b,room c where (power(2,"+userId+"-1)&a.author_read)>0 and a.rtuno=c.rtuno and a.deviceno=b.deviceno and c.roomno =b.roomno  and b.domain=c.rtuno  and c.roomno="+pno+"  and c.rtuno="+devno+" group by   b.devicenm ";
+      logger.warn(sql);
 	     userData = getJdbcTemplate().queryForList(sql);
 	     size=userData.size() ;
 	  
@@ -1511,7 +2148,7 @@ logger.warn(sql);
 	    	{	
 	    		Map listData = (Map)userData.get(i);
 	    		len[i] =  (long) listData.get("cnt");
-	    		//log(len[i]);
+	    		//logger.warn(len[i]);
 	    		//dev.add(listData.get("deviceno").toString());
 	    		
 	    	}	 
@@ -1524,8 +2161,8 @@ logger.warn(sql);
       List<String> lower = new ArrayList<String>();
 	  	//List<String> dev = new ArrayList<String>();
 	    saveno = 0;
-	  	 sql ="SELECT  a.name,a.saveno, b.devicenm,a.upperlimit,a.lowerlimit from prtuana a,dev_author b,room c where (power(2,"+userId+"-1)&a.author_read)>0 and a.deviceno=b.deviceno and c.roomno =b.roomno and c.rtuno="+devno+" order by   b.devicenm ";
-      log(sql);
+	  	 sql ="SELECT  a.name,a.saveno, b.devicenm,a.upperlimit,a.lowerlimit,a.deviceno from prtuana a,dev_author b,room c where (power(2,"+userId+"-1)&a.author_read)>0 and a.rtuno=c.rtuno and a.deviceno=b.deviceno and c.roomno =b.roomno  and b.domain=c.rtuno  and c.roomno="+pno+"  and c.rtuno="+devno+" order by   b.devicenm,a.sn ";
+      logger.warn(sql);
 	  	 userData = getJdbcTemplate().queryForList(sql);
 	     size=userData.size() ;
 	    Object arr[] = new Object[size];
@@ -1542,36 +2179,59 @@ logger.warn(sql);
 	    		sav.add(listData.get("saveno").toString());
                 up.add(listData.get("upperlimit").toString());
                 lower.add(listData.get("lowerlimit").toString());
-	    		devnm=listData.get("devicenm").toString().replace("#", "").replace("(", "").replace(")", "");
-	    		dev.add(devnm);
-	    		//dev.add(listData.get("deviceno").toString());
+	    		//devnm=listData.get("deviceno").toString();
+	    		//dev.add(devnm);
+	    		dev.add(listData.get("deviceno").toString());
 	    		
 	    	}	 
 	     }
-      //System.out.println(dt);
-	    sql ="SELECT * FROM hyc"+dt.substring(3,4)+" where savetime = "+dt.substring(4,12)+"  and chgtime is not null order by groupno";
-      log(sql);
+      //logger.warn(dev);
+	    sql ="SELECT * FROM hyc"+dt.substring(3,4)+" where savetime = "+dt.substring(4,12)+"   order by groupno";
+      logger.warn(sql);
 	    userData = getJdbcTemplate().queryForList(sql);
 	    size=userData.size() ;
+try {
+
+
 	    if (size> 0)
 	    {
-			
+            //logger.warn(sql);
 	    	for (int i = 0; i<nms.size(); i++)
-	    	{	
-	    		saveno = Integer.parseInt(sav.get(i));
-	    		int gno=(int)(saveno)/200;
-	 	  	    int vno=(saveno)%200;
-	    		Map listData = (Map)userData.get(gno);
-	    		val.add(listData.get("val"+vno).toString());
-               // System.out.println(listData.get("val"+vno).toString()+">"+lower.get(i)+" && "+listData.get("val"+vno).toString()+"<"+up.get(i));
-                if ((boolean)scriptEngine.eval(listData.get("val"+vno).toString()+">"+lower.get(i)+" && "+listData.get("val"+vno).toString()+"<"+up.get(i)))
-                    color[i]=0;
-                else
-                    color[i]=1;
-                //System.out.println(listData.get("val"+vno).toString()+">"+lower.get(i)+" && "+listData.get("val"+vno).toString()+"<"+up.get(i));
-	    		arr[i]=nms.get(i);
-	    		arr2[i]=val.get(i);
-	    		arr3[i]=dev.get(i);
+	    	{	try
+                {
+                    saveno = Integer.parseInt(sav.get(i));
+                    int gno=(int)(saveno)/200;
+                    int vno=(saveno)%200;
+                    Map listData = (Map)userData.get(gno);
+                    if (listData!=null) {
+                        vv = listData.get("val" + vno).toString();
+                        if (vv != null) {
+                            val.add(vv);
+                            // logger.warn(listData.get("val"+vno).toString()+">"+lower.get(i)+" && "+listData.get("val"+vno).toString()+"<"+up.get(i));
+                            if ((boolean) scriptEngine.eval(vv + ">" + lower.get(i) + " && " + vv + "<" + up.get(i)))
+                                color[i] = 0;
+                            else
+                                color[i] = 1;
+                        } else {
+                            val.add(" ");
+                            color[i] = 0;
+                        }
+                        //logger.warn(listData.get("val"+vno).toString()+">"+lower.get(i)+" && "+listData.get("val"+vno).toString()+"<"+up.get(i));
+
+                        arr2[i] = val.get(i);
+
+                    }else
+                    {
+                        arr2[i] = " ";
+                    }
+                    arr[i] = nms.get(i);
+                    arr3[i] = dev.get(i);
+                }catch (Exception ee)
+                    {
+
+                        logger.warn("一览表取数失败："+saveno);
+                    }
+
 	    		
 	    	}	
 	    	 java.util.Map<String,Object> map1 = new HashMap<String,Object>();  
@@ -1623,6 +2283,10 @@ logger.warn(sql);
 			  jsonString = JSON.toJSONString(map1);	
 	    	
 	     }
+}catch (Exception e)
+{
+    logger.error(e.toString());
+}
 	   // sheet.autoSizeColumn((short)0); //调整第一列宽度
        // sheet.autoSizeColumn((short)1); //调整第二列宽度
        // sheet.autoSizeColumn((short)2); //调整第三列宽度
@@ -1657,7 +2321,7 @@ logger.warn(sql);
 				hhmmcl = Integer.parseInt(clstr[e].substring(0, 2))*60+Integer.parseInt(clstr[e].substring(5, 7));
 				sql="UPDATE TIME_PLAN set ON_OFF = "+oofstr[e]+" , t_open ="+hhmmop+", t_close="+hhmmcl+" where week="+(e-1);
 				if (all==0) sql=sql+" AND SN="+id;
-				log(sql);
+				logger.warn(sql);
 				stm.addBatch(sql);
 			}
 		   stm.executeBatch();   
@@ -1713,7 +2377,7 @@ logger.warn(sql);
 						hhmmcl = Integer.parseInt(clstr[e].substring(0, 2))*60+Integer.parseInt(clstr[e].substring(3, 5));
 						sql="INSERT INTO TIME_PLAN (SN,ON_OFF,T_OPEN,T_CLOSE,WEEK) VALUES ("+id+", "+oofstr[e]+" , "+hhmmop+", "+hhmmcl+","+wkstr[e]+")";
 						
-						log(sql);
+						logger.warn(sql);
 						stm.addBatch(sql);
 				   // }
 				}
@@ -1758,7 +2422,7 @@ logger.warn(sql);
 						hhmmcl = Integer.parseInt(clstr[e].substring(0, 2))*60+Integer.parseInt(clstr[e].substring(3, 5));
 						sql="INSERT INTO TIME_PLAN (SN,ON_OFF,T_OPEN,T_CLOSE,WEEK) VALUES ("+i+", "+oofstr[e]+" , "+hhmmop+", "+hhmmcl+","+wkstr[e]+")";
 						
-						log(sql);
+						logger.warn(sql);
 						stm.addBatch(sql);
 					    }
 					}
@@ -1810,7 +2474,7 @@ logger.warn(sql);
 			   con.setAutoCommit(false);
 			   stm = con.createStatement();  
 			   sql = " delete from time_plan_temp where sn="+id;
-			   log(sql);
+			   logger.warn(sql);
 			   stm.addBatch(sql);
 			   for (int e = 1; e <  oofstr.length; e++)//00:00
 				{  // if (Integer.parseInt(oofstr[e])>0){
@@ -1818,7 +2482,7 @@ logger.warn(sql);
 						//hhmmcl = wkstr[e];
 						sql="INSERT INTO time_plan_temp (SN,ON_OFF,TEMP,T_SET,week) VALUES ("+id+", "+oofstr[e]+" , "+clstr[e]+" , "+hhmmop+", "+wkstr[e]+")";
 						
-						log(sql);
+						logger.warn(sql);
 						stm.addBatch(sql);
 				   // }
 				}
@@ -1863,7 +2527,7 @@ logger.warn(sql);
 						//hhmmcl = Integer.parseInt(clstr[e].substring(0, 2))*60+Integer.parseInt(clstr[e].substring(3, 5));
 						sql="INSERT INTO TIME_PLAN_TEMP (SN,ON_OFF,T_SET,TEMP) VALUES ("+i+", "+oofstr[e]+" , "+hhmmop+", "+wkstr[e]+")";
 						
-						log(sql);
+						logger.warn(sql);
 						stm.addBatch(sql);
 					    }
 					}
@@ -1921,7 +2585,7 @@ logger.warn(sql);
 						//hhmmcl = Integer.parseInt(clstr[e].substring(0, 2))*60+Integer.parseInt(clstr[e].substring(3, 5));
 						sql="delete from TIME_PLAN where SN="+id+" AND WEEK="+wk+" AND  T_OPEN="+op;
 						
-						log(sql);
+						logger.warn(sql);
 						stm.addBatch(sql);
 					   // }
 					}
@@ -1979,7 +2643,7 @@ logger.warn(sql);
 						//hhmmcl = Integer.parseInt(clstr[e].substring(0, 2))*60+Integer.parseInt(clstr[e].substring(3, 5));
 						sql="delete from time_plan_temp where SN="+id+"  AND  T_SET="+st+" AND TEMP="+op+" AND week="+wk;
 						
-						log(sql);
+						logger.warn(sql);
 						stm.addBatch(sql);
 					   // }
 					}
@@ -2096,13 +2760,13 @@ logger.warn(sql);
 				String eT=temp.getString(7)+":00";
 				sql="Insert into PLAN (SN,M_NAME,PLAN_SN,START_TIME,END_TIME,START_P,RATE_P,UP_DOWN,END_P,TEXT2) values (Plan_sn.nextval,'"+temp.getString(1)+"',"+sn+",to_date('"+sT+"','yyyy-MM-dd HH24:mi:ss'),to_date ('"+eT+"','yyyy-MM-dd HH24:mi:ss'),"+temp.getString(3)+","+temp.getString(4)+","+temp.getString(5)+","+temp.getString(6)+",'"+text2+"') ";
 				stm.addBatch(sql); 
-				//log("insert:  " + sql);
+				//logger.warn("insert:  " + sql);
 			}
 		   for (int d = 0; d <  delArr.size(); d++)
 			{
 			   sql="delete from PLAN where sn="+delArr.getInteger(d);
 			   stm.addBatch(sql);
-			  // log("delete:  " + sql);
+			  // logger.warn("delete:  " + sql);
 			}
 		   for (int e = 0; e <  editArr.size(); e++)
 			{
@@ -2114,7 +2778,7 @@ logger.warn(sql);
 				}
 				String text2=temp.getString(2)+",以"+temp.getString(4)+"MW/MIN速率"+upDown+temp.getString(6)+"MW";
 				sql="update PLAN set M_NAME= '"+temp.getString(1)+"' , START_TIME=TO_DATE ('"+temp.getString(2)+":00"+"', 'yyyy-MM-dd hh24:mi:ss') , END_TIME=TO_DATE ('"+temp.getString(7)+":00"+"', 'yyyy-MM-dd hh24:mi:ss') ,RATE_P="+temp.getString(4)+" ,  UP_DOWN="+temp.getString(5)+" ,  START_P="+temp.getString(3)+" ,  END_P="+temp.getString(6)+" ,TEXT2='"+text2+"' where SN="+temp.getInteger(0);
-				//log("insert  " + sql);
+				//logger.warn("insert  " + sql);
 				stm.addBatch(sql);
 			}
 		   stm.executeBatch();   
@@ -2171,7 +2835,7 @@ logger.warn(sql);
 			{
 			   sql="delete from PLAN_POINT where id="+delArr.getInteger(d);
 			  
-			   //log("delete:  " + sql);
+			   //logger.warn("delete:  " + sql);
 			}
 		   for (int e = 0; e <  editArr.size(); e++)
 			{
@@ -2191,8 +2855,8 @@ logger.warn(sql);
 					    flag = 2;
 					}	
 				}
-				//log("UPDATE  " + sql);
-				//log((temp.getInteger(1)+","+temp.getInteger(0)+","+temp.getString(2)+","+temp.getFloat(3)+","+temp.getFloat(5)+"---"+temp.getFloat(6)+","+temp.getString(7)+","+temp.getFloat(8)+","+flag));
+				//logger.warn("UPDATE  " + sql);
+				//logger.warn((temp.getInteger(1)+","+temp.getInteger(0)+","+temp.getString(2)+","+temp.getFloat(3)+","+temp.getFloat(5)+"---"+temp.getFloat(6)+","+temp.getString(7)+","+temp.getFloat(8)+","+flag));
 				saveGd(temp.getInteger(1),temp.getInteger(0),temp.getString(2),temp.getFloat(3),temp.getFloat(5),temp.getFloat(6),temp.getString(7),temp.getFloat(8),flag);
 			}
 		 
@@ -2277,7 +2941,7 @@ logger.warn(sql);
 	        Object[] narr = new Object[1];
 	        while (rs.next()) {
 	          
-	          log(rs.getString("sn"));
+	          logger.warn(rs.getString("sn"));
 	          ArrayList kv = new ArrayList();
 	          
 	          kv.add(rs.getString("sn"));
@@ -2332,7 +2996,7 @@ logger.warn(sql);
 	    } catch (SQLException e) {
 	      e.printStackTrace();
 	    } 
-	    log(jsonString);
+	    logger.warn(jsonString);
 	    return jsonString;
 	  }
 	  
@@ -2373,7 +3037,7 @@ logger.warn(sql);
 	        
 	        sql = "Insert into calc_evt (sn,key,name,enb_flg,uid,pid,value,quality,ref_time,chg_time,close_exp,close_delay_time,close_keep_time,open_exp,open_delay_time,open_keep_time,event_type,event_level,note) values (";
 	        sql = String.valueOf(sql) + nsn + ",'evt_" + nsn + "','" + temp.getString(3) + "',1," + temp.getString(1) + "," + temp.getString(2) + ",0,0,0,0,'" + str1 + "',0,0,'" + str2 + "',0,0,'o_2_c',1,0)";
-	        log("insert  " + sql);
+	        logger.warn("insert  " + sql);
 	        stmt.addBatch(sql);
 	      } 
 	      
@@ -2406,7 +3070,7 @@ logger.warn(sql);
 
 	        
 	        sql = "update calc_evt set close_exp='" + str1 + "' ,open_exp='" + str2 + "' where sn=" + temp.getInteger(0);
-	        log("UPDATE  " + sql);
+	        logger.warn("UPDATE  " + sql);
 	        stmt.addBatch(sql);
 	      } 
 	      stmt.executeBatch();
@@ -2465,7 +3129,7 @@ logger.warn(sql);
 	        } 
 
 	        
-	        log("UPDATE  " + sql);
+	        logger.warn("UPDATE  " + sql);
 	        stmt.addBatch(sql);
 	      } 
 	      stmt.executeBatch();
@@ -2564,7 +3228,7 @@ logger.warn(sql);
 	    } else {
 	      sql = "select get_subs(name,0) p_name,rtuno*10000+sn rtunos,rtuno from prtuana where roomno=" + dn + " and name like '" + nm + "%' order by saveno";
 	    } 
-	    log(sql);
+	    logger.warn(sql);
 	    List userData = getJdbcTemplate().queryForList(sql);
 	    int size = userData.size();
 	    if (size > 0) {
@@ -2599,7 +3263,7 @@ logger.warn(sql);
 	    } else {
 	      sql = "select get_subs(name,0) p_name,rtuno*10000+sn rtunos,rtuno from prtuana where rtuno=" + dn + "-1 and name like '" + nm + "%' order by saveno";
 	    } 
-	    log(sql);
+	    logger.warn(sql);
 	    List userData = getJdbcTemplate().queryForList(sql);
 	    int size = userData.size();
 	    if (size > 0) {
@@ -2629,15 +3293,15 @@ logger.warn(sql);
 	  String jsonString = "";
     Map<String, Object> map1 = new HashMap<String, Object>();
     String sql = "update dev_author set author=bitnot(author ,power(2," + uid + "-1)) ";
-    log(sql);
+    logger.warn(sql);
     
     int re = getJdbcTemplate().update(sql);
-    log(Integer.valueOf(re));
+    logger.warn(Integer.valueOf(re));
     if (re > 0) {
       sql = "update dev_author set author=(author | power(2," + uid + "-1)) where deviceno in (" + devs + ")";
-      log(sql);
+      logger.warn(sql);
       re = getJdbcTemplate().update(sql);
-      log(Integer.valueOf(re));
+      logger.warn(Integer.valueOf(re));
       if (re > 0) { map1.put("result", Integer.valueOf(1)); }
       else { map1.put("result", Integer.valueOf(0)); }
     
@@ -2686,7 +3350,7 @@ logger.warn(sql);
         String cka = " ";
         if (ck==1) cka=" and  a.readstatus=0 ";
         String sql = "select concat(get_datestr(a.ymd,a.hms),' ',b.name,' ',d.e_info) text,concat('1,',a.ymd,',',a.hms,',',a.ch,',',a.xh) id,a.readstatus readStatus,d.e_color ecl from hevt0 a,prtudig b,prtu c,etype_info d where b.author_read>0 "+cka+" and  b.type=d.e_type and a.zt=d.e_zt and  a.ch=c.rtuno and a.xh=b.sn and a.ch=b.rtuno   and c.un_x='"+gkey+"' union select concat(get_datestr(a.ymd,a.hms),' ',b.name,' ',concat(CASE WHEN a.zt = -1 THEN 'yxx' WHEN a.zt = 0 THEN 'hf' ELSE 'ysx' END ,'(',a.val,')')) text,concat('2,',a.ymd,',',a.hms,',',a.ch,',',a.xh) id,a.readstatus readStatus,abs(a.zt) ecl from hevtyc0 a,prtuana b,prtu c  where   b.author_read>0 "+cka+" and  a.ch=c.rtuno and a.xh=b.sn and a.ch=b.rtuno  and c.un_x='"+gkey+"' order by text desc LIMIT "+(sn*10)+", 10";
-        log(sql);
+        logger.warn(sql);
         List userData = getJdbcTemplate().queryForList(sql);
         int size = userData.size();
         Map<String, Object> map1 = new HashMap<String, Object>();
@@ -2751,7 +3415,7 @@ logger.warn(sql);
                     tid = listData.get("tid").toString();
                 }
 				sql="Insert into msg_user (auth,NAME,PHONE,PHONEVALID,MSG_ST,MSG_ET,EMAIL,EMAILVALID,valid,leval,gkey,passwd) values ("+tid+",'"+temp.getString(1)+"','"+temp.getString(2)+"',"+temp.getString(3)+","+keys[0]+","+keys[1]+",'"+temp.getString(5)+"',"+temp.getString(6)+",1,2,'"+gkey+"','111111')";
-                //log("insert:  " + sql);
+                //logger.warn("insert:  " + sql);
 				stm.addBatch(sql); 
 				
 			}
@@ -2759,7 +3423,7 @@ logger.warn(sql);
 			{
 			   sql="delete from msg_user where id="+delArr.getInteger(d);
 			   stm.addBatch(sql);
-			   //log("delete:  " + sql);
+			   //logger.warn("delete:  " + sql);
 			}
 		   for (int e = 0; e <  editArr.size(); e++)
 			{
@@ -2767,7 +3431,7 @@ logger.warn(sql);
                 String[] keys=temp.getString(4).split(",");
 				//2,weswsw,13900000000,false,0/1440,111@111.com,false
 				sql="update msg_user set NAME='"+temp.getString(1)+"' ,PHONE='"+temp.getString(2)+"',phonevalid="+temp.getString(3)+",msg_st="+keys[0]+",msg_et="+keys[1]+",EMAIL='"+temp.getString(5)+"',emailvalid="+temp.getString(6)+" where ID="+temp.getInteger(0);
-				log("UPDATE  " + sql);
+				logger.warn("UPDATE  " + sql);
 				stm.addBatch(sql);
 			}
 		   stm.executeBatch();   
@@ -2807,6 +3471,7 @@ logger.warn(sql);
         PreparedStatement pstm = null;
         Statement stm = null;
         String sql="";
+        Map<String,Object> map1 = new HashMap<String,Object>();
         try
         {
             con = getJdbcTemplate().getDataSource().getConnection();
@@ -2819,7 +3484,7 @@ logger.warn(sql);
                 //String text2=temp.getString(2)+",以"+temp.getString(4)+"MW/MIN速率"+upDown+temp.getString(6)+"MW";
 
                 sql="Insert into msg_user (NAME,PHONE,PHONEVALID,MSG_ST,MSG_ET,EMAIL,EMAILVALID) values ('"+temp.getString(1)+"','"+temp.getString(2)+"',"+temp.getString(3)+","+keys[0]+","+keys[1]+",'"+temp.getString(5)+"',"+temp.getString(6)+")";
-                log("insert:  " + sql);
+                logger.warn("insert:  " + sql);
                 stm.addBatch(sql);
 
             }*/
@@ -2827,31 +3492,66 @@ logger.warn(sql);
             {
                 sql="delete from msg_user where id="+delArr.getInteger(d);
                 stm.addBatch(sql);
-                //log("delete:  " + sql);
+                //logger.warn("delete:  " + sql);
             }*/
             for (int e = 0; e <  editArr.size(); e++)
             {
                 JSONArray  temp=editArr.getJSONArray(e);
                 String[] keys=temp.getString(4).split(",");
                 //2,weswsw,13900000000,false,0/1440,111@111.com,false
-                if (temp.getString(9)==null) temp.set(9,"1000");
-                if (temp.getString(8)==null) temp.set(8," ");
-                sql="update prtuana set upperlimit="+temp.getString(2)+" ,lowerlimit="+temp.getString(3)+",author_alert="+temp.getString(4)+",author_msg="+temp.getString(5)+",author_email="+temp.getString(6)+",timevalid="+temp.getString(7)+",timecondition='"+temp.getString(8)+"',warnline="+temp.getString(9)+" where saveno="+temp.getInteger(0);
-                //log("UPDATE ana " + sql);
-                try {
-                    if ((boolean)scriptEngine.eval("1"+temp.getString(6))) ;
-                    stm.addBatch(sql);
-                    stm.executeBatch();
-                    con.commit();
-                    con.setAutoCommit(true);
-                    Map<String,Object> map1 = new HashMap<String,Object>();
-                    map1.put("result",1);
-                    jsonString = JSON.toJSONString(map1);
-                } catch (ScriptException e1) {
-                    //e1.printStackTrace();
-                }catch (Exception ee)
-                {}
+                //if (temp.getString(9)==null) temp.set(9,"1000");
+
+                if (temp.getString(8)==null || temp.getString(8).matches(" "))
+                {
+                    sql="update prtuana set upperlimit="+temp.getString(2)+" ,lowerlimit="+temp.getString(3)+",author_alert="+temp.getString(4)+",author_msg="+temp.getString(5)+",author_email="+temp.getString(6)+" where saveno="+temp.getInteger(0);
+
+                    try {
+
+                        stm.addBatch(sql);
+                        stm.executeBatch();
+                        con.commit();
+                        //con.setAutoCommit(true);
+
+                        map1.put("result",1);
+
+                    } catch (Exception ee)
+                    {}
+                }
+                else
+                {
+
+                    sql="update prtuana set upperlimit="+temp.getString(2)+" ,lowerlimit="+temp.getString(3)+",author_alert="+temp.getString(4)+",author_msg="+temp.getString(5)+",author_email="+temp.getString(6)+",timevalid="+temp.getString(7)+",timecondition='"+temp.getString(8)+"',warnline="+temp.getString(9)+" where saveno="+temp.getInteger(0);
+                    try {
+                        if ((boolean)scriptEngine.eval("1"+temp.getString(8)) );
+
+                        {
+                            stm.addBatch(sql);
+                            stm.executeBatch();
+                            con.commit();
+                            //con.setAutoCommit(true);
+
+                            map1.put("result",1);
+                        }
+
+
+                    } catch (ScriptException e1) {
+                        logger.warn("err ScriptException:"+e1.toString());
+                        map1.put("result",2);
+                        //e1.printStackTrace();
+                    }catch (Exception ee)
+                    {
+                        logger.warn("err Exception:"+ee.toString());
+                        map1.put("result",0);
+                    }
+                }
+
+
+                logger.warn("UPDATE ana : " + sql);
+
+
             }
+            logger.warn(map1);
+            jsonString = JSON.toJSONString(map1);
 
         }
         catch (SQLException e)
@@ -2884,7 +3584,7 @@ logger.warn(sql);
         PreparedStatement pstm = null;
         Statement stm = null;
         String sql="";
-
+        Map<String,Object> map1 = new HashMap<String,Object>();
         try
         {
             con = getJdbcTemplate().getDataSource().getConnection();
@@ -2897,7 +3597,7 @@ logger.warn(sql);
                 //String text2=temp.getString(2)+",以"+temp.getString(4)+"MW/MIN速率"+upDown+temp.getString(6)+"MW";
 
                 sql="Insert into msg_user (NAME,PHONE,PHONEVALID,MSG_ST,MSG_ET,EMAIL,EMAILVALID) values ('"+temp.getString(1)+"','"+temp.getString(2)+"',"+temp.getString(3)+","+keys[0]+","+keys[1]+",'"+temp.getString(5)+"',"+temp.getString(6)+")";
-                log("insert:  " + sql);
+                logger.warn("insert:  " + sql);
                 stm.addBatch(sql);
 
             }*/
@@ -2905,7 +3605,7 @@ logger.warn(sql);
             {
                 sql="delete from msg_user where id="+delArr.getInteger(d);
                 stm.addBatch(sql);
-                //log("delete:  " + sql);
+                //logger.warn("delete:  " + sql);
             }*/
             for (int e = 0; e <  editArr.size(); e++)
             {
@@ -2913,12 +3613,12 @@ logger.warn(sql);
                 JSONArray  temp=editArr.getJSONArray(e);
 
                 //2,weswsw,13900000000,false,0/1440,111@111.com,false
-                if (temp.getString(7)==null) temp.set(7,"1000");
+               /* if (temp.getString(7)==null) temp.set(7,"1000");
                 if (temp.getString(6)==null) temp.set(6," ");
 
                 //2,weswsw,13900000000,fal temp.getString(6)
                 sql="update prtudig set author_alert="+temp.getString(2)+",author_msg="+temp.getString(3)+",author_email="+temp.getString(4)+",timevalid="+temp.getString(5)+",timecondition='"+temp.getString(6)+"',warnline="+temp.getString(7)+" where kkey='"+temp.getString(0)+"'";
-                System.out.println("UPDATE dig " + sql);
+                logger.warn("UPDATE dig " + sql);
                 try {
                    if ((boolean)scriptEngine.eval("1"+temp.getString(6))) ;
                     stm.addBatch(sql);
@@ -2931,9 +3631,55 @@ logger.warn(sql);
                 } catch (ScriptException e1) {
                     //e1.printStackTrace();
                 }catch (Exception ee)
-                {}
+                {}*/
 
+
+                if (temp.getString(6)==null || temp.getString(6).matches(" "))
+                {
+                    sql="update prtudig set author_alert="+temp.getString(2)+",author_msg="+temp.getString(3)+",author_email="+temp.getString(4)+" where kkey='"+temp.getString(0)+"'";
+
+                    try {
+
+                        stm.addBatch(sql);
+                        stm.executeBatch();
+                        con.commit();
+                        //con.setAutoCommit(true);
+
+                        map1.put("result",1);
+
+                    } catch (Exception ee)
+                    {}
+                }
+                else
+                {
+
+                    sql="update prtudig set author_alert="+temp.getString(2)+",author_msg="+temp.getString(3)+",author_email="+temp.getString(4)+",timevalid="+temp.getString(5)+",timecondition='"+temp.getString(6)+"',warnline="+temp.getString(7)+" where kkey='"+temp.getString(0)+"'";
+                    try {
+                        if ((boolean)scriptEngine.eval("1"+temp.getString(6)) );
+
+                        {
+                            stm.addBatch(sql);
+                            stm.executeBatch();
+                            con.commit();
+                            //con.setAutoCommit(true);
+
+                            map1.put("result",1);
+                        }
+
+
+                    } catch (ScriptException e1) {
+                        map1.put("result",2);
+                        //e1.printStackTrace();
+                    }catch (Exception ee)
+                    {
+                        map1.put("result",0);
+                    }
+                }
+
+
+                logger.warn("UPDATE dig: " + sql);
             }
+            jsonString = JSON.toJSONString(map1);
 
         }
         catch (SQLException e)
@@ -3058,7 +3804,7 @@ logger.warn(sql);
 		  //String jsonString="{\"result\":0}";
 		  String sql = "delete from PLAN_NAME where SN = "+key;
 			int i=getJdbcTemplate().update(sql);
-			//log("delete:"+i);
+			//logger.warn("delete:"+i);
 				Map<String, Object> map = new HashMap<String, Object>();
 				map.put("data", i);
 				map.put("result",1);  
@@ -3080,7 +3826,7 @@ logger.warn(sql);
             //String jsonString="{\"result\":0}";
             String sql = "update "+tb[tp]+"  set online=0,checktime='"+dtstr+"',timestat=0,warntimes=0 where "+keys[tp];
             int i=getJdbcTemplate().update(sql);
-            //log("delete:"+i);
+            //logger.warn("delete:"+i);
             Map<String, Object> map = new HashMap<String, Object>();
             map.put("data", i);
             map.put("result",1);
@@ -3098,7 +3844,7 @@ logger.warn(sql);
 		  //String jsonString="{\"result\":0}";
 		  String sql = "insert into del_gd values ( "+key+","+mode+")";
 			int i=getJdbcTemplate().update(sql);
-			//log("delete:"+i);
+			//logger.warn("delete:"+i);
 				Map<String, Object> map = new HashMap<String, Object>();
 				map.put("data", i);
 				map.put("result",1);  
@@ -3111,13 +3857,13 @@ logger.warn(sql);
     {
         String jsonString="{\"result\":0}";
         String[] ifo = info.split(",");
-        //log(ifo[0]);
+        //logger.warn(ifo[0]);
         String dbname=(ifo[0].matches("1")?"hevt":"hevtyc")+ifo[1].substring(1,2);
 
         {
             //String jsonString="{\"result\":0}";
             String sql = "update "+dbname+" set readstatus=1 where ymd="+ifo[1]+" and hms="+ifo[2]+" and ch="+ifo[3]+" and xh="+ifo[4];
-            //log(sql);
+            //logger.warn(sql);
             try {
                 int i=getJdbcTemplate().update(sql);
 
@@ -3147,7 +3893,7 @@ logger.warn(sql);
 	  {sql="select * from PLAN_NAME where  P_YEAR like '%"+keys[0]+"%'";}
 	  if (keys[0].length()==0 && keys[1].length()>0)
 	  {sql="select * from PLAN_NAME where P_NAME like '%"+keys[1]+"%' ";}
-      //log("sql:"+sql);
+      //logger.warn("sql:"+sql);
 	  List userData = getJdbcTemplate().queryForList(sql);
 		if (userData.size() > 0)
 		{
@@ -3414,7 +4160,7 @@ logger.warn(sql);
     if (rs.next())
     {
       newID = rs.getInt(1);
-     // log(newID+":newid");
+     // logger.warn(newID+":newid");
     }
     ps.close();
     ps = null;
@@ -3527,7 +4273,7 @@ logger.warn(sql);
 		  	String jsonString="";
 		  	String jzName="";
 		  	String dateString ="";
-		  	//log(crewLong);
+		  	//logger.warn(crewLong);
             dbnameString= "hyc";
             dbnameString2 = "prtuana";
             String sql="";
@@ -3541,7 +4287,7 @@ logger.warn(sql);
           if (sav==-1)
           {
               sql = "select min(a.saveno) sav from prtuana a,prtu b  where (power(2,"+userId+"-1)&a.author_read)>0 and  a.rtuno=b.rtuno and b.domain="+tab;
-              //log(sql);
+              //logger.warn(sql);
               userData = getJdbcTemplate().queryForList(sql);
               jznm = (Map)userData.get(0);
               sav = Integer.parseInt(jznm.get("sav").toString());
@@ -3563,7 +4309,7 @@ logger.warn(sql);
 			     userData = getJdbcTemplate().queryForList(sql);
 			     jznm = (Map)userData.get(0);
 			    jzName=jznm.get("anm").toString()+jznm.get("bnm").toString();
-			   // log(jzName);
+			   // logger.warn(jzName);
 		     sql = "select IFNULL(val"+vno+",0) val,savetime from "+dbnameString+(dateTime2.getYear()%10)+" where  groupno="+gno+"  and savetime>="+dateString+"0000 and savetime<"+dateString+"9999 order by savetime"; 
 		     userData.clear();
 		    
@@ -3621,7 +4367,7 @@ logger.warn(sql);
 	        map1.put("result",1);  
 	        map1.put("jzName",jzName);
 		    jsonString = JSON.toJSONString(map1);
-		    //log(jsonString);
+		    //logger.warn(jsonString);
 		    return jsonString;
 	  }
 	public String getTfPlanAll_kb(String crew , String tab,int pId) throws ParseException
@@ -3633,7 +4379,7 @@ logger.warn(sql);
 		  	String jsonString="";
 		  	String jzName="";
 		  	String dateString ="",dateString2 ="";
-		  	//log(crewLong);
+		  	//logger.warn(crewLong);
 		  	if (Integer.parseInt(tab) ==1) 
 		  		{
 		  		dbnameString= "hyc";
@@ -3660,7 +4406,7 @@ logger.warn(sql);
 			    List userData = getJdbcTemplate().queryForList(sql);
 			    Map jznm = (Map)userData.get(0);
 			    jzName=jznm.get("anm").toString()+jznm.get("bnm").toString();
-			   // log(jzName);
+			   // logger.warn(jzName);
 		     sql = "select IFNULL(val"+vno+",0) val,savetime from "+dbnameString+(dateTime2.getYear()%10)+" where  groupno="+gno+"  and savetime>="+dateString+"0000 and savetime<"+dateString+"9999 order by savetime"; 
 		     userData.clear();
 		    
@@ -3719,7 +4465,7 @@ logger.warn(sql);
 	        map1.put("result",1);  
 	        map1.put("jzName",jzName);
 		    jsonString = JSON.toJSONString(map1);
-		    //log(jsonString);
+		    //logger.warn(jsonString);
 		    return jsonString;
 	  }
 	public String getTfPlanAll_evt(String crew , String tab,int pId,int ob,String pno,int userId) throws ParseException
@@ -3734,7 +4480,7 @@ logger.warn(sql);
 
 		  	String dateString ="";
 		  	String dateString2 ="";
-		  	//log(crewLong);
+		  	//logger.warn(crewLong);
 		    String[] evt_info ={" "," ","保护动作","数据越限","遥测越限","电流越限","预告警","故障告警","备用","备用","通讯中断","漏水报警","烟雾报警","照明开/关"};
 		    String[] zt_info ={"恢复","告警","告警","数据越限","数据越限","电流越限","预告警","故障告警","备用","备用"};
 		  		dbnameString= "hevt";
@@ -3744,32 +4490,40 @@ logger.warn(sql);
 
 		  	dateString = crew.replace('/', '-');
 		  	dateString2 = tab.replace('/', '-');
-			
-		  	 //DateTime dateTime2 = new DateTime(new SimpleDateFormat("yyyy-MM-dd").parse(dateString));
-          DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-          LocalDateTime dateTime2 = LocalDateTime.parse(dateString, formatter);
-          dateString = ""+(dateTime2.getMonthValue()*100+dateTime2.getDayOfMonth());
-		  	 //dateString = ""+(dateTime2.getMonthOfYear()*100+dateTime2.getDayOfMonth());
+         /* LocalDateTime dateTime2 =LocalDateTime.now();
+		  	 //DateTime dateTime2 = new DateTime(new SimpleDateFormat("yyyy-MM-dd").parse(dateString));
+          //DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+          DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+          try {
+              dateTime2 = LocalDateTime.parse(dateString+" 00:00:00", df);
+          }catch (Exception e)
+          {
+              logger.error(e.toString());
+          }
+
+
+          dateString = ""+(dateTime2.getMonthValue()*100+dateTime2.getDayOfMonth());*/
+
 		  	dateString = dateString.replace("-","");
 		  	dateString2 =dateString2.replace("-","");
 		  	dateString = dateString.substring(2);
 		  	dateString2 = dateString2.substring(2);
 
-		  	String  sql = "select a.ymd yd,a.hms hs,a.event evt,' ' sm,a.zt tz,d.e_info ifo,b.name bm,c.name cm from hevt"+(dateTime2.getYear()%10)+" a,prtudig b,prtu c,etype_info d where (power(2,"+userId+"-1) & b.author_read)>0 and b.type=d.e_type and a.zt=d.e_zt and  a.ch=c.rtuno and a.xh=b.sn and a.ch=b.rtuno and a.ymd>="+dateString+" and a.ymd<="+dateString2+" ";
+		  	String  sql = "select a.ymd yd,a.hms hs,a.event evt,' ' sm,a.zt tz,d.e_info ifo,c.name cm,concat(e.roomname,f.devicenm,b.name) bm from hevt"+(dateString.substring(1,2))+" a,prtudig b,prtu c,etype_info d,room e,dev_author f where (power(2,"+userId+"-1) & b.author_read)>0 and b.type=d.e_type and a.zt=d.e_zt and  a.ch=c.rtuno and e.rtuno=c.rtuno and e.roomno=f.roomno and f.deviceno=b.deviceno and a.xh=b.sn and a.ch=b.rtuno and a.ymd>="+dateString+" and a.ymd<="+dateString2+" ";
           if (pId>=0) sql= sql+" and a.ch="+pId;
           else {
         	  sql= sql+" and c.domain="+pno;
 		}
-          sql = sql + " union select a.ymd yd,a.hms hs,'yc' evt,a.val sm,a.zt tz,a.tlimit ifo,b.name bm,c.name cm from hevtyc"+(dateTime2.getYear()%10)+" a,prtuana b,prtu c  where  (power(2,"+userId+"-1) & b.author_read)>0 and  a.ch=c.rtuno and a.xh=b.sn and a.ch=b.rtuno and a.ymd>="+dateString+" and a.ymd<="+dateString2;
+          sql = sql + " union select a.ymd yd,a.hms hs,'yc' evt,a.val sm,a.zt tz,a.tlimit ifo,c.name cm,concat(e.roomname,f.devicenm,b.name) bm from hevtyc"+(dateString.substring(1,2))+" a,prtuana b,prtu c,room e,dev_author f  where  (power(2,"+userId+"-1) & b.author_read)>0 and  a.ch=c.rtuno and a.xh=b.sn and a.ch=b.rtuno and e.rtuno=c.rtuno and e.roomno=f.roomno and f.deviceno=b.deviceno  and a.ymd>="+dateString+" and a.ymd<="+dateString2;
           if (pId>=0) sql= sql+" and a.ch="+pId;
           else {
         	  sql= sql+" and c.domain="+pno;
 		}
           if (ob==0) sql = sql + " order by yd desc,hs desc";
-			else sql= sql+ " order by yd desc,hs desc";
+          else sql= sql+ " order by bm desc,cm desc,yd desc,hs desc";
 
-log(sql);
+logger.warn(sql);
 			    List userData = getJdbcTemplate().queryForList(sql);
 			   
 		    
@@ -3779,7 +4533,7 @@ log(sql);
 
 		    if (size> 0)
 		    {
-               // log(sql);
+               // logger.warn(sql);
 		    	for (int i = 0; i<size; i++)
 		    	{
 		    		ArrayList xCell = new ArrayList();
@@ -3890,12 +4644,12 @@ log(sql);
 
 		    	}
 		    }
-          //log(sql);
+          //logger.warn(sql);
 			map1.put("data", arr);
 	        map1.put("result",1);  
 	        map1.put("jzName",jzName);
 		    jsonString = JSON.toJSONString(map1);
-		    //log(jsonString);
+		    //logger.warn(jsonString);
 		    return jsonString;
 	  }
   public String getTfPlanAll_xb(String crew , String tab,String pId,int nmd) throws ParseException
@@ -3910,7 +4664,7 @@ log(sql);
 	  	String jzName="";
 	  	String dateString ="";
 	  	String savstr = "-99";
-	  	//log(crewLong);
+	  	//logger.warn(crewLong);
 	  	abc[0]="A";
 	  	abc[1]="B";
 	  	abc[2]="C";
@@ -3926,7 +4680,7 @@ log(sql);
 	  		dbnameString2 = "prtuana";
 	  		String  sql = "select a.name anm,get_subs(b.name,1) bnm,b.saveno sav from prtu a,"+dbnameString2+" b where a.rtuno=b.rtuno and b.type=7 and b.name like '%"+pId+"%' order by saveno"; 
 
-	       //log(sql);
+	       //logger.warn(sql);
 		    List userData = getJdbcTemplate().queryForList(sql);
 		    int size=userData.size() ;
 		    String savArr[ ]=new String[size];
@@ -3956,8 +4710,8 @@ log(sql);
 	     userData.clear();
 	    
 	    userData = getJdbcTemplate().queryForList(sql);
-	    //log(sql);
-	    //log(userData.size());
+	    //logger.warn(sql);
+	    //logger.warn(userData.size());
 	     size=userData.size() ;
 	   
 	    
@@ -4005,7 +4759,7 @@ log(sql);
         map1.put("result",1);  
         map1.put("jzName",jzName);
 	    jsonString = JSON.toJSONString(map1);
-	    //log(jsonString);
+	    //logger.warn(jsonString);
 	    return jsonString;
   }
   public String getTfPlanAll_dl(String crew , String tab,String pId,int nmd) throws ParseException
@@ -4021,7 +4775,7 @@ log(sql);
 	  	String jzName="";
 	  	String dateString ="";
 	  	String savstr = "-99";
-	  	//log(crewLong);
+	  	//logger.warn(crewLong);
 	  	abc[0]="A";
 	  	abc[1]="B";
 	  	abc[2]="C";
@@ -4043,7 +4797,7 @@ log(sql);
 	  		dbnameString2 = "prtuana";
 	  		String  sql = "select a.name anm,get_subs(b.name,1) bnm,b.saveno sav from prtu a,"+dbnameString2+" b where a.rtuno=b.rtuno and b.type=2 and b.name like '%"+pId+"%' order by saveno"; 
 
-	      // log(sql);
+	      // logger.warn(sql);
 		    List userData = getJdbcTemplate().queryForList(sql);
 		    int size=userData.size() ;
 		    String savArr[ ]=new String[size];
@@ -4072,8 +4826,8 @@ log(sql);
 	     userData.clear();
 	    
 	    userData = getJdbcTemplate().queryForList(sql);
-	    //log(sql);
-	   // log(userData.size());
+	    //logger.warn(sql);
+	   // logger.warn(userData.size());
 	     size=userData.size() ;
 	   
 	    
@@ -4121,7 +4875,7 @@ log(sql);
         map1.put("result",1);  
         map1.put("jzName",jzName);
 	    jsonString = JSON.toJSONString(map1);
-	    //log(jsonString);
+	    //logger.warn(jsonString);
 	    return jsonString;
   }
   public String showgd(int aids , int pids) throws ParseException
@@ -4130,7 +4884,7 @@ log(sql);
 	    String sql ="";
 	    sql ="select a.id aid,a.p_day ap_day,a.point_id apoint_id,a.s_power as_power,a.e_power ae_power,a.rate arate,a.s_datetime as_datetime,a.e_datetime ae_datetime,a.mark amark,b.evt_id bevt_id from plan_gd a,plan_point_hd b,plan_point c where a.point_id=c.id and c.evt_id=b.evt_id and a.id=b.evt_sn  and b.jz_id=c.jz_id  and   a.POINT_ID="+pids +" and a.id="+aids;
 
-	   //log(sql);
+	   //logger.warn(sql);
 	    
 	    List userData = getJdbcTemplate().queryForList(sql);
 	    int size=userData.size() ;
@@ -4205,7 +4959,7 @@ log(sql);
 		map1.put("data", arr);
         map1.put("result",1);  
 	    jsonString = JSON.toJSONString(map1);
-	    //log(jsonString);
+	    //logger.warn(jsonString);
 	    return jsonString;
   }
   public String getyTfPlanAll(Integer sn , String jz,int tab) throws ParseException
@@ -4242,8 +4996,8 @@ log(sql);
 		    	 sql ="SELECT * from PLAN where "+selMName+" and PLAN_SN="+sn+" order by M_NAME asc ,START_TIME asc";
 		    }
 		    sql ="SELECT * from PLAN_POINT where  PLAN_ID="+sn +" and jz_id=get_jzid2('"+jz+"') order by EVT_ID asc ,S_DATETIME asc";
-           //log(sql);
-           //log(jz);
+           //logger.warn(sql);
+           //logger.warn(jz);
 	    }
 	    else
 	    {
@@ -4352,7 +5106,7 @@ log(sql);
 		map1.put("data", arr);
         map1.put("result",1);  
 	    jsonString = JSON.toJSONString(map1);
-	    //log(jsonString);
+	    //logger.warn(jsonString);
 	    return jsonString;
   }
   public String getyTfPlanAll11(Integer sn , String jz,int tab) throws ParseException
@@ -4391,8 +5145,8 @@ log(sql);
 		    }*/
 		    //sql ="SELECT * FROM PLAN_GD WHERE POINT_ID IN (SELECT id from PLAN_POINT where  PLAN_ID="+sn +" and jz_id=get_jzid2('"+jz+"')) ORDER BY POINT_ID,S_DATETIME";
             sql ="select a.id aid,a.point_id p_id,c.jz_name jz,b.evt_id evtid,b.info evtinfo,a.s_datetime sdate,a.e_datetime edate,a.s_power sp,a.e_power ep,a.rate ra ,a.mark mk,a.p_day pday,p_datetime pdate from plan_gd a,plan_point b,web_jz c where b.jz_id=c.sn and  a.point_id=b.id and b.PLAN_ID="+sn +" and jz_id=get_jzid2('"+jz+"') order by b.evt_id,a.s_datetime";
-		    //log("sql:"+sql);
-           //log(jz);
+		    //logger.warn("sql:"+sql);
+           //logger.warn(jz);
 	    }
 	    else
 	    {
@@ -4548,7 +5302,7 @@ log(sql);
 	    	}
 	    }
 	    sql="select count(*) jz_cnt,jz_id from plan_gd a,plan_point b,web_jz c where b.jz_id=c.sn and  a.point_id=b.id and b.PLAN_ID="+sn +" and jz_id=get_jzid2('"+jz+"') group by jz_id order by jz_id";
-	    //log(sql);
+	    //logger.warn(sql);
 	    userData = getJdbcTemplate().queryForList(sql);
 	     size=userData.size() ;
 	    int jz_cnt[ ]=new int[size];
@@ -4560,7 +5314,7 @@ log(sql);
     		jz_cnt[i]=cnt;
     	}
 	    sql="select count(*) evt_cnt,b.evt_id,a.point_id  from plan_gd a,plan_point b,web_jz c where b.jz_id=c.sn and  a.point_id=b.id and b.PLAN_ID="+sn +" and jz_id=get_jzid2('"+jz+"') group by b.evt_id,a.point_id order by b.evt_id,a.point_id";
-	    //log(sql);
+	    //logger.warn(sql);
 	    userData = getJdbcTemplate().queryForList(sql);
 	     size=userData.size() ;
 	    int evt_cnt[ ]=new int[size];
@@ -4578,7 +5332,7 @@ log(sql);
         map1.put("jz_cnt",jz_cnt);
         map1.put("evt_cnt",evt_cnt);
 	    jsonString = JSON.toJSONString(map1);
-	    //log(jsonString);
+	    //logger.warn(jsonString);
 	    return jsonString;
   }
   
@@ -4592,7 +5346,7 @@ log(sql);
 		    
 		    	
 		    	 sql ="SELECT * from PLAN_POINT where "+selMName+" and PLAN_id="+sn+" order by EVT_ID asc ,S_DATETIME asc";
-		 // log(sql);
+		 // logger.warn(sql);
 		    	 // }
 	    }
 	    else
@@ -4745,8 +5499,8 @@ log(sql);
 	    	 sql="select nvl(sum(fdl),0) fd,nvl(sum(swdl),0) sw,nvl(sum(lost),0) ls,to_char(savetime,'mm') mm,jz_name,sn from plan_points_all a,web_jz b where plan_sn="+sn+" and jz_sn =get_jzid2('"+jz+"') and a.jz_sn=b.sn group by sn,jz_name,to_char(savetime,'mm') order by sn,jz_name,to_char(savetime,'mm')";
 	    	 
 	    }
-	    //log(jz+"---"+sql);
-	    //log(jz+"---"+sql2);
+	    //logger.warn(jz+"---"+sql);
+	    //logger.warn(jz+"---"+sql2);
 	    List userData = getJdbcTemplate().queryForList(sql);
 	    int size = userData.size();
 	    String infoArr[ ]=new String[size];
@@ -4829,7 +5583,7 @@ log(sql);
 					//xCell.add(df.format(fdl));
 					//xCell2.add(df.format(swdl));
 					//xCell3.add(df.format(ls));
-					//log(data);
+					//logger.warn(data);
 	    	    }
 	    	    else
 	    	    {
@@ -4954,7 +5708,7 @@ log(sql);
 	   // arr[2] = xCell3;
 		Map<String, Object> map1 = new HashMap<String, Object>();
 		map1.put("data", arr);
-		//log(arr);
+		//logger.warn(arr);
         map1.put("result",1);  
 	    jsonString = JSON.toJSONString(map1);
 	    return jsonString;
@@ -5053,7 +5807,7 @@ log(sql);
             jznm = (Map)userData.get(0);
             sav = Integer.parseInt(jznm.get("sav").toString());
         }
-//log("ddd:"+sav);
+//logger.warn("ddd:"+sav);
 	  	gno = (int)sav/200;
 	  	vno = sav % 200;
 	  	dateString = crew.replace('/', '-');
@@ -5067,7 +5821,7 @@ log(sql);
 	  	java.util.Map<String,Object> map1 = new HashMap<String,Object>() ;
 	  	 sql = "select a.name anm,b.name bnm from prtu a,"+dbnameString2+" b where a.rtuno=b.rtuno and b.saveno="+sav;
 
-		   // log("ddd2:"+sql);
+		   // logger.warn("ddd2:"+sql);
 		     userData = getJdbcTemplate().queryForList(sql);
 		     jznm = (Map)userData.get(0);
 		    jzName=jznm.get("anm").toString()+jznm.get("bnm").toString();
@@ -5076,10 +5830,10 @@ log(sql);
         // if (ttp==0)  sql = "select IFNULL(val"+vno+",0) val,savetime from "+dbnameString+(dateTime2.getYear()%10)+" where  groupno="+gno+" and savetime>="+dateString+"0800 and savetime<"+dateString+"2005 order by savetime"; 
 
 		    userData.clear();
-	     //log(userData.size());
+	     //logger.warn(userData.size());
 	    userData = getJdbcTemplate().queryForList(sql);
-	   // log("ddd3:"+sql);
-	   // log(userData.size());
+	   // logger.warn("ddd3:"+sql);
+	   // logger.warn(userData.size());
 	    int size=userData.size() ;
 	    String infoArr[ ]=new String[288];
 	    java.util.Map<String,Object> map2 = new HashMap<String,Object>();  
@@ -5160,7 +5914,7 @@ log(sql);
 				
 	          map1 = getTfReal(crew,crewLong,sav);
 	          map1.put("planJson", JSON.parse(jsonString)); 
-	          //log(xArr[0]);
+	          //logger.warn(xArr[0]);
 	    }
   
         jsonString = JSON.toJSONString(map1);
@@ -5181,7 +5935,7 @@ log(sql);
 	  	tvmn = 9999999;
 	  	mxt = "";
 	  	mnt = "";
-	  	//log(crewLong);
+	  	//logger.warn(crewLong);
 	  	if (Integer.parseInt(crewLong) ==1) 
 	  		{
 	  		dbnameString= "hyc";
@@ -5204,7 +5958,7 @@ log(sql);
 	  	java.util.Map<String,Object> map1 = new HashMap<String,Object>() ;
 	  	String  sql = "select a.name anm,b.name bnm from prtu a,"+dbnameString2+" b where a.rtuno=b.rtuno and b.saveno="+pId; 
 
-		    //log(sql);
+		    //logger.warn(sql);
 		    List userData = getJdbcTemplate().queryForList(sql);
 		    Map jznm = (Map)userData.get(0);
 		    jzName=jznm.get("anm").toString()+jznm.get("bnm").toString();
@@ -5213,10 +5967,10 @@ log(sql);
           sql = "select IFNULL(val"+vno+",0) val,savetime from "+dbnameString+(dateTime2.getYear()%10)+" where  groupno="+gno+" and savetime>="+dateString+"0800 and savetime<"+dateString+"2005 order by savetime"; 
 
 		    userData.clear();
-	     //log(userData.size());
+	     //logger.warn(userData.size());
 	    userData = getJdbcTemplate().queryForList(sql);
-	    //log(sql);
-	    //log(userData.size());
+	    //logger.warn(sql);
+	    //logger.warn(userData.size());
 	    int size=userData.size() ;
 	    String infoArr[ ]=new String[144];
 	    java.util.Map<String,Object> map2 = new HashMap<String,Object>();  
@@ -5297,7 +6051,7 @@ log(sql);
 				
 	          map1 = getTfReal_gzr(crew,crewLong,pId);
 	          map1.put("planJson", JSON.parse(jsonString)); 
-	          //log(xArr[0]);
+	          //logger.warn(xArr[0]);
 	    }
   
         jsonString = JSON.toJSONString(map1);
@@ -5319,7 +6073,7 @@ log(sql);
 	  	tvmn = 9999999;
 	  	mxt = "";
 	  	mnt = "";
-	  	//log(crewLong);
+	  	//logger.warn(crewLong);
 	  	if (Integer.parseInt(crewLong) ==1) 
 	  		{
 	  		dbnameString= "hyc";
@@ -5342,7 +6096,7 @@ log(sql);
 	  	java.util.Map<String,Object> map1 = new HashMap<String,Object>() ;
 	  	String  sql = "select a.name anm,b.name bnm from prtu a,"+dbnameString2+" b where a.rtuno=b.rtuno and b.saveno="+pId; 
 
-		    //log(sql);
+		    //logger.warn(sql);
 		    List userData = getJdbcTemplate().queryForList(sql);
 		    Map jznm = (Map)userData.get(0);
 		    jzName=jznm.get("anm").toString()+jznm.get("bnm").toString();
@@ -5352,8 +6106,8 @@ log(sql);
 		    userData.clear();
 	     
 	    userData = getJdbcTemplate().queryForList(sql);
-	    //log(sql);
-	    //log(userData.size());
+	    //logger.warn(sql);
+	    //logger.warn(userData.size());
 	    int size=24 ;
 	    String infoArr[ ]=new String[24];
 	    float dlval[ ]=new float[24];
@@ -5437,7 +6191,7 @@ log(sql);
 	          map1 = getdlinc(crew,crewLong,pId);
 	          map1.put("planJson", JSON.parse(jsonString));
 	          map1.put("result",1);
-	          //log(xArr[0]);
+	          //logger.warn(xArr[0]);
 	    }
   
         jsonString = JSON.toJSONString(map1);
@@ -5486,7 +6240,7 @@ log(sql);
 	   {
 		   mode = 1;
 	   }
-	   //log("mode:"+mode);
+	   //logger.warn("mode:"+mode);
 	  	dateString = crew.replace('/', '-');
 	  	// DateTime dateTime2 = new DateTime(new SimpleDateFormat("yyyy-MM-dd").parse(dateString));
 	  	// dateString = ""+(dateTime2.getMonthOfYear()*100+dateTime2.getDayOfMonth());
@@ -5540,7 +6294,7 @@ log(sql);
 	    java.util.Map<String,Object> map2 = new HashMap<String,Object>();  
 	    int maxPoint=  size;
 	  
-    	//log("ss:"+size);
+    	//logger.warn("ss:"+size);
 	    Object xArr[ ]=new Object[maxPoint];
 		   Object yArr[ ]=new Object[maxPoint];
 		   Object yArr2[ ]=new Object[maxPoint];
@@ -5604,7 +6358,7 @@ log(sql);
 	    	  
 	         
 	          
-	          //log(xArr[0]);
+	          //logger.warn(xArr[0]);
 	    }
 	    
 	    
@@ -5613,7 +6367,7 @@ log(sql);
 				gno = (int)savno/200;
 			  	vno = savno % 200;   
 		     sql = "select IFNULL(val"+vno+",0) val,savetime from "+dbnameString+(dateTime2.getYear()%10)+" where  groupno="+gno+timestring+"  order by savetime"; 
-		     //log("B:"+sql);
+		     //logger.warn("B:"+sql);
 			   
 			 userData.clear();
 		    
@@ -5663,7 +6417,7 @@ log(sql);
 				gno = (int)savno/200;
 			  	vno = savno % 200;   
 		     sql = "select IFNULL(val"+vno+",0) val,savetime from "+dbnameString+(dateTime2.getYear()%10)+" where  groupno="+gno+timestring+"  order by savetime";  
-		     //log("C:"+sql);
+		     //logger.warn("C:"+sql);
 			 userData.clear();
 		    
 		    userData = getJdbcTemplate().queryForList(sql);
@@ -5769,7 +6523,7 @@ log(sql);
 	   {
 		   mode = 1;
 	   }
-	   //log("mode:"+mode);
+	   //logger.warn("mode:"+mode);
 	  	dateString = crew.replace('/', '-');
 	  	// DateTime dateTime2 = new DateTime(new SimpleDateFormat("yyyy-MM-dd").parse(dateString));
 	  	// dateString = ""+(dateTime2.getMonthOfYear()*100+dateTime2.getDayOfMonth());
@@ -5792,7 +6546,7 @@ log(sql);
 		  //dateTime2 =dateTime2.plusDays(1);
 	  	java.util.Map<String,Object> map1 = new HashMap<String,Object>() ;
 	  	String  sql = "select a.name anm,get_subs(b.name,1) bnm,b.saveno sav,b.upperlimit up from prtu a,"+dbnameString2+" b where a.rtuno=b.rtuno and b.type=2 and b.name like '%"+pId+"%' order by saveno"; 
-        //log(sql);
+        //logger.warn(sql);
 		   
 		    List userData = getJdbcTemplate().queryForList(sql);
 		    int size=userData.size() ;
@@ -5813,7 +6567,7 @@ log(sql);
 		    java.util.Map<String,Object> map2 = new HashMap<String,Object>();  
 		    int maxPoint=  size;
 		  
-	  	//log("ss:"+size);
+	  	//logger.warn("ss:"+size);
 		    Object xArr[ ]=new Object[maxPoint];
 			   Object yArr[ ]=new Object[maxPoint];
 			   Object yArr2[ ]=new Object[maxPoint];
@@ -5833,7 +6587,7 @@ log(sql);
 			gno = (int)savno/200;
 		  	vno = savno % 200;   
 	     sql = "select IFNULL(val,0) val,did,valtime from dl_max where  saveno="+savArr[0]+timestring +"  order by did"; 
-	     //log(sql);
+	     //logger.warn(sql);
 		 userData.clear();
 	    
 	    userData = getJdbcTemplate().queryForList(sql);
@@ -5863,7 +6617,7 @@ log(sql);
 	    	  
 	         
 	          
-	          //log(xArr[0]);
+	          //logger.warn(xArr[0]);
 	    }
 	    
 	    
@@ -5872,7 +6626,7 @@ log(sql);
 				gno = (int)savno/200;
 			  	vno = savno % 200;   
 			  	 sql = "select IFNULL(val,0) val,did,valtime from dl_max where  saveno="+savArr[1]+timestring +"  order by did"; 
-		     //log(sql);
+		     //logger.warn(sql);
 			   
 			 userData.clear();
 		    
@@ -5994,7 +6748,7 @@ log(sql);
 	  
 	  	String jzName="";
 	  	String dateString ="";
-	  	//log(crewLong);
+	  	//logger.warn(crewLong);
 	  	if (Integer.parseInt(crewLong) ==1) 
 	  		{
 	  		dbnameString= "hyc";
@@ -6099,7 +6853,7 @@ log(sql);
 	  
 	  	String jzName="";
 	  	String dateString ="";
-	  	//log(crewLong);
+	  	//logger.warn(crewLong);
 	  	if (Integer.parseInt(crewLong) ==1) 
 	  		{
 	  		dbnameString= "hyc";
@@ -6205,7 +6959,7 @@ log(sql);
 	    float zrdl=0;
 	  	String jzName="";
 	  	String dateString ="";
-	  	//log(crewLong);
+	  	//logger.warn(crewLong);
 	  	if (Integer.parseInt(crewLong) ==1) 
 	  		{
 	  		dbnameString= "hyc";
@@ -6229,7 +6983,7 @@ log(sql);
 	  	dateString = ""+(dateTime2.getMonthValue()*100+dateTime2.getDayOfMonth());
 	  	
 	  	String   sql = "select sum(IFNULL(val"+vno+",0)) val,floor(savetime/100)*100 savetime from "+dbnameString+" where   groupno="+gno+" and savetime>="+dateString+"0000 and savetime<"+dateString+"9999 group by floor(savetime/100) order by floor(savetime/100)"; 
-	  	log(sql);
+	  	logger.warn(sql);
 	  	List userData = getJdbcTemplate().queryForList(sql);
 	  	int size=userData.size() ; 
 	  	 msiz=288+1;
@@ -6280,7 +7034,7 @@ log(sql);
 	  
 	  	String jzName="";
 	  	String dateString ="";
-	  	//log(crewLong);
+	  	//logger.warn(crewLong);
 	  	if (Integer.parseInt(crewLong) ==1) 
 	  		{
 	  		dbnameString= "hyc";
@@ -6453,14 +7207,14 @@ log(sql);
                 oldval = jedis.get(okey+"_.value");
 
                 // oldval = jedis.get(ikey);
-                // log(optype+"---"+ikey+"----"+val+"---"+oldval);
+                // logger.warn(optype+"---"+ikey+"----"+val+"---"+oldval);
                 oldval = oldval!=null?oldval:"0";
                 switch(optype){
                     case 1:
                         nval = val;
                         break;
                     case 2:
-                        //log(oldval);
+                        //logger.warn(oldval);
                         nval = oldval.matches("1")?"0":"256";
                         break;
                     case 3:
@@ -6546,7 +7300,7 @@ log(sql);
 
                         if (userData.size() > 0)
                         {
-                            //log(sql);
+                            //logger.warn(sql);
                             for (int i=0;i<userData.size();i++)
                             {
                                 Map userMap = (Map)userData.get(i);
@@ -6559,7 +7313,7 @@ log(sql);
                                 }
                             }
                             jedis = RedisUtil.getJedis();
-                            log("恢复定时任务状态：set "+key+"_.value="+val);
+                            logger.warn("恢复定时任务状态：set "+key+"_.value="+val);
                             jedis.set(key+"_.value", val);
                             jedis.setex(key+"_.status",30,"1");
                             RedisUtil.close(jedis);
@@ -6611,7 +7365,7 @@ log(sql);
 
 			  RedisUtil.close(sjedis);
 
-          //System.out.println(result);
+          //logger.warn(result);
       } 
       catch (SocketException e) {
       	logger.error("lua err: " +  e.toString() );
@@ -6741,7 +7495,7 @@ log(sql);
 			{
 			   sql="delete from SHCS_JOIN where id="+delArr.getInteger(d);
 			   stm.addBatch(sql);
-			   //log("delete:  " + sql);
+			   //logger.warn("delete:  " + sql);
 			}
 		   for (int e = 0; e <  editArr.size(); e++)
 			{
@@ -6752,7 +7506,7 @@ log(sql);
 				
 				stm.addBatch(sql);
 			}
-		   //log("sql:  " + sql);
+		   //logger.warn("sql:  " + sql);
 		   stm.executeBatch();   
 		   con.commit();
 		   con.setAutoCommit(true);
@@ -6791,7 +7545,7 @@ log(sql);
 	  	String jsonString="";
 	  	String jzName="";
 	  	String dateString ="";
-	  	//log(crewLong);
+	  	//logger.warn(crewLong);
 	  
 		  //dateTime2 =dateTime2.plusDays(1);
 	  	java.util.Map<String,Object> map1 = new HashMap<String,Object>() ;
@@ -6832,7 +7586,7 @@ log(sql);
 		
         map1.put("result",1);  
 	    jsonString = JSON.toJSONString(map1);
-	    //log(jsonString);
+	    //logger.warn(jsonString);
 	    return jsonString;
   }
   public String chgPwd(String uname,String opwd,String npwd) throws ParseException
@@ -6850,7 +7604,7 @@ log(sql);
 	  	java.util.Map<String,Object> map1 = new HashMap<String,Object>() ;
 	  	String  sql = "select * from user where pwd='"+opwd+"' and uname='"+uname+"'"; 
 
-	  	log(sql);  
+	  	logger.warn(sql);  
 	  	 List userData = getJdbcTemplate().queryForList(sql);
 		   
 		    
@@ -6861,7 +7615,7 @@ log(sql);
 		    if (size> 0)
 		    {
 		    	 sql = " update user set pwd='"+npwd+"' where uname='"+uname+"'"; 
-		    	 //log(sql);
+		    	 //logger.warn(sql);
 		    	 getJdbcTemplate().update(sql);
 		    	 map1.put("npwd", npwd);
 		 		
@@ -6872,7 +7626,7 @@ log(sql);
 		   
 		 
 	    jsonString = JSON.toJSONString(map1);
-	    //log(jsonString);
+	    //logger.warn(jsonString);
 	    return jsonString;
   }
   public String logred(String uname) throws ParseException
@@ -6884,7 +7638,7 @@ log(sql);
 	  	String jsonString="";
 	  	String jzName="";
 	  	String dateString ="";
-	  	//log(crewLong);
+	  	//logger.warn(crewLong);
 	  
 		  //dateTime2 =dateTime2.plusDays(1);
 	  	java.util.Map<String,Object> map1 = new HashMap<String,Object>() ;
@@ -6925,7 +7679,7 @@ log(sql);
 		
         map1.put("result",1);  
 	    jsonString = JSON.toJSONString(map1);
-	    //log(jsonString);
+	    //logger.warn(jsonString);
 	    return jsonString;
   }
   public String login(String uname,String pwd,int userId)
@@ -6934,7 +7688,7 @@ log(sql);
 		 String jsonString="";
 	     String ov = "0";
 	     String sql = "select * from msg_user  where name='" + uname+"' and passwd='"+pwd+"' and valid=1";
-	     //log(sql);
+	     //logger.warn(sql);
 	     List qaData = getJdbcTemplate().queryForList(sql);
 	     if (qaData.size() > 0)
 	     {
@@ -6942,10 +7696,10 @@ log(sql);
 	       //httpSession.setAttribute("username", userMap.get("uname").toString());
 	    	 username=userMap.get("name").toString();
 	       map1.put("result",userMap.get("leval").toString());
-	       //log((String) httpSession.getAttribute("username"));
+	       //logger.warn((String) httpSession.getAttribute("username"));
 	       int backR = 0;
 	       String aBackSql = "insert into loginred  (uname) values ('"+uname+"')";
-	       //log(aBackSql);
+	       //logger.warn(aBackSql);
 	       backR = getJdbcTemplate().update(aBackSql);
 	     }else {
 	    	 map1.put("result",0);
@@ -6961,7 +7715,7 @@ log(sql);
         String jsonString="";
         String ov = "0";
         String sql = "select * from msg_user  where id=" + us+" and passwd='"+op+"' and valid=1";
-        //log(sql);
+        //logger.warn(sql);
         List qaData = getJdbcTemplate().queryForList(sql);
         if (qaData.size() > 0)
         {
@@ -6969,10 +7723,10 @@ log(sql);
 
 
 
-            //log((String) httpSession.getAttribute("username"));
+            //logger.warn((String) httpSession.getAttribute("username"));
             int backR = 0;
             String aBackSql = "update msg_user set passwd='"+np+"' where id="+us;
-           // log(aBackSql);
+           // logger.warn(aBackSql);
             backR = getJdbcTemplate().update(aBackSql);
             map1.put("result",1);
         }else {
@@ -6991,7 +7745,7 @@ log(sql);
 
             int backR = 0;
             String aBackSql = "update msg_user set phone='"+op+"',email='"+np+"' where id="+us;
-            //log(aBackSql);
+            //logger.warn(aBackSql);
             try {
 
                 backR = getJdbcTemplate().update(aBackSql);
@@ -7011,7 +7765,7 @@ log(sql);
 		
 		 String jsonString="";
 		
-		 //log("22:"+(String) httpSession.getAttribute("username"));  
+		 //logger.warn("22:"+(String) httpSession.getAttribute("username"));  
 	  jsonString = "{\"result\":\""+username+"\"}";
 	  return jsonString;
 
@@ -7026,7 +7780,7 @@ log(sql);
         java.util.Map<String,Object> map1 = new HashMap<String,Object>() ;
         String  sql = "select * from prtu where un_x='"+gkey+"'";
 
-        System.out.println(sql);
+        logger.warn(sql);
         List userData = getJdbcTemplate().queryForList(sql);
 
 
@@ -7108,7 +7862,7 @@ log(sql);
         java.util.Map<String,Object> map1 = new HashMap<String,Object>() ;
         String  sql = "select * from prtu where un_x='"+gkey+"'";
 
-        System.out.println(sql);
+        logger.warn(sql);
         List userData = getJdbcTemplate().queryForList(sql);
 
 
@@ -7211,7 +7965,7 @@ log(sql);
   public boolean exec_sql(String sqls)
   {
     String sql = sqls;
-    //log(sql);
+    //logger.warn(sql);
     int re = getJdbcTemplate().update(sql);
     if (re == 1) {
       return true;
@@ -7223,7 +7977,7 @@ log(sql);
   {
     String jsonString = "";
     String sql = "SELECT * FROM user LIMIT 0,20";
-    //log("getUserID  " + sql);
+    //logger.warn("getUserID  " + sql);
     List userData = getJdbcTemplate().queryForList(sql);
     if (userData.size() <= 0) {
       jsonString = "{\"result\":-1}";
@@ -7242,7 +7996,7 @@ log(sql);
     String jsonString = "";
     
     String sql = "select id,uName ,uEmail ,`lock`,treeLv,uScore,loginTime from user order by id desc LIMIT " + start + "," + length;
-    //log("getUserList  " + sql);
+    //logger.warn("getUserList  " + sql);
     List userData = getJdbcTemplate().queryForList(sql);
     Map userMap = new HashMap();
     userMap.put("draw", Integer.valueOf(draw));
@@ -7265,7 +8019,7 @@ log(sql);
  /* public String exec_sql(String sqls)
   {
     String sql = sqls;
-    log(sql);
+    logger.warn(sql);
     getJdbcTemplate().update(sql);
     
     String jsonString =;
@@ -7276,7 +8030,7 @@ log(sql);
   {
     String jsonString = "";
     String sql = "select * from admin where uName='" + uName + "'  and uPwd='" + pwd + "'";
-    //log("adminLogin  " + sql);
+    //logger.warn("adminLogin  " + sql);
     List userData = getJdbcTemplate().queryForList(sql);
     if (userData.size() > 0) {
       jsonString = "ok";
@@ -7286,9 +8040,9 @@ log(sql);
     return jsonString;
   }
   
-  public void log(Object msg) 
+  public void log(Object msg)
   {
-	   System.out.println(LocalDateTime.now().toString()+":"+msg);
+	   logger.warn(LocalDateTime.now().toString()+":"+msg);
 	  
 	 
   }

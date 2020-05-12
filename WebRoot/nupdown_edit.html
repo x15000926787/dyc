@@ -100,24 +100,29 @@ body{ background:#343c48;}
 
 <body class="skin-blue layout-top-nav" style="height: auto;overflow-x: hidden;">
 
+ 
 
-	<div style="width:90%;margin-left :20px;box-shadow: none">
+
+
+
+
+	<div style="width:96.5%;margin-left :20px;box-shadow: none">
 		<div class="nav-tabs-custom" style="box-shadow: none;">
-			<ul class="nav nav-tabs" style="border:none">
+			<!-- <ul class="nav nav-tabs" style="border:none">
 								<p>
 
 					<div class="pull-left">
 					 
-						<table border="0" cellspacing="0" cellpadding="0" width="1900"style="margin:-20px 0 0 300px">
+						<table border="0" cellspacing="0" cellpadding="0" width="1700"style="margin:-25px 0 0 200px;">
 							<tr>
 								<td width="100"; height="100">
 
 
 
 								</td>
-								 <td style="width:300px;">
+								 <td style="width:500px;">
 								  <label style="font-size:16px;" >选择设备：</label>
-								        <select id="ttp"  style="width:200px;height:40px;font-size:18px;padding:0px 10px 0px 10px;background: #343c48;" onchange="reloadUpDown()">
+								        <select id="ttp"  style="width:400px;height:40px;font-size:18px;padding:0px 10px 0px 10px;background: #343c48;" onchange="reloadUpDown()">
 										        <option value=-1>所有设备</option>
 												
 										</select>  
@@ -131,10 +136,46 @@ body{ background:#343c48;}
 					</div>
 
 
-			</ul>
-			<div id="zjTitle" style="background: #2a3039;height: 65px;width: 89.6%;margin: 50px 0 0 44px ;padding:15px 20px">遥测点位限值设置</div>
+			</ul> -->
 
-			<div id="editCell" class="hot handsontable" style="width:1450px;margin: 0px 45px ;font-size:16px;">
+
+
+			<div class="dashboard-wrapper">
+        <!-- Container fluid Starts -->
+        <div class="container-fluid">
+            <!-- 选择框 starts-->
+            <div class="row gutter" style="margin:15px 0 0 -93px;">
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                    <div class="panel" style="margin: 7px 0 -28px 83px;background: #2a3039;padding: 13px 0 0 47px;height: 100px;width: 98%;">
+                        <div class="form-group">
+                            <div class="row gutter">
+                                <div class="col-md-2">
+                                    <label class="control-label">配电室</label>
+                                    <select class="form-control" id="form-control-r" name="genre" onchange="chgrtu()">
+                                      
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="control-label">总进线柜</label>
+                                    <select class="form-control" id="ttp" name="genre" onchange="reloadUpDown()">
+                                      <option value=-1>所有设备</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="col-md-1">
+                                    <button type="button" class="btn btn-default" id="enable" style="margin: 25px 0 0 0 ">确定</button>
+									<button type="button" class="btn btn-default" id="submit" style="margin: 25px 0 0 0 ">应用</button>
+								</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+			<div id="zjTitle" style="background: #2a3039;height: 65px;width: 100%;margin: 50px 0 0 20px ;padding:15px 20px">限值管理设置</div>
+
+			<div id="editCell" class="hot handsontable" style="width:100%;margin: 0px 20px ;font-size:16px;">
 
 			
 			</div>
@@ -168,7 +209,7 @@ body{ background:#343c48;}
 	
 
 	<script type="text/javascript">
-		
+		var trow  = 0;
 		var nowJz = "all"
 		var nowJzLong = "all"
 		var nowPlanSn = 0;          //
@@ -176,6 +217,8 @@ body{ background:#343c48;}
 		var timeOutNum = 100000;
 		var titleFontSize = 5;
 		var autharr = [4,5,6];
+		var rtuno = 0;
+		var roomno = 0;
 		var valueValidator = function(value, callback) {
 			//console.log(value+'__'+value.length)
 			/*if (!value || 0 === value.length || value.length != 11) {
@@ -232,6 +275,85 @@ body{ background:#343c48;}
 		function cancel(){
 			$('#tbl-users').hide();
 		}
+		// 下拉框一级导航定义开始
+ // var dtyp=2;
+     //数据类型，详见ana_type表  最后在第四级data中传给dtype的
+    $(function() {
+        $.ajax({
+            url: httpIp + 'tree',
+            data: { pno:0 },//有多个项目用一个服务器时用来区分的
+            dataType: "json",
+            type: "POST",
+            async:false,
+            success: function(data) {
+                if (data.result==1) {
+                    datanavr=data.data
+                    for (var i = 0; i < datanavr.length; i++) {
+                        //取第一个下拉框的id在里面添加内容，datanavr[i][0]为取到的value用来传给后端的，datanavr[i][1]为取到的文字内容
+                        $("#form-control-r").append("<option value = " +datanavr[i][0] +">"+datanavr[i][1]+"</option>");
+                    }
+                } else {
+                    $("#jstree_div").html("暂无数据！");
+                }
+                $("#form-control-r").click(); //一级下拉框默认点击
+            }
+        });
+    });
+    //下拉框一级导航定义结束
+    //下拉框一级传至二级下拉框定义开始
+ $("#form-control-r").on("click", function() { //取第一个下拉框的id进行点击
+        //var lino  =$('#form-control-r').val();//定义一个一级下拉框点击传出的值
+
+        $.ajax({
+            url: httpIp + 'tree_2',
+            dataType: "json",
+            data: { dd: 0, kk: 2, rtu: rtuno },//dd为prtuana=0或者prtupol=1；kk为大项目四层为=2，小项目三层=1；一般dd,kk为固定的；rtu: lino 为第一个下拉框定义一级下拉框点击传出的值；
+            type: "POST",
+            async:false,
+            success: function(data) {
+               
+                if (data.result==1) {
+                   datanavc=data.data
+                    $("#ttp").empty();//清除第二个下拉框之前存储的值
+                    for (var i = 0; i < datanavc.length; i++) {
+                        //取第二个下拉框的id在里面添加内容，datanavr[i][0]为取到的value用来传给后端的，datanavr[i][1]为取到的文字内容
+                        $("#ttp").append("<option value = " +datanavc[i][0] +">"+datanavc[i][1]+"</option>");
+                    }
+                } else {
+                    $("#jstree_div").html("暂无数据！");
+                }
+                $("#ttp").click(); //二级下拉框默认点击
+            }
+        });
+    });
+//下拉框一级传至二级下拉框定义结束
+ //下拉框二级传至三级下拉框定义开始
+ // $("#form-control-c").on("click", function() {//取第二个下拉框的id进行点击
+ //        var lino  =$('#form-control-r').val();//定义一个一级下拉框点击传出的值
+ //        var ttpc  =$('#form-control-c').val();//定义一个二级下拉框点击传出的值
+ //        $.ajax({
+ //            url: httpIp + 'tree_3',
+ //            dataType: "json",
+ //            data: { kk: 2, rtu: lino, pno:ttpc },//kk为大项目四层为=2，小项目三层=1；一般kk为固定的；rtu: lino 为第一个下拉框定义一级下拉框点击传出的值； pno:ttpc为第二个下拉框定义二级下拉框点击传出的值
+ //            type: "POST",
+ //            async:false,
+ //            success: function(data) {
+ //                if (data.result==1) {
+                    
+ //                  datanavs=data.data;
+ //                  $("#ttp").empty();//清除第二个下拉框之前存储的值
+ //                    for (var i = 0; i < datanavs.length; i++) {
+ //            //取第三个下拉框的id添加内容；datanavs[i][1]+","+datanavs[i][2] +","+datanavs[i][3]为取到的value用来传给后端的第一个下拉框传的值，第二个下拉框传的值，第三个下拉框传的值；datanavr[i][1]为取到的文字内容
+ //                        $("#ttp").append("<option value = " +datanavs[i][1]+","+datanavs[i][2] +","+datanavs[i][3]+">"+datanavs[i][0]+"</option>");
+ //                    }
+ //                } else {
+ //                    $("#jstree_div").html("暂无数据！");
+ //                }
+ //                $("#ttp").click(); //三级下拉框默认点击
+ //            }
+ //        });
+ //    });
+//下拉框二级传至三级下拉框定义结束
 		function setauthor(){
 			var dd = [];
 			var vv = 1;
@@ -300,9 +422,15 @@ body{ background:#343c48;}
 		}
 		function reloadUpDown()
 		{
-			var dev = $("#ttp").val();
-			console.log(dev);
-			getUpdown(0, dev);
+			 roomno = $("#ttp").val();
+			//console.log(dev);
+			//getUpdown(0, dev);
+		}
+		function chgrtu()
+		{
+			 rtuno = $("#form-control-r").val();
+			//console.log(dev);
+			//getUpdown(0, dev);
 		}
 		function initCheckbox(vv)
 		{
@@ -324,18 +452,23 @@ body{ background:#343c48;}
 			Handsontable.renderers.TextRenderer.apply(this, arguments);
 			if (row%2==1)
 			{
+
 				td.style.backgroundColor = '#343c48';
 				//td.style.color = '#3C3C3C';
 			}
 
 			switch(prop) {
+				case 1:
+					td.style.textAlign = 'right';//图片居中对齐
+					cellProperties.readOnly = true;
+					break;
 				case 4:
 
 
 					var imgadd;
 
 					//if (str.indexOf("OT")>0 ||str.indexOf("调峰")>0)
-
+					
 					imgadd = document.createElement('IMG');
 					if (value>1){ imgadd.src = "alert.png";
 					   
@@ -348,6 +481,7 @@ body{ background:#343c48;}
 					imgadd.width = 18;
 					imgadd.style = 'cursor:pointer;';//鼠标移上去变手型
 					Handsontable.dom.addEvent(imgadd, 'click', function (event) {
+						trow = row;
 						$("#authorname").html("弹窗");
 						nowPlanSn=col;
 						nowTab = row;
@@ -364,7 +498,7 @@ body{ background:#343c48;}
 				case 5:
 					nowPlanSn=1;
 					var imgadd;
-
+					
 					//if (str.indexOf("OT")>0 ||str.indexOf("调峰")>0)
 
 					imgadd = document.createElement('IMG');
@@ -380,6 +514,7 @@ body{ background:#343c48;}
 					imgadd.width = 18;
 					imgadd.style = 'cursor:pointer;';//鼠标移上去变手型
 					Handsontable.dom.addEvent(imgadd, 'click', function (event) {
+						trow = row;
 						$("#authorname").html("短信");
 						$('#tbl-users').show();
 						nowTab = row;
@@ -397,7 +532,7 @@ body{ background:#343c48;}
 				case 6:
 					nowPlanSn=2;
 					var imgadd;
-
+					
 					//if (str.indexOf("OT")>0 ||str.indexOf("调峰")>0)
 
 					imgadd = document.createElement('IMG');
@@ -411,6 +546,7 @@ body{ background:#343c48;}
 					imgadd.width = 18;
 					imgadd.style = 'cursor:pointer;';//鼠标移上去变手型
 					Handsontable.dom.addEvent(imgadd, 'click', function (event) {
+						trow = row;
 						$("#authorname").html("邮件");
 						$('#tbl-users').show();
 						nowTab = row;
@@ -475,7 +611,7 @@ body{ background:#343c48;}
            }
 			if(tg.tagName=='IMG' ){
 				targetX=event.clientX-22; //减去盒子宽度和高度，最终鼠标光标可以定位到图片正中间
-				targetY=event.clientY+20;
+				targetY=trow*46+290;
 
 
 			}
@@ -505,7 +641,7 @@ body{ background:#343c48;}
 			colHeaders: colHeaders1,
 			rowHeaders: false,
 			fillHandle: false,
-			colWidths: [60,100,80,80,60,60,60,60,60,60,60,60],
+			colWidths: [60,140,60,60,60,60,60,60,60,60,60,60],
 			contextMenu: false,
 			disableVisualSelection: false,
 			className: 'htCenter',
@@ -561,21 +697,22 @@ body{ background:#343c48;}
 			}
 		}
 		function getUpdown(rtu, dev) {
-			nowMode = rtu;
+			 //rtuno = $("#form-control-r").val();
+			 //roomno = $("#ttp").val();
             console.log(dev);
 			$.ajax({
 				url: httpIp + 'loadUpdown',
 				type: 'POST',
 				async: false,
 				timeout: timeOutNum,
-				data: { rtuno: rtu,devno:dev,pno:prono,userId:uid},
+				data: { rtuno: rtuno,devno:roomno,pno:-1,userId:uid},
 				dataType: 'json',
 				beforeSend: beforeSend, //发送请求
 				complete: complete, //请求完成
 				success: function(data, textStatus, jqXHR) {
 					if (data.result == 1) {
 						console.log(data);
-						$("#zjTitle").html("<font size='" + titleFontSize + "'>" + "  遥测点限值管理" + "</font>");
+						$("#zjTitle").html("<font size='" + titleFontSize + "'>" + "  限值管理设置" + "</font>");
 						editData = [];
 
 						editData = JSON.parse(JSON.stringify(data.data));
@@ -583,6 +720,11 @@ body{ background:#343c48;}
 						editHot.loadData(editData);
 
 
+					}
+					else
+					{
+						editData = [];
+						editHot.loadData(editData);
 					}
 				},
 				error: function(xhr, textStatus) {
@@ -658,10 +800,10 @@ body{ background:#343c48;}
 				complete: function() {}
 			})
 		}
-		$(document).on("click", "#subBtn", function() { submitCell(); });
+		$(document).on("click", "#enable", function() { getUpdown(0,0); });
 		$(document).on("click", "#submit", function() { submitCell(); });
 		function submitCell() {
-           // console.log("dddssss");
+			// console.log("dddssss");
 			editHot.validateCells(function(result, obj) {
 				if (result == true) {
 					var addArr = [];
@@ -674,7 +816,7 @@ body{ background:#343c48;}
 					} else {
 						oldJson = JSON.parse(editDataBk)
 					}
-
+console.log(oldJson);
 					//editHot.setDataAtCell(0,4,0);
 					/*for (var j = 0; j < editHot.countRows(); j++) {
 
@@ -725,12 +867,19 @@ body{ background:#343c48;}
 							delArr.push(sn);
 						}
 					}
-
+					/**
+					 * 此处甚是诡异！！！
+					 *
+					 */
 					for (var j = 0; j < newJson.length; j++) {
-						if (newJson[j][0] == null || newJson[j][0] == "") {
-							addArr.push(newJson[j])
+						if (newJson[j][0] === null || newJson[j][0] === "") {
+
+							addArr.push(newJson[j]);
 						}
 					}
+					console.log(addArr );
+					console.log(editArr );
+					console.log(delArr );
 					if (addArr.length == 0 && editArr.length == 0 && delArr.length == 0) {
 						alert('没有更新内容');
 						return;
@@ -754,15 +903,21 @@ body{ background:#343c48;}
 						dataType: 'text',
 
 						success: function(data, textStatus, jqXHR) {
+							console.log(data)
 							data = JSON.parse(data)
 							if (data.result == 1) {
 
-								//console.log(data)
-								getUpdown(0, -1);
+
+								getUpdown(0, 0);
 								reloadAna();
 								//alert('提交成功')
 
-							} else {
+							}
+						else if (data.result == 2)
+							{
+								alert('计时条件验证失败')
+							}
+					     else {
 								alert('提交失败')
 							}
 
@@ -818,7 +973,7 @@ body{ background:#343c48;}
                 }  
             });  
         }   
-        addsel();
+        //addsel();
 
 			
 			
@@ -836,7 +991,7 @@ body{ background:#343c48;}
 			var ttp  =$('#ttp').val();
 			var ord  =$('#ord').val();
 			$.ajax({
-				url: httpIp + 'getTfPlanAll_evt',
+				url: httpIp + '/LF/getTfPlanAll_evt',
 				type: 'POST',
 				async: true, 
 				data: { crew: dstr, tab: dstr2, pId: ttp,ob:ord,pno:prono },
@@ -866,7 +1021,7 @@ body{ background:#343c48;}
             loadPlan(); 
 		})
 
-		getUpdown(0, -1);
+		getUpdown(0, 0);
 		creaeCheckboxList(0,0,0);
 		 
 		 

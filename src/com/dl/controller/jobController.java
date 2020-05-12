@@ -1,7 +1,12 @@
 package com.dl.controller;
 
+import com.alibaba.fastjson.JSONObject;
 import com.dl.impl.jobDAOImpl;
+import com.dl.quartz.QuartzManager;
+import com.dl.tool.ReportDycJob;
 import com.dl.tool.Tool;
+import com.dl.tool.saveMaxMin;
+import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -10,12 +15,15 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.text.ParseException;
+import java.util.HashMap;
 
 @Controller
 public class jobController
 {
   @Autowired
   private jobDAOImpl user;
+
+  private QuartzManager qjob=new QuartzManager();
 
   @RequestMapping({"histycjob"})
   public void restarthistyc(HttpServletResponse response) throws IOException
@@ -43,6 +51,41 @@ public class jobController
   public void getQuartzDetail(String sn,String nm,HttpServletResponse response) throws IOException
   {
     Tool.request(user.getQuartzDetail(sn,nm),response);
+  }
+  @RequestMapping({"saveMaxMin"})
+  public void saveMaxMin(HttpServletResponse response) throws IOException
+  {
+    try {
+      qjob.addJob("savemaxmin", "gsavemaxmin", "tsavemaxmin", "tgsavemaxmin",
+              saveMaxMin.class,  new JSONObject(), 5,5 ,0);
+
+    }catch (Exception e)
+    {
+
+    }
+  }
+  @RequestMapping({"dycbb"})
+  public void dycbb(String tdatestr,HttpServletResponse response) throws IOException
+  {
+    HashMap<String,String> tdate =new HashMap<>();
+
+    Gson gson = new Gson();
+    //Map<String, Object> map = new HashMap<String, Object>();
+    tdate = gson.fromJson("{\"dtstr\":"+tdatestr+"}", tdate.getClass());
+    Tool.request(adddycbbjob(tdate),response);
+  }
+  public  String adddycbbjob(HashMap tdate)
+  {
+    String jsonString="{\"result\":0}";
+    try {
+      qjob.addJob("dycbb", "gdycbb", "tdycbb", "tgdycbb",
+              ReportDycJob.class,  tdate, 5,5 ,0);
+      jsonString="{\"result\":1}";
+    }catch (Exception e)
+    {
+
+    }
+    return jsonString;
   }
   @RequestMapping({"savejobEdit"})
   public void savejobEdit(String jsonStr,int sn , HttpServletResponse response) throws ParseException
@@ -118,6 +161,15 @@ public class jobController
   public void setUserDao(jobDAOImpl userDao)
   {
     this.user = userDao;
+  }
+  public QuartzManager getQuartzManager()
+  {
+    return this.qjob;
+  }
+
+  public void setQuartzManager(QuartzManager qjob)
+  {
+    this.qjob = qjob;
   }
 }
 

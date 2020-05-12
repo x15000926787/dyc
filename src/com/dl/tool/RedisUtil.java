@@ -134,7 +134,25 @@ public class RedisUtil {
             return null;
         }
     }
+    /**
+     * 获取Jedis实例
+     * @return
+     */
+    public synchronized static Jedis getJedis(int redid) {
 
+        try {
+            if (jedisPool != null) {
+                Jedis resource = jedisPool.getResource();
+                resource.select(redid);
+                return resource;
+            } else {
+                return null;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
     /**
      * 释放jedis资源
      * @param jedis

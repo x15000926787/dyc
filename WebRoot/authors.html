@@ -185,6 +185,28 @@ table.gridtable td {
         }else
             editHot.setDataAtCell(r,c,1);
     }
+    function chgtimeopen(e,r){
+       var topen = $(e).val();
+        var tclose = $("#close_"+r).val();
+
+       var tt = topen.split(":");
+       var tt2 = tclose.split(":");
+        console.log((tt[0]*60+tt[1]*1)+","+(tt2[0]*60+tt2[1]*1));
+        editHot.setDataAtCell(r,4,(tt[0]*60+tt[1]*1)+","+(tt2[0]*60+tt2[1]*1));
+
+
+    }
+    function chgtimeclose(e,r){
+        var tclose = $(e).val();
+        var topen = $("#open_"+r).val();
+
+        var tt = topen.split(":");
+        var tt2 = tclose.split(":");
+        console.log((tt[0]*60+tt[1]*1)+","+(tt2[0]*60+tt2[1]*1));
+        editHot.setDataAtCell(r,4,(tt[0]*60+tt[1]*1)+","+(tt2[0]*60+tt2[1]*1));
+
+
+    }
 function negativeValueRenderer_user(instance, td, row, col, prop, value, cellProperties) {
         var id;
         id = editHot.getDataAtCell(row,0);
@@ -214,7 +236,7 @@ function negativeValueRenderer_user(instance, td, row, col, prop, value, cellPro
 
                       // console.log(cc);
                     Handsontable.renderers.HtmlRenderer.apply(this, arguments);
-                    var str="<input style='color: #fff;background: #2a3039;border: 1px solid #2a3039;' type=\"time\"  value='"+aa+":"+bb+"'  id=\"open_"+row+"\" /> ~ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input style='color: #fff;background: #2a3039;border: 1px solid #2a3039;' type=\"time\"  value='"+cc+":"+dd+"'  id=\"close_"+row+"\" />";
+                    var str="<input style='color: #fff;background: #2a3039;border: 1px solid #2a3039;' onchange='chgtimeopen(this,"+row+")' type=\"time\"  value='"+aa+":"+bb+"'  id=\"open_"+row+"\" /> ~ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input style='color: #fff;background: #2a3039;border: 1px solid #2a3039;' type=\"time\" onchange='chgtimeclose(this,"+row+")'  value='"+cc+":"+dd+"'  id=\"close_"+row+"\" />";
                     
                    //  console.log(str);
                     td.innerHTML = str;
@@ -305,7 +327,7 @@ function negativeValueRenderer_user(instance, td, row, col, prop, value, cellPro
     function loadPlan(jz, mode, sn) {
 
         $.ajax({
-            url: httpIp + 'getuser',
+            url: httpIp + '/getuser',
             type: 'POST',
             async: true,
             timeout: timeOutNum,
@@ -345,7 +367,7 @@ function negativeValueRenderer_user(instance, td, row, col, prop, value, cellPro
     function loadauthor() {
 
         $.ajax({
-            url: httpIp + 'getauthor',
+            url: httpIp + '/getauthor',
             type: 'POST',
             async: false,
             timeout: timeOutNum,
@@ -387,7 +409,7 @@ function negativeValueRenderer_user(instance, td, row, col, prop, value, cellPro
         }
         strs = strs + "99";
         $.ajax({
-            url: httpIp + 'set_author',
+            url: httpIp + '/set_author',
             type: 'POST',
             async: false,
             timeout: timeOutNum,
@@ -417,7 +439,7 @@ function negativeValueRenderer_user(instance, td, row, col, prop, value, cellPro
         // $("#authorTitle").html("<font size='" + titleFontSize + "'>" +nm + "  短信权限列表" + "</font>");
         $("#authorTitle2").html(" " + nm + "  " + "</font>");
         $.ajax({
-            url: httpIp + 'getUserAuthor',
+            url: httpIp + '/getUserAuthor',
             type: 'POST',
             async: false,
             timeout: timeOutNum,
@@ -569,7 +591,7 @@ function negativeValueRenderer_user(instance, td, row, col, prop, value, cellPro
                 console.log(postJson + "  json ")
 
                 $.ajax({
-                    url: httpIp + 'saveyTfEdit',
+                    url: httpIp + '/saveyTfEdit',
                     type: 'POST',
                     async: true,
                     data: { jsonStr: postJson, sn: nowPlanSn ,gky:gkey},

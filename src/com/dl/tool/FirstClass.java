@@ -10,11 +10,14 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
-import reactor.fn.timer.HashWheelTimer;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 
 public class FirstClass  implements ServletContextListener {
@@ -59,10 +62,13 @@ public class FirstClass  implements ServletContextListener {
 
 	JSONObject objana = new JSONObject();
 	public static AnaUtil myana=new AnaUtil();
+	public static ThreadPoolExecutor executor = null;
 	//public UpdateCkzJob upckz=new UpdateCkzJob();
     public FirstClass() {
-    
-    	 super(); 
+		super();
+		executor = new ThreadPoolExecutor(5, 10, 200, TimeUnit.MILLISECONDS,
+				new LinkedBlockingQueue<Runnable>(), Executors.defaultThreadFactory(),new ThreadPoolExecutor.DiscardOldestPolicy());
+
 
    	 
     }
@@ -80,13 +86,15 @@ public class FirstClass  implements ServletContextListener {
 	@Override
 	public void contextDestroyed(ServletContextEvent arg0) {
 		// TODO Auto-generated method stub
-		QuartzManager.shutdownJobs();
-		T4.stoplisten();
 		try {
-			Thread.sleep(5000);
+			Thread.sleep(30000);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+		QuartzManager.shutdownJobs();
+		executor.shutdown();
+		T4.stoplisten();
+
 		//T4.killThreadByName("lisner_data");
 		logger.warn("应用程序关闭!");
 	}
@@ -252,7 +260,7 @@ public class FirstClass  implements ServletContextListener {
 					fmap.put("luaname",tmap.get("luaname").toString());	
 					logger.warn("定时脚本任务:"+tmap.get("cronstr").toString()+fmap.toString());
 					QuartzManager.addJob("ljob"+i, LuaJob.class,tmap.get("cronstr").toString(),fmap);
-					//SchedulerUtil.hadleCronTrigger(rs.getString("id"), rs.getString("type"),""+i, ""+j,MyJob.class,rs.getString("cronstr"),taskstr); 	
+					//SchedulerUtil.hadleCronTrigger(rs.getString("id"), rs.getString("type"),""+i, ""+j,MyJob.class,rs.getString("cronstr"),taskstr); 	saveMaxMin
 					break;
 				case 3:
 
@@ -266,6 +274,29 @@ public class FirstClass  implements ServletContextListener {
 				case 5:
 						QuartzManager.addJob("checkonlinetime",checkOnlineTime.class,tmap.get("cronstr").toString(),objana);
 						logger.warn("check在线时长任务:"+tmap.get("cronstr").toString());
+						break;
+				case 6:
+						QuartzManager.addJob("reportjob",ReportJob.class,tmap.get("cronstr").toString(),new JSONObject());
+						logger.warn("yc报表任务:"+tmap.get("cronstr").toString());
+						break;
+				case 8:
+						QuartzManager.addJob("reportdnjob",ReportdnJob.class,tmap.get("cronstr").toString(),new JSONObject());
+						logger.warn("dn报表任务:"+tmap.get("cronstr").toString());
+						break;
+				case 10:
+						QuartzManager.addJob("reportdnjob",ReportDycJob.class,tmap.get("cronstr").toString(),new JSONObject());
+						logger.warn("大悦城报表任务:"+tmap.get("cronstr").toString());
+						break;
+				case 7:
+						QuartzManager.addJob("maxmindayjob",saveMaxMin.class,tmap.get("cronstr").toString(),new JSONObject());
+						logger.warn("daymaxmin任务:"+tmap.get("cronstr").toString());
+						break;
+				case 9:
+						Map<String, Object> xmap = new HashMap<String,Object>();
+						xmap.put("txtname",tmap.get("luaname").toString());
+
+						QuartzManager.addJob("zjdyjob",zjdyJob.class,tmap.get("cronstr").toString(),xmap);
+						logger.warn("电量总加任务:"+tmap.get("cronstr").toString());
 						break;
 				default:
 					break;

@@ -39,6 +39,10 @@ public class AnaUtil  {
     public static ScriptEngineManager scriptEngineManager = new ScriptEngineManager();
     public static ScriptEngine scriptEngine =null;// scriptEngineManager.getEngineByName("nashorn");
     private static final String projectName = "【"+PropertyUtil.getProperty("project_name")+"】";
+    private static final int user_divide = Integer.parseInt(PropertyUtil.getProperty("user_divide","0"));           //默认用户不分组
+    public static LocalDateTime rightnow = LocalDateTime.now();
+    public static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    public static DateTimeFormatter ymd = DateTimeFormatter.ofPattern("yyyy-MM-dd");
    /* static{
         loadAna(jdbcTemplate);
     }*/
@@ -48,13 +52,13 @@ public class AnaUtil  {
     synchronized static public void loadAna_v(JdbcTemplate jdbcTemplate){
         logger.info("开始读取ana内容.......");
 
-
+        LocalDateTime tt = null;//LocalDateTime.parse(map.get("checktime").toString(), formatter);
 
         int i,j,maxsav=0,maxdnsav=0;
 
         i=0;j=0;
         Map<String,Object> map =null;//new HashMap<>();// (HashMap)userData.get(i);
-        String sql="select rtuno,sn,kkey,saveno,upperlimit,lowerlimit,pulsaveno,chgtime,deviceno,ldz,type,author_msg,author_email,author_alert,timevalid,timecondition,warnline,online,timestat,checktime,warntimes  from prtuana_v";
+        String sql="select rtuno,sn,kkey,saveno,upperlimit,lowerlimit,pulsaveno,chgtime,deviceno,ldz,type,author_msg,author_email,author_alert,timevalid,timecondition,warnline,online,timestat,checktime,warntimes,maxv,maxt,minv,mint  from prtuana_v";
 
         //if(rand.equalsIgnoreCase(imagerand)){
         try{
@@ -75,6 +79,29 @@ public class AnaUtil  {
                     }
                     catch(Exception e)
                     {}
+                    try {
+                        tt = LocalDateTime.parse(map.get("maxt").toString(), formatter);
+                    }catch(Exception e)
+                    {
+                         tt = LocalDateTime.parse("2020-01-01 00:00:00", formatter); ;
+                    }
+
+                    if (!rightnow.format(ymd).matches(tt.format(ymd)))
+                    {
+                        map.put("maxv","-99999999");
+                        map.put("maxt",rightnow.format(formatter));
+                    }
+                    try {
+                        tt = LocalDateTime.parse(map.get("minit").toString(), formatter);
+                    }catch(Exception e)
+                    {
+                        tt = LocalDateTime.parse("2020-01-01 00:00:00", formatter); ;
+                    }
+                    if (!rightnow.format(ymd).matches(tt.format(ymd)))
+                    {
+                        map.put("minv","99999999");
+                        map.put("mint",rightnow.format(formatter));
+                    }
                     objana_v.put(map.get("kkey").toString(),map);
 
                 }
@@ -84,6 +111,7 @@ public class AnaUtil  {
 
         }catch(Exception e){
             logger.warn("出错了"+e.toString());
+            e.printStackTrace();
         }
         /*sql="select rtuno,sn,type ,kkey,chgtime,deviceno,author_msg,author_email,author_alert  from prtudig";
         //if(rand.equalsIgnoreCase(imagerand)){
@@ -163,6 +191,7 @@ public class AnaUtil  {
             //dbcon.getClose();
         }catch(Exception e){
             logger.error("出错了"+e.toString());
+            e.printStackTrace();
         }
         logger.warn(msg_user);
         logger.info("加载msg_user内容完成.");
@@ -205,6 +234,7 @@ public class AnaUtil  {
             //dbcon.getClose();
         }catch(Exception e){
             logger.error("出错了"+e.toString());
+            e.printStackTrace();
         }
         logger.warn(msg_author);
         logger.info("加载msg_author内容完成.");
@@ -244,6 +274,7 @@ public class AnaUtil  {
             //dbcon.getClose();
         }catch(Exception e){
             logger.error("出错了"+e.toString());
+            e.printStackTrace();
         }
         logger.warn(online_warn);
         logger.info("加载online_warn内容完成.");
@@ -287,9 +318,44 @@ public class AnaUtil  {
             }
         }catch(Exception e){
             logger.error("condition出错了"+e.toString());
+            e.printStackTrace();
         }
         logger.info(objcondition);
         logger.info("加载objcondition内容完成.");
+
+    }
+    /**
+     * 检查遥测越限
+     * @param
+     * @throws ScriptException
+     */
+
+    synchronized static public int checkmaxmin(String val,String mx,String mn) {
+        int st=-2;
+        //logger.warn("check updown : " +  val+":"+  up+":"+  down+":"+  stat );
+
+
+        try
+        {
+
+            if ((boolean) scriptEngine.eval(val+"<"+mn) )
+                st = -1;
+            if ((boolean) scriptEngine.eval(val+">"+mx))
+                st = 1;
+            if ((boolean) scriptEngine.eval(val+">="+mn)&&(boolean) scriptEngine.eval(val+"<="+mx) )
+                st = 0;
+
+        }catch (IllegalStateException ie)
+        {
+            logger.error("check maxmin err: " +  ie.toString() );
+            ie.printStackTrace();
+        }
+        catch (ScriptException e) {
+            logger.error("check maxmin err: " +  e.toString() );
+            e.printStackTrace();
+        }
+        //logger.warn("st : " +  st );
+        return st;
 
     }
     /**
@@ -392,7 +458,7 @@ public class AnaUtil  {
             }catch (IllegalStateException ie)
             {
                 logger.error("check updown err: " +  ie.toString() );
-               // ie.printStackTrace();
+                ie.printStackTrace();
             }
             catch (ScriptException e) {
                 logger.error("check updown err: " +  e.toString() );
@@ -519,15 +585,16 @@ public class AnaUtil  {
             msg= ((HashMap)userData.get(0)).get("msg").toString();
         }catch(Exception e){
             logger.error("出错了:"+sql+":"+e.toString());
+            e.printStackTrace();
         }
 
         return msg;
     }
-    synchronized static public void handleMessage(String channel, String message, JdbcTemplate jdbcTemplate, Jedis tjedis, ChatSocket skt) {
+    synchronized static public void handleMessage(String channel, String message, JdbcTemplate jdbcTemplate, Jedis tjedis,Jedis mjedis, ChatSocket skt) {
         String val=null,pmessage=null;
 
 
-        if (message.indexOf("_.value")>=0 )
+        if (message.endsWith("_.value") )
         {
             try {
 
@@ -537,6 +604,7 @@ public class AnaUtil  {
             } catch (Exception  e) {
                 val = "0";
                 logger.warn(message+":"+e);
+                e.printStackTrace();
             }
             try {
 
@@ -547,13 +615,14 @@ public class AnaUtil  {
             }
             pmessage = message.replace("_.value","");
 
+            if (message.contains("ai")) handleMaxMin(pmessage,val,mjedis);
+
             handleEvt(pmessage,val,jdbcTemplate,skt);
 
             handleTime(pmessage,val,jdbcTemplate,skt);
 
             handleCondition(val,pmessage,tjedis);
 
-            //logger.warn("handle message done:"+pmessage+","+val);
         }else if (message.matches("anaupdate")) {
             try {
                 loadAna_v(jdbcTemplate);
@@ -592,7 +661,7 @@ public class AnaUtil  {
                 e1.printStackTrace();
             }
         }
-        else if (message.indexOf("active")>0)
+        else if (message.contains("active"))
         {
             //
             //logger.info("延时虚拟遥信心跳：" );
@@ -601,17 +670,17 @@ public class AnaUtil  {
     }
     synchronized static public void handleExpired(String channel, String message, JdbcTemplate jdbcTemplate, Jedis tjedis) {
         String val=null,luaStr=null,pmessage=null;
-        if (channel.indexOf("expired")>=0) {
+        if (channel.contains("expired")) {
             try {
 
-                if (message.indexOf("_.status")>0)   //do或者ao设置指令超时
+                if (message.contains("_.status"))   //do或者ao设置指令超时
                 {
                     pmessage = message.replace("_.status","");
                     val = tjedis.get(pmessage+"_.value");
                     add_red(jdbcTemplate,"insert into setfail (kkey,nval,chgtime) values ('"+pmessage+"','"+val+"',sysdate())");
                     logger.info("设置指令超时：" + pmessage);
                 }
-                else if (message.indexOf("_.delay")>0)
+                else if (message.contains("_.delay"))
                 {
                     //
                     logger.info("延时虚拟遥信执行完成：" + message);
@@ -656,9 +725,92 @@ public class AnaUtil  {
                 }
             }
             catch (Exception  e)
-            {logger.error("delay lua err："+e.toString()+" : "+message);}
+            {
+                logger.error("delay lua err："+e.toString()+" : "+message);
+                e.printStackTrace();
+            }
 
 
+        }
+
+    }
+    synchronized static public void handleMaxMin(String key,String vals,Jedis mjedis) {
+        String maxv,minv;
+
+
+        //String luaStr = null;
+        //SimpleDateFormat df,df2,df3;
+        //JSONObject  map = null;
+        //HashMap<String,Object>  authormap = new HashMap<String,Object>();
+
+        HashMap<String,Object>  map = new HashMap<String,Object>();
+
+        //logger.error(key);
+        //map = (HashMap<String,Object>)objana_v.get(key);
+        //logger.warn(key+ "：" +vals);
+        //logger.warn(map.toString());
+        //df = new SimpleDateFormat("YYMMdd");//设置日期格式
+        //df2 = new SimpleDateFormat("HHmmss");//设置日期格式
+        // df3 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//设置日期格式
+        // savet = (df.format(new Date()));// new Date()为获取当前系统时间
+        LocalDateTime rightnow = LocalDateTime.now();
+        int vv;
+
+        if (objana_v.containsKey(key))
+        {
+
+            map = (HashMap<String,Object>)objana_v.get(key);
+            // logger.warn(map.toString());
+            maxv = map.get("maxv").toString();
+            minv = map.get("minv").toString();
+
+
+                vv =  checkmaxmin(vals,maxv,minv);
+                //logger.warn(vv);//, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);//
+                if (vv!=-2)
+                {
+                    //logger.warn(key+ "：" +vals);
+                    //logger.warn(msg_author);
+
+                    try {
+
+                        //logger.warn(msg_author.toString());
+                        if (vv==1)
+                        {
+                           // add_red(jdbcTemplate, "UPDATE prtuana SET maxv= " + vals + ",maxt='"+rightnow.format(formatter)+"' where kkey='"+key+"'");
+                            ((HashMap<String,String>) objana_v.get(key)).put("maxv", vals);
+                            ((HashMap<String,String>) objana_v.get(key)).put("maxt", rightnow.format(formatter));
+                            mjedis.set(key+"_.maxv",vals);
+                            mjedis.set(key+"_.maxt",rightnow.format(formatter));
+                        }
+                        if(vv==-1)
+                        {
+                           // add_red(jdbcTemplate, "UPDATE prtuana SET minv= " + vals + ",mint='"+rightnow.format(formatter)+"' where kkey='"+key+"'");
+                            ((HashMap<String,String>) objana_v.get(key)).put("minv", vals);
+                            ((HashMap<String,String>) objana_v.get(key)).put("mint", rightnow.format(formatter));
+                            mjedis.set(key+"_.minv",vals);
+                            mjedis.set(key+"_.mint",rightnow.format(formatter));
+
+                        }
+
+
+
+                    }
+                    catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+
+
+
+
+
+
+            //map.clear();
+            //map=null;
+        } else
+        {
+            //logger.error("redis_key do not match mysql_kkey:"+key+",请确认！！！");
         }
 
     }
@@ -679,7 +831,7 @@ public class AnaUtil  {
         //logger.warn(map.toString());
         //df = new SimpleDateFormat("YYMMdd");//设置日期格式
         //df2 = new SimpleDateFormat("HHmmss");//设置日期格式
-       // df3 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//设置日期格式
+        // df3 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//设置日期格式
         // savet = (df.format(new Date()));// new Date()为获取当前系统时间
         LocalDateTime rightnow = LocalDateTime.now();
 
@@ -692,25 +844,55 @@ public class AnaUtil  {
         {
 
             map = (HashMap<String,Object>)objana_v.get(key);
-           // logger.warn(map.toString());
-            msgah = map.get("author_msg").toString();
-            mailah = map.get("author_email").toString();
-            altah = map.get("author_alert").toString();
+            // logger.warn(map.toString());
+            try {
+                msgah = map.get("author_msg").toString();
+            }catch (Exception e)
+            {
+                msgah = "0";
+            }
 
-            if (key.indexOf("ai")>0){
+            try {
+                mailah = map.get("author_email").toString();
+            }catch (Exception e)
+            {
+                mailah = "0";
+            }
+            try {
+                altah = map.get("author_alert").toString();
+            }catch (Exception e)
+            {
+                altah = "0";
+            }
+            rtuno = map.get("rtuno").toString();
+            sn = map.get("sn").toString();
+            gkey = key.split("\\.")[0];
+            if(user_divide==0) gkey = "un_all_";
+
+            if (key.contains("ai")){
                 //logger.warn(map.toString());
-                down = map.get("lowerlimit").toString();
+                try {
+                    down = map.get("lowerlimit").toString();
+                }catch (Exception e)
+                {
+                    down = "0";
+                }
+                try {
+                    up = map.get("upperlimit").toString();
+                }catch (Exception e)
+                {
+                    up = "999999";
+                }
 
-                up = map.get("upperlimit").toString();
+
                 //logger.warn(up);
-                rtuno = map.get("rtuno").toString();
-                sn = map.get("sn").toString();
-                gkey = key.split("\\.")[0];
+
+
                 //logger.error(s);
                 //logger.error(luaStr);
                 //logger.error(map.get("lowerlimit").toString());
                 //logger.warn(map);//, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);//
-               // logger.warn(key+","+vals+","+down+","+up+","+Integer.parseInt(map.get("chgtime").toString()));
+                // logger.warn(key+","+vals+","+down+","+up+","+Integer.parseInt(map.get("chgtime").toString()));
                 vv =  checkupdown(vals,down,up,Integer.parseInt(map.get("chgtime").toString()));
                 //logger.warn(vv);//, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);//
                 if (vv!=-2)
@@ -723,39 +905,42 @@ public class AnaUtil  {
                         //logger.warn(msg_author.toString());
                         if (vv==1) limit=up;
                         if(vv==-1) limit=down;
-                        if (vv==0)
+                        if (vv==0) {
                             add_red(jdbcTemplate, "INSERT INTO " + dbname + " (ymd,hms,ch,xh,zt,val,readstatus) values (" + rightnow.format(DateTimeFormatter.ofPattern("YYMMdd")) + "," + rightnow.format(DateTimeFormatter.ofPattern("HHmmss")) + "," + rtuno + "," + sn + "," + vv + "," + vals + ",0)");
-                        else
-                            add_red(jdbcTemplate, "INSERT INTO " + dbname + " (ymd,hms,ch,xh,zt,val,tlimit,readstatus) values (" + rightnow.format(DateTimeFormatter.ofPattern("YYMMdd")) + "," + rightnow.format(DateTimeFormatter.ofPattern("HHmmss"))+ "," + rtuno + "," + sn + "," + vv + "," + vals +","+limit+ ",0)");
-
+                            add_red(jdbcTemplate, "UPDATE prtu SET status=0 WHERE RTUNO=" + rtuno );
+                        }else {
+                            add_red(jdbcTemplate, "INSERT INTO " + dbname + " (ymd,hms,ch,xh,zt,val,tlimit,readstatus) values (" + rightnow.format(DateTimeFormatter.ofPattern("YYMMdd")) + "," + rightnow.format(DateTimeFormatter.ofPattern("HHmmss")) + "," + rtuno + "," + sn + "," + vv + "," + vals + "," + limit + ",0)");
+                            add_red(jdbcTemplate, "UPDATE prtu SET status=1 WHERE RTUNO=" + rtuno );
+                        }
                         //chgtime 字段用来存储当前遥测状态
                         add_red(jdbcTemplate, "UPDATE prtuana SET chgtime=" + vv + " WHERE RTUNO=" + rtuno + " AND SN=" + sn);
+                        ((HashMap<String,String>) objana_v.get(key)).put("chgtime", ""+vv);
 
                         //authormap = (HashMap<String,Object>)msg_author.get(map.get("deviceno").toString());
 
 
                         //logger.warn(authormap.toString());
 
-                         msg = query_red(jdbcTemplate, "select concat(a.pro_name,b.name,c.roomname,d.devicenm,e.name) msg from project_list a,prtu b,room c,dev_author d,prtuana e where a.pro_id=b.domain and b.rtuno=c.rtuno and c.roomno = d.roomno and d.deviceno=e.deviceno  and e.rtuno=" + rtuno + " and e.sn=" + sn);
+                        msg = query_red(jdbcTemplate, "select concat(a.pro_name,b.name,c.roomname,d.devicenm,e.name) msg from project_list a,prtu b,room c,dev_author d,prtuana e where a.pro_id=b.domain and b.rtuno=c.rtuno and c.roomno = d.roomno and d.deviceno=e.deviceno  and e.rtuno=" + rtuno + " and e.sn=" + sn);
                         if (!msg.isEmpty())
                         {
-                                    msg = rightnow.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) + " " + msg;
-                                switch (vv) {
-                                    case -1:
-                                        msg = msg + " 越下限。备注：" + vals + "（" + down + "~" + up + "）";
-                                        ttp = 1;
-                                        break;
-                                    case 0:
-                                        msg = msg + " 恢复正常。备注：" + vals + "（" + down + "~" + up + "）";
-                                        ttp = 0;
-                                        break;
-                                    case 1:
-                                        msg = msg + " 越上限。备注：" + vals + "（" + down + "~" + up + "）";
-                                        ttp = 1;
-                                        break;
-                                    default:
-                                        break;
-                                }
+                            msg = rightnow.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) + " " + msg;
+                            switch (vv) {
+                                case -1:
+                                    msg = msg + " 越下限。备注：" + vals + "（" + down + "~" + up + "）";
+                                    ttp = 1;
+                                    break;
+                                case 0:
+                                    msg = msg + " 恢复正常。备注：" + vals + "（" + down + "~" + up + "）";
+                                    ttp = 0;
+                                    break;
+                                case 1:
+                                    msg = msg + " 越上限。备注：" + vals + "（" + down + "~" + up + "）";
+                                    ttp = 1;
+                                    break;
+                                default:
+                                    break;
+                            }
                             if (Integer.parseInt(altah) > 0) {
                                 //logger.info( "send alt_yc_msg :" + msg);
                                 if (!skt.getSockets().isEmpty()) {
@@ -763,13 +948,13 @@ public class AnaUtil  {
                                     logger.warn( "send alt_msg :" + "{\"auth\":\""+altah+"\",\"gkey\":\""+gkey+"\",\"msg\":{\"message\":\"" + msg + "\",\"title\":\"遥测越限\",\"type\":" + ttp + ",\"stay\":5000}}", Integer.parseInt(altah));
 
                                 }
-                               // logger.warn( "send alt_msg :" + "{\"msg\":{\"message\":\""+msg+"\",\"title\":\"遥测越\",\"type\":"+ttp+",\"stay\":5000}}");
+                                // logger.warn( "send alt_msg :" + "{\"msg\":{\"message\":\""+msg+"\",\"title\":\"遥测越\",\"type\":"+ttp+",\"stay\":5000}}");
                                 //sendmsg.sendmsg(mobs.substring(1),msg);\"auth\":\""+altah+"\",
                             }
 
 
 
-                       }
+                        }
                         msg=projectName +msg;
                         if (Integer.parseInt(msgah) > 1) {
                             try {
@@ -783,10 +968,11 @@ public class AnaUtil  {
 
                                 for (int i = 1; i < s.length(); i++) {
                                     //logger.warn("ss"+i+":"+ss[i]);
-                                    if (ss[i] == '1') {
+                                    if (ss[i] == '1' && msg_user.containsKey(gkey)) {
                                         usermap = (JSONObject) msg_user.get(gkey);
-                                        tuser = (HashMap<String, Object>) usermap.get(""+(i+1));
-                                        if (tuser != null) {
+                                        if (usermap.containsKey(String.valueOf(i+1))) {
+                                            tuser = (HashMap<String, Object>) usermap.get(""+(i+1));
+
 
                                             if ((Boolean) tuser.get("phonevalid")==true && (min > Integer.parseInt(tuser.get("msg_st").toString())) && (min < Integer.parseInt(tuser.get("msg_et").toString())))
                                                 mobs = mobs + "," + tuser.get("phone").toString();
@@ -798,6 +984,7 @@ public class AnaUtil  {
                                     //sendmsg.sendmsg(mobs.substring(1),msg);
                                 }
                             } catch (Exception e) {
+                                e.printStackTrace();
                             }
 
                         }
@@ -807,10 +994,10 @@ public class AnaUtil  {
                                 String s = Integer.toBinaryString(Integer.parseInt(mailah));
                                 char ss[] =(new StringBuffer(s).reverse()).toString().toCharArray();
                                 for (int i = 1; i < ss.length; i++) {
-                                    if (ss[i] == '1') {
+                                    if (ss[i] == '1' && msg_user.containsKey(gkey)) {
                                         usermap = (JSONObject) msg_user.get(gkey);
-                                        tuser = (HashMap<String, Object>) usermap.get(""+(i+1));
-                                        if (tuser != null) {
+                                        if (usermap.containsKey(String.valueOf(i+1))) {
+                                            tuser = (HashMap<String, Object>) usermap.get(""+(i+1));
 
                                             if ((Boolean) tuser.get("emailvalid")==true && (tuser.get("email").toString() != null))
                                                 umap.put(tuser.get("name").toString(), tuser.get("email").toString());
@@ -820,6 +1007,7 @@ public class AnaUtil  {
                                 }
 
                             } catch (Exception e) {
+                                e.printStackTrace();
                             }
                             emailUtil sendmail = new emailUtil();
                             // logger.warn(sendmail.emailSend("系统信息", msg, umap) + ":" + umap.toString());
@@ -827,7 +1015,7 @@ public class AnaUtil  {
                         }
                         // logger.warn("save hevtyc:"+df.format(new Date())+","+df2.format(new Date())+","+rtuno+","+sn+","+vv+","+vals);
                         //updownstat.put(s, ""+vv);
-                        ((HashMap<String,String>) objana_v.get(key)).put("chgtime", ""+vv);
+
 
                     }
                     catch (Exception e) {
@@ -836,18 +1024,18 @@ public class AnaUtil  {
                 }
 
             }
-            if (key.indexOf("di")>0){
+            if (key.contains("di")){
 
                 //map =(Map) objdig.get(s);
                 //logger.warn(map.toString());
                 //logger.warn(vals);
                 mobs="";
-                rtuno = map.get("rtuno").toString();
-                sn = map.get("sn").toString();
+                //rtuno = map.get("rtuno").toString();
+                //sn = map.get("sn").toString();
                 up = map.get("type").toString();
-               // logger.warn(key+","+vals+","+map.get("chgtime").toString());
+                // logger.warn(key+","+vals+","+map.get("chgtime").toString());
                 vv =  checkevt(vals,Integer.parseInt(map.get("chgtime").toString()));
-                gkey = key.split("\\.")[0];
+
                 //logger.warn(map);
                 // logger.warn(vals);
                 //logger.warn(vv);
@@ -856,13 +1044,16 @@ public class AnaUtil  {
                     //logger.warn(key+ "：" +vals);
                     try
                     {
+                        //logger.warn("INSERT INTO "+dbname2+" (ymd,hms,ch,xh,event,zt,readstatus) values ("+rightnow.format(DateTimeFormatter.ofPattern("YYMMdd"))+","+rightnow.format(DateTimeFormatter.ofPattern("HHmmss"))+","+rtuno+","+sn+","+up+","+vals+",0)");
 
                         add_red(jdbcTemplate,"INSERT INTO "+dbname2+" (ymd,hms,ch,xh,event,zt,readstatus) values ("+rightnow.format(DateTimeFormatter.ofPattern("YYMMdd"))+","+rightnow.format(DateTimeFormatter.ofPattern("HHmmss"))+","+rtuno+","+sn+","+up+","+vals+",0)");
+                        //logger.warn("INSERT INTO "+dbname2+" (ymd,hms,ch,xh,event,zt,readstatus) values ("+rightnow.format(DateTimeFormatter.ofPattern("YYMMdd"))+","+rightnow.format(DateTimeFormatter.ofPattern("HHmmss"))+","+rtuno+","+sn+","+up+","+vals+",0)");
                         add_red(jdbcTemplate,"UPDATE prtudig SET chgtime="+vals+" where RTUNO="+rtuno+" AND SN="+sn);
-
+                        ((HashMap<String,String>) objana_v.get(key)).put("chgtime", ""+vals);
                         // logger.warn("save hevt:"+df.format(new Date())+","+df2.format(new Date())+","+rtuno+","+sn+","+vv+","+vals);
 
                     } catch (Exception e) {
+
                         e.printStackTrace();
                     }
 
@@ -872,23 +1063,23 @@ public class AnaUtil  {
 
 
 
-                   // authormap = (HashMap<String,Object>)msg_author.get(map.get("deviceno").toString());
+                    // authormap = (HashMap<String,Object>)msg_author.get(map.get("deviceno").toString());
                     //logger.warn(authormap);
 
 
-                         msg=query_red(jdbcTemplate,"select concat(a.pro_name,b.name,c.roomname,d.devicenm,e.name,f.e_info,',',f.e_color,',',f.e_stay) msg from project_list a,prtu b,room c,dev_author d,prtudig e,etype_info f where a.pro_id=b.domain and b.rtuno=c.rtuno and c.roomno = d.roomno and d.deviceno=e.deviceno and e.type=f.e_type  and e.rtuno="+rtuno+" and e.sn="+sn+" and f.e_zt="+vals);
-                        String[] msgs = msg.split(",");
-                        msg=projectName+rightnow.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))+" "+msgs[0];
-                        if (Integer.parseInt(altah) > 0) {
+                    msg=query_red(jdbcTemplate,"select concat(a.pro_name,b.name,c.roomname,d.devicenm,e.name,f.e_info,',',f.e_color,',',f.e_stay) msg from project_list a,prtu b,room c,dev_author d,prtudig e,etype_info f where a.pro_id=b.domain and b.rtuno=c.rtuno and c.roomno = d.roomno and c.rtuno=d.domain and d.deviceno=e.deviceno and c.rtuno=e.rtuno and e.type=f.e_type  and e.rtuno="+rtuno+" and e.sn="+sn+" and f.e_zt="+vals);
+                    String[] msgs = msg.split(",");
+                    msg=projectName+rightnow.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))+" "+msgs[0];
+                    if (Integer.parseInt(altah) > 0) {
 
-                            if (!skt.getSockets().isEmpty())
-                                //skt.broadcast(skt.getSockets(), "{\"gkey\":\""+key.split("\\.")[0]+"\",\"msg\":{\"message\":\"" + msg + "\",\"title\":\"遥测越限\",\"type\":" + ttp + ",\"stay\":5000}}", Integer.parseInt(altah));
+                        if (!skt.getSockets().isEmpty())
+                            //skt.broadcast(skt.getSockets(), "{\"gkey\":\""+key.split("\\.")[0]+"\",\"msg\":{\"message\":\"" + msg + "\",\"title\":\"遥测越限\",\"type\":" + ttp + ",\"stay\":5000}}", Integer.parseInt(altah));
 
-                                skt.broadcast(skt.getSockets(), "{\"auth\":\""+altah+"\",\"gkey\":\""+gkey+"\",\"msg\":{\"message\":\""+rightnow.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))+" "+msgs[0]+"\",\"title\":\"开关变位\",\"type\":\""+msgs[1]+"\",\"stay\":\""+msgs[2]+"\"}}",Integer.parseInt(altah));
+                            skt.broadcast(skt.getSockets(), "{\"auth\":\""+altah+"\",\"gkey\":\""+gkey+"\",\"msg\":{\"message\":\""+rightnow.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))+" "+msgs[0]+"\",\"title\":\"开关变位\",\"type\":\""+msgs[1]+"\",\"stay\":\""+msgs[2]+"\"}}",Integer.parseInt(altah));
 
-                            logger.info( "send alt_yx_msg :" + msgs[0]+"   {\"auth\":\""+altah+"\",\"gkey\":\""+gkey+"\"}");
-                            //sendmsg.sendmsg(mobs.substring(1),msg);
-                        }
+                        logger.info( "send alt_yx_msg :" + msgs[0]+"   {\"auth\":\""+altah+"\",\"gkey\":\""+gkey+"\"}");
+                        //sendmsg.sendmsg(mobs.substring(1),msg);
+                    }
 
                     if (Integer.parseInt(msgah) > 1) {
                         try {
@@ -902,13 +1093,15 @@ public class AnaUtil  {
 
                             for (int i = 1; i < s.length(); i++) {
                                 //logger.warn("ss"+i+":"+ss[i]);
-                                if (ss[i] == '1') {
+                                if (ss[i] == '1' && msg_user.containsKey(gkey)) {
                                     usermap = (JSONObject) msg_user.get(gkey);
-                                   // logger.warn(i);
-                                   // logger.warn(usermap);
-                                    tuser = (HashMap<String, Object>) usermap.get(""+(i+1));
-                                    if (tuser != null) {
-                                     //   logger.warn(tuser);
+                                    // logger.warn(i);
+                                    // logger.warn(usermap);
+                                    if (usermap.containsKey(String.valueOf(i+1)))
+                                    {
+                                        tuser = (HashMap<String, Object>) usermap.get(""+(i+1));
+
+                                        //   logger.warn(tuser);
                                         if ((Boolean) tuser.get("phonevalid")==true && (min > Integer.parseInt(tuser.get("msg_st").toString())) && (min < Integer.parseInt(tuser.get("msg_et").toString())))
                                             mobs = mobs + "," + tuser.get("phone").toString();
                                     }
@@ -919,6 +1112,7 @@ public class AnaUtil  {
                                 //sendmsg.sendmsg(mobs.substring(1),msg);
                             }
                         } catch (Exception e) {
+                            e.printStackTrace();
                         }
 
                     }
@@ -928,10 +1122,10 @@ public class AnaUtil  {
                             String s = Integer.toBinaryString(Integer.parseInt(mailah));
                             char ss[] =(new StringBuffer(s).reverse()).toString().toCharArray();
                             for (int i = 1; i < ss.length; i++) {
-                                if (ss[i] == '1') {
+                                if (ss[i] == '1' && msg_user.containsKey(gkey)) {
                                     usermap = (JSONObject) msg_user.get(gkey);
-                                    tuser = (HashMap<String, Object>) usermap.get(""+(i+1));
-                                    if (tuser != null) {
+                                    if (usermap.containsKey(String.valueOf(i+1))) {
+                                        tuser = (HashMap<String, Object>) usermap.get(""+(i+1));
 
                                         if ((Boolean) tuser.get("emailvalid")==true && (tuser.get("email").toString() != null))
                                             umap.put(tuser.get("name").toString(), tuser.get("email").toString());
@@ -941,6 +1135,7 @@ public class AnaUtil  {
                             }
 
                         } catch (Exception e) {
+                            e.printStackTrace();
                         }
                         emailUtil sendmail = new emailUtil();
                         // logger.warn(sendmail.emailSend("系统信息", msg, umap) + ":" + umap.toString());
@@ -950,7 +1145,7 @@ public class AnaUtil  {
 
 
                 }
-                ((HashMap<String,String>) objana_v.get(key)).put("chgtime", ""+vals);
+
 
                 //map.clear();
                 //map=null;
@@ -975,7 +1170,7 @@ public class AnaUtil  {
 
         //SimpleDateFormat df,df2,df3;
         LocalDateTime rightnow = LocalDateTime.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
 
         String rnow = rightnow.format(formatter);
         JSONObject  usermap = new JSONObject();
@@ -995,19 +1190,20 @@ public class AnaUtil  {
 
             map = (HashMap<String,Object>)objana_v.get(key);
 
-            if (key.indexOf("ai")>0)
-                dbname = "prtuana";
-            else
-                dbname = "prtudig";
+
             try {
                 timevalid = Integer.parseInt(map.get("timevalid").toString());
             }catch (Exception e)
             {
                 timevalid = 0;
             }
-             //
+
             if (timevalid==1)
             {
+                if (key.contains("ai"))
+                    dbname = "prtuana";
+                else
+                    dbname = "prtudig";
                 //logger.warn(map.get("kkey").toString()+","+timevalid+","+vals+","+map.get("timecondition").toString());
                 if (checkcondition(vals,map.get("timecondition").toString()) && Integer.parseInt(map.get("timestat").toString())==0)
                 {
@@ -1057,7 +1253,7 @@ public class AnaUtil  {
                         mailah = map.get("author_email").toString();
                         altah = map.get("author_alert").toString();
 
-                        if (key.indexOf("ai")>0){
+                        if (key.contains("ai")){
                             //logger.warn(map.toString());
 
                             rtuno = map.get("rtuno").toString();
@@ -1120,6 +1316,7 @@ public class AnaUtil  {
                                             }
 
                                         } catch (Exception e) {
+                                            e.printStackTrace();
                                         }
 
                                     }
@@ -1142,6 +1339,7 @@ public class AnaUtil  {
                                             }
 
                                         } catch (Exception e) {
+                                            e.printStackTrace();
                                         }
                                         emailUtil sendmail = new emailUtil();
                                         // logger.warn(sendmail.emailSend("系统信息", msg, umap) + ":" + umap.toString());
@@ -1156,7 +1354,7 @@ public class AnaUtil  {
 
 
                         }
-                        if (key.indexOf("di")>0){
+                        if (key.contains("di")){
 
 
                             mobs="";
@@ -1207,6 +1405,7 @@ public class AnaUtil  {
                                         }
 
                                     } catch (Exception e) {
+                                        e.printStackTrace();
                                     }
 
                                 }
@@ -1229,6 +1428,7 @@ public class AnaUtil  {
                                         }
 
                                     } catch (Exception e) {
+                                        e.printStackTrace();
                                     }
                                     emailUtil sendmail = new emailUtil();
                                     // logger.warn(sendmail.emailSend("系统信息", msg, umap) + ":" + umap.toString());
@@ -1282,7 +1482,7 @@ public class AnaUtil  {
 
         if (map!=null)
         {
-            if (key.indexOf("ai")>0)
+            if (key.contains("ai"))
                 dbname = "prtuana";
             else
                 dbname = "prtudig";
@@ -1330,7 +1530,7 @@ public class AnaUtil  {
                         mailah = map.get("author_email").toString();
                         altah = map.get("author_alert").toString();
 
-                        if (key.indexOf("ai")>0){
+                        if (key.contains("ai")){
                             //logger.warn(map.toString());
 
                             rtuno = map.get("rtuno").toString();
@@ -1393,6 +1593,7 @@ public class AnaUtil  {
                                         }
 
                                     } catch (Exception e) {
+                                        e.printStackTrace();
                                     }
 
                                 }
@@ -1415,6 +1616,7 @@ public class AnaUtil  {
                                         }
 
                                     } catch (Exception e) {
+                                        e.printStackTrace();
                                     }
                                     emailUtil sendmail = new emailUtil();
                                     // logger.warn(sendmail.emailSend("系统信息", msg, umap) + ":" + umap.toString());
@@ -1429,7 +1631,7 @@ public class AnaUtil  {
 
 
                         }
-                        if (key.indexOf("di")>0){
+                        if (key.contains("di")){
 
 
                             mobs="";
@@ -1480,6 +1682,7 @@ public class AnaUtil  {
                                     }
 
                                 } catch (Exception e) {
+                                    e.printStackTrace();
                                 }
 
                             }
@@ -1502,6 +1705,7 @@ public class AnaUtil  {
                                     }
 
                                 } catch (Exception e) {
+                                    e.printStackTrace();
                                 }
                                 emailUtil sendmail = new emailUtil();
                                 // logger.warn(sendmail.emailSend("系统信息", msg, umap) + ":" + umap.toString());

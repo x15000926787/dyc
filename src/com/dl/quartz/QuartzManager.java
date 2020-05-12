@@ -133,7 +133,7 @@ public class QuartzManager {
 		// 启动时间
 
 		Date statTime = new Date(tmpTime);
-		System.out.println("test job:"+statTime.toString());
+		System.out.println("QuartzManager 136:"+statTime.toString());
 		try {
 			Scheduler sched = gSchedulerFactory.getScheduler();
 			JobDetail jobDetail = JobBuilder.newJob((Class<? extends Job>) jobClass).withIdentity(jobName, jobGroupName)

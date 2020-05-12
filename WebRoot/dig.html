@@ -103,7 +103,8 @@ body{ background:#343c48;}
 
 	<div style="width:90%;margin-left :20px;box-shadow: none">
 		<div class="nav-tabs-custom" style="box-shadow: none;">
-			<ul class="nav nav-tabs" style="border:none">
+
+			<!--<ul class="nav nav-tabs" style="border:none">
 								<p>
 
 					<div class="pull-left">
@@ -120,10 +121,25 @@ body{ background:#343c48;}
 								        <select id="ttp"  style="width:200px;height:40px;font-size:18px;padding:0px 10px 0px 10px;background: #343c48;" onchange="reloadUpDown()">
 										        <option value=-1>所有设备</option>
 												
-										</select>  
+										</select>
+                                     <div class="col-md-2">
+                                         <label class="control-label">配电室</label>
+                                         <select class="form-control" id="form-control-r" name="genre" onchange="chgrtu()">
+
+                                         </select>
+                                     </div>
+                                     <div class="col-md-2">
+                                         <label class="control-label">总进线柜</label>
+                                         <select class="form-control" id="ttp" name="genre" onchange="reloadUpDown()">
+                                             <option value=-1>所有设备</option>
+                                         </select>
+                                     </div>
 							   </td>
 
-								<td><button id="submit" type="button" class="btn btn-block btn-default " style="width:100px;text-align:center;" align="center">应用</button></td>
+								<td>
+                                    <button type="button" class="btn btn-default" id="enable" style="margin: 25px 0 0 0 ">确定</button>
+                                    <button type="button" class="btn btn-default" id="submit" style="margin: 25px 0 0 0 ">应用</button>
+                                </td>
 
 							</tr>
 						</table>
@@ -131,7 +147,40 @@ body{ background:#343c48;}
 					</div>
 
 
-			</ul>
+			</ul>-->
+            <div class="dashboard-wrapper">
+                <!-- Container fluid Starts -->
+                <div class="container-fluid">
+                    <!-- 选择框 starts-->
+                    <div class="row gutter" style="margin:15px 0 0 -93px;">
+                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                            <div class="panel" style="margin: 7px 0 -28px 83px;background: #2a3039;padding: 13px 0 0 47px;height: 100px;width: 98%;">
+                                <div class="form-group">
+                                    <div class="row gutter">
+                                        <div class="col-md-2">
+                                            <label class="control-label">配电室</label>
+                                            <select class="form-control" id="form-control-r" name="genre" onchange="chgrtu()">
+
+                                            </select>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label class="control-label">总进线柜</label>
+                                            <select class="form-control" id="ttp" name="genre" onchange="reloadUpDown()">
+                                                <option value=-1>所有设备</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="col-md-1">
+                                            <button type="button" class="btn btn-default" id="enable" style="margin: 25px 0 0 0 ">确定</button>
+                                            <button type="button" class="btn btn-default" id="submit" style="margin: 25px 0 0 0 ">应用</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 			<div id="zjTitle" style="background: #2a3039;height: 65px;width: 89.6%;margin: 50px 0 0 44px ;padding:15px 20px">遥测点位限值设置</div>
 
 			<div id="editCell" class="hot handsontable" style="width:1450px;margin: 0px 45px ;font-size:16px;">
@@ -168,7 +217,7 @@ body{ background:#343c48;}
 	
 
 	<script type="text/javascript">
-		
+		var trow  = 0;
 		var nowJz = "all"
 		var nowJzLong = "all"
 		var nowPlanSn = 0;          //
@@ -176,7 +225,8 @@ body{ background:#343c48;}
 		var timeOutNum = 100000;
 		var titleFontSize = 5;
 		var autharr = [4,5,6];
-
+        var rtuno = 0;
+        var roomno = 0;
 		var conditionValidator = function (value,callback) {
 
 			if (!value || 0 === value.length  ) {
@@ -231,6 +281,77 @@ body{ background:#343c48;}
 		function cancel(){
 			$('#tbl-users').hide();
 		}
+        $(document).on("click", "#enable", function() {
+            console.log("click");
+            getUpdown(0,0);
+        });
+        function chgrtu()
+        {
+            rtuno = $("#form-control-r").val();
+            loadroom();
+        }
+        function loadprtu() {
+            // console.log(nowMode);
+
+            $.ajax({
+                url: httpIp + '/mysqltest',
+                type: 'POST',
+                async: true,
+                data: {pno:prono},
+                timeout: timeOutNum,
+                dataType: 'json',
+                beforeSend:beforeSend, //发送请求
+                complete:complete,//请求完成
+                success: function (data, textStatus, jqXHR) {
+                    if (data.result == 1) {
+                        tnm=data.data[0][1];
+                        console.log(tnm);
+                        for(var i = 0; i<data.data.length; i++){
+
+                            $("#form-control-r").append(" <option value='"+data.data[i][0]+"'>"+data.data[i][1]+"</option>");
+                        }
+                        // $("#sel_prtu").get(0).selectedIndex=0;
+                    }
+                    //loadPlan(1,0);
+                },
+                error: function (xhr, textStatus) {
+
+                }
+            })
+
+        }
+        function loadroom() {
+            // console.log(nowMode);
+            var rtuno=$("#form-control-r").val();
+            if (rtuno==null) rtuno=0;
+            $.ajax({
+                url: httpIp + '/getrooms',
+                type: 'POST',
+                async: true,
+                data: {pno:rtuno},
+                timeout: timeOutNum,
+                dataType: 'json',
+                beforeSend:beforeSend, //发送请求
+                complete:complete,//请求完成
+                success: function (data, textStatus, jqXHR) {
+                    if (data.result == 1) {
+                        tnm=data.data[0][1];
+                        console.log(tnm);
+                        $("#ttp").find('option').remove();
+                        for(var i = 0; i<data.data.length; i++){
+
+                            $("#ttp").append(" <option value='"+data.data[i][0]+"'>"+data.data[i][1]+"</option>");
+                        }
+                        // $("#sel_prtu").get(0).selectedIndex=0;
+                    }
+                    //loadPlan(1,0);
+                },
+                error: function (xhr, textStatus) {
+
+                }
+            })
+
+        }
 		function setauthor(){
 			var dd = [];
 			var vv = 1;
@@ -253,7 +374,7 @@ body{ background:#343c48;}
 		function creaeCheckboxList(jz, mode, sn) {
 
 			$.ajax({
-				url: httpIp + 'getuser',
+				url: httpIp + '/getuser',
 				type: 'POST',
 				async: true,
 				timeout: timeOutNum,
@@ -305,9 +426,9 @@ body{ background:#343c48;}
 		}
 		function reloadUpDown()
 		{
-			var dev = $("#ttp").val();
-			console.log(dev);
-			getUpdown(0, dev);
+			 roomno = $("#ttp").val();
+
+			//getUpdown(0, dev);
 		}
 		function initCheckbox(vv)
 		{
@@ -353,6 +474,7 @@ body{ background:#343c48;}
 					imgadd.width = 18;
 					imgadd.style = 'cursor:pointer;';//鼠标移上去变手型
 					Handsontable.dom.addEvent(imgadd, 'click', function (event) {
+						trow = row;
 						$("#authorname").html("弹窗");
 						nowPlanSn=col;
 						nowTab = row;
@@ -385,6 +507,7 @@ body{ background:#343c48;}
 					imgadd.width = 18;
 					imgadd.style = 'cursor:pointer;';//鼠标移上去变手型
 					Handsontable.dom.addEvent(imgadd, 'click', function (event) {
+						trow = row;
 						$("#authorname").html("短信");
 						$('#tbl-users').show();
 						nowTab = row;
@@ -416,6 +539,7 @@ body{ background:#343c48;}
 					imgadd.width = 18;
 					imgadd.style = 'cursor:pointer;';//鼠标移上去变手型
 					Handsontable.dom.addEvent(imgadd, 'click', function (event) {
+						trow = row;
 						$("#authorname").html("邮件");
 						$('#tbl-users').show();
 						nowTab = row;
@@ -456,7 +580,9 @@ body{ background:#343c48;}
 					if (editHot.getDataAtCell(row,5)==0) Handsontable.dom.empty(td);
 					cellProperties.readOnly = true;
 					break;
-
+                case 1:
+                    cellProperties.readOnly = true;
+                    break;
 				default:
 					;
 			}
@@ -480,7 +606,7 @@ body{ background:#343c48;}
            }
 			if(tg.tagName=='IMG' ){
 				targetX=event.clientX-22; //减去盒子宽度和高度，最终鼠标光标可以定位到图片正中间
-				targetY=event.clientY+20;
+				targetY=trow*46+290;
 
 
 			}
@@ -499,7 +625,7 @@ body{ background:#343c48;}
 
 			if(msg==true) {
 				$.ajax({
-					url: httpIp + 'resettime',
+					url: httpIp + '/resettime',
 					type: 'POST',
 					async: true,
 					data: {key: saveno, tp: 2},
@@ -515,8 +641,12 @@ body{ background:#343c48;}
 
 							alert('成功')
 
-						} else {
-							alert('失败')
+						}
+						else if (data.result == 2)
+						{
+							alert('计时条件验证失败')
+						}else {
+							alert('提交失败')
 						}
 
 
@@ -548,7 +678,7 @@ body{ background:#343c48;}
 			colHeaders: colHeaders1,
 			rowHeaders: false,
 			fillHandle: false,
-			colWidths: [60,100,60,60,60,60,60,60,60,60],
+			colWidths: [60,140,50,50,50,50,50,50,50,50],
 			contextMenu: false,
 			disableVisualSelection: false,
 			className: 'htCenter',
@@ -567,21 +697,22 @@ body{ background:#343c48;}
 		});
 
 		function getUpdown(rtu, dev) {
-			nowMode = rtu;
-            console.log(dev);
+
+
 			$.ajax({
-				url: httpIp + 'loadUpdown_dig',
+				url: httpIp + '/loadUpdown_dig',
 				type: 'POST',
 				async: false,
 				timeout: timeOutNum,
-				data: { rtuno: rtu,devno:dev,pno:prono,userId:uid},
+				data: { rtuno: rtuno,devno:roomno,pno:-1,userId:uid},
 				dataType: 'json',
 				beforeSend: beforeSend, //发送请求
 				complete: complete, //请求完成
 				success: function(data, textStatus, jqXHR) {
+                    console.log(data);
 					if (data.result == 1) {
-						console.log(data);
-						$("#zjTitle").html("<font size='" + titleFontSize + "'>" + "  遥测点限值管理" + "</font>");
+
+						$("#zjTitle").html("<font size='" + titleFontSize + "'>" + "  遥信点管理" + "</font>");
 						editData = [];
 
 						editData = JSON.parse(JSON.stringify(data.data));
@@ -589,7 +720,11 @@ body{ background:#343c48;}
 						editHot.loadData(editData);
 
 
-					}
+					}else
+                    {
+                        editData = [];
+                        editHot.loadData(editData);
+                    }
 				},
 				error: function(xhr, textStatus) {
 					editHot.loadData([]);
@@ -634,7 +769,7 @@ body{ background:#343c48;}
 		{
 
 			$.ajax({
-				url: httpIp + 'sendUpdateCMD',
+				url: httpIp + '/sendUpdateCMD',
 				type: 'POST',
 				async: true,
 				data: { key:'anaupdate'},
@@ -733,7 +868,7 @@ body{ background:#343c48;}
 					}
 
 					for (var j = 0; j < newJson.length; j++) {
-						if (newJson[j][0] == null || newJson[j][0] == "") {
+						if (newJson[j][0] === null || newJson[j][0] === "") {
 							addArr.push(newJson[j])
 						}
 					}
@@ -752,7 +887,7 @@ body{ background:#343c48;}
 					console.log(postJson + "  json ")
 
 					$.ajax({
-						url: httpIp + 'saveUpDown_dig',
+						url: httpIp + '/saveUpDown_dig',
 						type: 'POST',
 						async: true,
 						data: { jsonStr: postJson, sn: nowPlanSn },
@@ -792,7 +927,7 @@ body{ background:#343c48;}
         function addsel(){  
 
             $.ajax({  
-                url:  httpIp + 'loadDevice_dig',
+                url:  httpIp + '/loadDevice_dig',
                 dataType : "json",  
                 type : "POST", 
                 data: {dm:prono,gky:gkey},
@@ -824,7 +959,7 @@ body{ background:#343c48;}
                 }  
             });  
         }   
-        addsel();
+        //addsel();
 
 			
 			
@@ -842,7 +977,7 @@ body{ background:#343c48;}
 			var ttp  =$('#ttp').val();
 			var ord  =$('#ord').val();
 			$.ajax({
-				url: httpIp + 'getTfPlanAll_evt',
+				url: httpIp + '/getTfPlanAll_evt',
 				type: 'POST',
 				async: true, 
 				data: { crew: dstr, tab: dstr2, pId: ttp,ob:ord,pno:prono },
@@ -871,7 +1006,8 @@ body{ background:#343c48;}
 			var dstr =$('#dayInput').val();
             loadPlan(); 
 		})
-
+        loadprtu();
+        loadroom();
 		getUpdown(0, -1);
 		creaeCheckboxList(0,0,0);
 		 

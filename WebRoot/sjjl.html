@@ -223,7 +223,7 @@ body{ background:#343c48;}
             
             
             $.ajax({  
-                url:  httpIp + '/LF/loadrtuno',  
+                url:  httpIp + 'loadrtuno',
                 dataType : "json",  
                 type : "POST", 
                 data: {pno:prono},
@@ -330,7 +330,7 @@ body{ background:#343c48;}
 			var ord  =$('#ord').val();
 			console.log(ttp);
 			$.ajax({
-				url: httpIp + '/LF/getTfPlanAll_evt',
+				url: httpIp + 'getTfPlanAll_evt',
 				type: 'POST',
 				async: true, 
 				data: { crew: dstr, tab: dstr2, pId: ttp,ob:ord,pno:prono ,userId:uid},
@@ -359,7 +359,7 @@ body{ background:#343c48;}
 			//dcPlanName = nowZhName + "" + nowPlanName;
            // console.log(jz+"___"+mode+"___"+sn);
 			// $.ajax({
-			// 	url: httpIp + '/LF/getTfData',
+			// 	url: httpIp + '/getTfData',
 			// 	type: 'POST',
 			// 	async: true,
 			// 	data: { crew: jz, crewLong: mode, pId: sn },

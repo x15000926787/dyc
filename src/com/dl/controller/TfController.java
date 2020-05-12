@@ -11,13 +11,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import javax.script.ScriptException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-//import javax.servlet.http.userId;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
+
+//import javax.servlet.http.userId;
 
 @Controller
 public class TfController
@@ -141,17 +140,58 @@ public class TfController
     {
         Tool.request( user.loadDevice(dm,gky),response);
     }
+    @RequestMapping({"askDevice"})
+    public void askDevice(String dm,HttpServletResponse response) throws ParseException
+    {
+        Tool.request( user.askDevice(dm),response);
+    }
+    @RequestMapping({"sendDevice"})
+    public void sendDevice(String dm,HttpServletResponse response) throws ParseException
+    {
+        Tool.request( user.sendDevice(dm),response);
+    }
+    /**
+     * 请求遥测历史数据 根据设备号
+     * @param deviceno   设备号 rtuno,roomno,deviceno
+     * @param len    时间长度，天
+     * @param dtype  数据类型，详见ana_type表
+     * @param type   1：起始时间为当日零点，2：起始时间为当前时间往前推len*24小时
+     * @return       返回5分钟遥测值
+     */
+    @RequestMapping({"ask4devdata"})
+    public void ask4devdata(String deviceno,int len,int dtype,int type,String dtstr,HttpServletResponse response) throws ParseException
+    {
+        Tool.request( user.ask4devdata(deviceno,len,dtype,type,dtstr),response);
+    }
+    /**
+     * 组合查询
+     * @param no   设备号 rtuno,roomno,deviceno
+     * @param len    时间长度，天
+
+     * @return       返回5分钟zuhe值
+     */
+    @RequestMapping({"ask4uniondata"})
+    public void ask4uniondata(String no,int len,String dtstr,HttpServletResponse response) throws ParseException
+    {
+        Tool.request( user.ask4uniondata(no,len,dtstr),response);
+    }
+    @RequestMapping({"ask4devavgdata"})
+    public void ask4devavgdata(String deviceno,int len,int dtype,int type,HttpServletResponse response) throws ParseException
+    {
+        Tool.request( user.ask4devavgdata(deviceno,len,dtype,type),response);
+    }
     /**
      * 请求遥测历史数据
      * @param keys   格式为：un_0_.ai_0,un_0_.ai_1,un_0_.ai_2
      * @param len    时间长度，天
-     * @param type   1：起始时间为当日零点，2：起始时间为当前时间往前推len*24小时
+     * @param type   1：起始时间为当日零点，2：起始时间为当前时间往前推len*24小时，弃用
+     * @param dtstr  取数日期
      * @return       返回5分钟遥测值
      */
     @RequestMapping({"ask4data"})
-    public void ask4data(String keys,int len,int type,HttpServletResponse response) throws ParseException
+    public void ask4data(String keys,int len,int type,String dtstr,HttpServletResponse response) throws ParseException
     {
-        Tool.request( user.ask4data(keys,len,type),response);
+        Tool.request( user.ask4data(keys,len,type,dtstr),response);
     }
     /**
      * 请求日电量结算数据
@@ -206,6 +246,11 @@ public class TfController
   {
 	  Tool.request( user.mysqltest(pno),response);
   }
+    @RequestMapping({"getrooms"})
+    public void getrooms(String pno,HttpServletResponse response) throws ParseException
+    {
+        Tool.request( user.getrooms(pno),response);
+    }
     @RequestMapping({"resettime"})
     public void resettime(String key,int tp,HttpServletResponse response) throws ParseException
     {

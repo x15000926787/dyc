@@ -1,3 +1,2 @@
-dlxy.vtl.val_2=val{dlxy.ch_1.dev_1.ai_1}+val{dlxy.ch_1.dev_1.ai_2}
-dlxy.vtl.val_3=val{dlxy.ch_1.dev_1.ai_3}+val{dlxy.ch_1.dev_1.ai_4}
-dlxy.vtl.val_4=val{dlxy.ch_1.dev_1.ai_1}+Fun{arrsum,val{dlxy.ch_1.dev_1.ai_1},val{dlxy.ch_1.dev_1.ai_2}}+Fun{tmax,val{dlxy.ch_1.dev_1.ai_1},val{dlxy.ch_1.dev_1.ai_2}}
+dlxy.vtl.val_2=val{un_0_.ai_0}+val{un_0_.ai_1}
+dlxy.vtl.val_3=val{un_0_.ai_2}+val{un_0_.ai_3}+val{un_0_.ai_4}+val{un_0_.ai_5}+val{un_0_.ai_6}

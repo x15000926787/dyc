@@ -57,7 +57,7 @@ public class SessionFilter implements Filter {
 
             // 判断是否为ajax请求
             if (httpRequest.getHeader("x-requested-with") != null && httpRequest.getHeader("x-requested-with").equalsIgnoreCase("XMLHttpRequest")) {
-            	logger.warn("1:"+session.getAttribute("LOGIN_SUCCESS"));
+            	//logger.warn("1:"+session.getAttribute("LOGIN_SUCCESS"));
                 httpResponse.addHeader("sessionstatus", "timeOut");
 
                 httpResponse.addHeader("loginPath", loginUrl);
@@ -65,7 +65,7 @@ public class SessionFilter implements Filter {
                 chain.doFilter(request, response);// 不可少，否则请求会出错
 
             } else {
-            	logger.warn("2:"+session.getAttribute("LOGIN_SUCCESS"));
+            	//logger.warn("2:"+session.getAttribute("LOGIN_SUCCESS"));
                 String str = "<script language='javascript'>alert('会话过期,请重新登录');"
 
                         + "window.top.location.href='"
@@ -95,7 +95,7 @@ public class SessionFilter implements Filter {
             }
 
         } else {
-        	logger.warn("3:"+session.getAttribute("LOGIN_SUCCESS"));
+        	//logger.warn("3:"+session.getAttribute("LOGIN_SUCCESS"));
             chain.doFilter(request, response);
 
         }

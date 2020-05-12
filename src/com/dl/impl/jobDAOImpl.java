@@ -3,6 +3,7 @@ package com.dl.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.dl.quartz.QuartzJob;
 import com.dl.quartz.QuartzManager;
 import com.dl.tool.AnaUtil;
 import com.dl.tool.saveHistyc;
@@ -23,10 +24,10 @@ import java.util.*;
 
 
 public class jobDAOImpl extends JdbcDaoSupport{
-	 static SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); 
+	static SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-	 private static final Logger logger = LogManager.getLogger(jobDAOImpl.class);
-	 public static AnaUtil myana=new AnaUtil();
+	private static final Logger logger = LogManager.getLogger(jobDAOImpl.class);
+	public static AnaUtil myana=new AnaUtil();
 
 	public String reloadana()
 	{
@@ -40,131 +41,131 @@ public class jobDAOImpl extends JdbcDaoSupport{
 		}
 		return jsonString;
 	}
-	public String restarthistyc() 
-	  {
-		  	String jsonString="{\"result\":0}";
-			JSONObject objana = new JSONObject();
-			int i,j,maxsav=0,maxdnsav=0;
-		    String key = null;
-			String value = null;
-			i=0;j=0;
-			Map<String,Object> map =null;//new HashMap<>();// (HashMap)userData.get(i);
-			String sql="select rtuno,sn,kkey,saveno,upperlimit,lowerlimit,pulsaveno,chgtime from prtuana ";
-			
-				//if(rand.equalsIgnoreCase(imagerand)){
-		    		try{
-		    			List<Map<String, Object>> userData = getJdbcTemplate().queryForList(sql);
-		    			 int size=userData.size() ;
-		    			    if (size> 0)
-		    			    {
-		    					
-		    			    	for ( i = 0; i<size; i++)
-		    			    	{
-		    						
-		    			    		map = (HashMap) userData.get(i);
-		    			    		
-		    			    		/**/
+	public String restarthistyc()
+	{
+		String jsonString="{\"result\":0}";
+		JSONObject objana = new JSONObject();
+		int i,j,maxsav=0,maxdnsav=0;
+		String key = null;
+		String value = null;
+		i=0;j=0;
+		Map<String,Object> map =null;//new HashMap<>();// (HashMap)userData.get(i);
+		String sql="select rtuno,sn,kkey,saveno,upperlimit,lowerlimit,pulsaveno,chgtime from prtuana ";
+
+		//if(rand.equalsIgnoreCase(imagerand)){
+		try{
+			List<Map<String, Object>> userData = getJdbcTemplate().queryForList(sql);
+			int size=userData.size() ;
+			if (size> 0)
+			{
+
+				for ( i = 0; i<size; i++)
+				{
+
+					map = (HashMap) userData.get(i);
+
+					/**/
 		    			    		/* Map tmap=new HashMap<String, String>();
 		    			    		 for (Map.Entry<String,Object> entry : map.entrySet()){
 			    			    			key = entry.getKey();
 			    			    			value = entry.getValue().toString();
-			    			    			tmap.put(key, value); 
+			    			    			tmap.put(key, value);
 			    			    		}*/
-									 //results.add(map);
-									 maxsav=(Integer.parseInt(map.get("saveno").toString())>maxsav?Integer.parseInt(map.get("saveno").toString()):maxsav);
-									 try
-									 {
-										 maxdnsav=(Integer.parseInt(map.get("pulsaveno").toString())>maxdnsav?Integer.parseInt(map.get("pulsaveno").toString()):maxdnsav); 
-									 }
-									 catch(Exception e)
-									 {}
-									 objana.put(map.get("kkey").toString(),map);
-	
-		    			    	}
-		    			    	 objana.put("maxsav",maxsav);
-								 objana.put("maxdnsav",maxdnsav);
-		    			    }
-						
-						
-			        // pstmt.close();
-			        // dbcon.getClose();
-					}catch(Exception e){
-						logger.warn("出错了"+e.toString());
-					}
-		    		//logger.warn(objana);
-					sql="select rtuno,sn,type ,kkey,chgtime from prtudig ";
-				//if(rand.equalsIgnoreCase(imagerand)){
-					try{
-		    			List<Map<String, Object>> userData = getJdbcTemplate().queryForList(sql);
-		    			 int size=userData.size() ;
-		    			    if (size> 0)
-		    			    {
-		    					
-		    			    	for ( i = 0; i<size; i++)
-		    			    	{	
-		    			    		map = (HashMap) userData.get(i);
-									objana.put(map.get("kkey").toString(),map);
-		    			    	}
-		    			    }
-					}catch(Exception e){
-						logger.warn("出错了"+e.toString());
-					}
-					logger.warn(objana);
-					sql="select cronstr from timetask where type=3 ";
-					//if(rand.equalsIgnoreCase(imagerand)){
-						try{
-							Map<String, Object> vmap = getJdbcTemplate().queryForMap(sql);							
-								 if (!vmap.isEmpty()){ 									
-									 value = vmap.get("cronstr").toString();								
-								 }	
-						}catch(Exception e){
-							logger.warn("cronstr出错了"+e.toString());
-						}
-					
-					logger.warn(value);
-					
+					//results.add(map);
+					maxsav=(Integer.parseInt(map.get("saveno").toString())>maxsav?Integer.parseInt(map.get("saveno").toString()):maxsav);
 					try
 					{
-						
-						QuartzManager.removeJob("saveHistyc");
-						QuartzManager.addJob("saveHistyc",saveHistyc.class,value,objana);
-					}catch(Exception e){
-						logger.warn("qmanager出错了"+e.toString());
+						maxdnsav=(Integer.parseInt(map.get("pulsaveno").toString())>maxdnsav?Integer.parseInt(map.get("pulsaveno").toString()):maxdnsav);
 					}
-		  
-		  
-		  return jsonString;
-	  }
-	 public String getquartz()
-	  {
-		  	String jsonString="{\"result\":0}";
-		  	String sql ="SELECT * from timetask where type=1 order by id";
-		  	 log(sql);  
-		    List userData = getJdbcTemplate().queryForList(sql);
-		    int size=userData.size() ;
-		    if (size> 0)
-		    {
-				Object arr[] = new Object[size];
-		    	for (int i = 0; i<size; i++)
-		    	{
-					ArrayList kv = new ArrayList();
-		    		Map listData = (Map)userData.get(i);
-		    		kv.add(listData.get("id"));
-		    		kv.add(listData.get("name"));
-		    		kv.add(listData.get("cronstr"));
-		    		kv.add(listData.get("description"));
-		    		kv.add("<a id='subBtn' href='javascript:void(0);' title='保存'><span class='fa fa-save'></span></a>&nbsp;&nbsp;&nbsp;&nbsp;<a id='delBtn' href='javascript:void(0);' title='删除'><span class='glyphicon glyphicon-trash'></span></a>&nbsp;&nbsp;&nbsp;&nbsp;<a id='infoBtn' href='javascript:void(0);' title='权限详情'><span class='fa fa-info-circle' onclick=javascript:getQuartzDetail("+listData.get("id")+",'"+listData.get("name")+"')></span></a>");
-		    		arr[i]=kv;
-		    		
-		    		
-		    	}
-		    	  java.util.Map<String,Object> map1 = new HashMap<String,Object>();  
-			      map1.put("result",1);  
-		          map1.put("data",arr);  
-				  jsonString = JSON.toJSONString(map1);
-		    }
-		    return jsonString;
-	  }
+					catch(Exception e)
+					{}
+					objana.put(map.get("kkey").toString(),map);
+
+				}
+				objana.put("maxsav",maxsav);
+				objana.put("maxdnsav",maxdnsav);
+			}
+
+
+			// pstmt.close();
+			// dbcon.getClose();
+		}catch(Exception e){
+			logger.warn("出错了"+e.toString());
+		}
+		//logger.warn(objana);
+		sql="select rtuno,sn,type ,kkey,chgtime from prtudig ";
+		//if(rand.equalsIgnoreCase(imagerand)){
+		try{
+			List<Map<String, Object>> userData = getJdbcTemplate().queryForList(sql);
+			int size=userData.size() ;
+			if (size> 0)
+			{
+
+				for ( i = 0; i<size; i++)
+				{
+					map = (HashMap) userData.get(i);
+					objana.put(map.get("kkey").toString(),map);
+				}
+			}
+		}catch(Exception e){
+			logger.warn("出错了"+e.toString());
+		}
+		logger.warn(objana);
+		sql="select cronstr from timetask where type=3 ";
+		//if(rand.equalsIgnoreCase(imagerand)){
+		try{
+			Map<String, Object> vmap = getJdbcTemplate().queryForMap(sql);
+			if (!vmap.isEmpty()){
+				value = vmap.get("cronstr").toString();
+			}
+		}catch(Exception e){
+			logger.warn("cronstr出错了"+e.toString());
+		}
+
+		logger.warn(value);
+
+		try
+		{
+
+			QuartzManager.removeJob("saveHistyc");
+			QuartzManager.addJob("saveHistyc",saveHistyc.class,value,objana);
+		}catch(Exception e){
+			logger.warn("qmanager出错了"+e.toString());
+		}
+
+
+		return jsonString;
+	}
+	public String getquartz()
+	{
+		String jsonString="{\"result\":0}";
+		String sql ="SELECT * from timetask where type=1 order by id";
+		log(sql);
+		List userData = getJdbcTemplate().queryForList(sql);
+		int size=userData.size() ;
+		if (size> 0)
+		{
+			Object arr[] = new Object[size];
+			for (int i = 0; i<size; i++)
+			{
+				ArrayList kv = new ArrayList();
+				Map listData = (Map)userData.get(i);
+				kv.add(listData.get("id"));
+				kv.add(listData.get("name"));
+				kv.add(listData.get("cronstr"));
+				kv.add(listData.get("description"));
+				kv.add("<a id='subBtn' href='javascript:void(0);' title='保存'><span class='fa fa-save'></span></a>&nbsp;&nbsp;&nbsp;&nbsp;<a id='delBtn' href='javascript:void(0);' title='删除'><span class='glyphicon glyphicon-trash'></span></a>&nbsp;&nbsp;&nbsp;&nbsp;<a id='infoBtn' href='javascript:void(0);' title='权限详情'><span class='fa fa-info-circle' onclick=javascript:getQuartzDetail("+listData.get("id")+",'"+listData.get("name")+"')></span></a>");
+				arr[i]=kv;
+
+
+			}
+			java.util.Map<String,Object> map1 = new HashMap<String,Object>();
+			map1.put("result",1);
+			map1.put("data",arr);
+			jsonString = JSON.toJSONString(map1);
+		}
+		return jsonString;
+	}
 
 	public String savejobEdit(String jsonStr,Integer sn) throws SQLException, ParseException
 	{
@@ -177,12 +178,13 @@ public class jobDAOImpl extends JdbcDaoSupport{
 		PreparedStatement pstm = null;
 		Statement stm = null;
 		String sql="";
+		int i;
 		try
 		{
 			con = getJdbcTemplate().getDataSource().getConnection();
 			con.setAutoCommit(false);
 			stm = con.createStatement();
-			for (int i = 0; i <  addArr.size(); i++)
+			for ( i = 0; i <  addArr.size(); i++)
 			{
 				JSONArray temp=addArr.getJSONArray(i);
 
@@ -197,6 +199,8 @@ public class jobDAOImpl extends JdbcDaoSupport{
 			{
 				sql="delete from timetask where id="+delArr.getInteger(d);
 				stm.addBatch(sql);
+				sql="delete from timetask_detail where taskid="+delArr.getInteger(d);
+				stm.addBatch(sql);
 				//log("delete:  " + sql);
 			}
 			for (int e = 0; e <  editArr.size(); e++)
@@ -210,7 +214,40 @@ public class jobDAOImpl extends JdbcDaoSupport{
 			}
 			stm.executeBatch();
 			con.commit();
-			con.setAutoCommit(true);
+
+
+			QuartzManager.shutdownJobs();
+
+
+
+
+
+			sql="select * from timetask where type=1";
+			List<Map<String, Object>> tasktype1 = new ArrayList<Map<String, Object>>();
+			//if(rand.equalsIgnoreCase(imagerand)){
+			try{
+				tasktype1= getJdbcTemplate().queryForList(sql);
+
+				for (Map<String, Object> tmap:tasktype1){
+
+					i=(int)tmap.get("id");
+					QuartzManager.removeJob("qjob"+i);
+					Map<String, String> maps = new HashMap<String,String>();
+					//maps.put("vv", taskarray.get(""+i).toString());
+					maps.put("vv", ""+i);
+					QuartzManager.addJob("qjob"+i, QuartzJob.class,tmap.get("cronstr").toString(),maps);
+					logger.warn("add定时ao/do任务:"+tmap.get("cronstr").toString()+maps.toString());
+
+					i++;
+
+				}
+
+			}catch(Exception e){
+				logger.error("生成定时任务出错了"+e.toString());
+			}
+
+			QuartzManager.startJobs();
+
 			Map<String,Object> map1 = new HashMap<String,Object>();
 			map1.put("result",1);
 			jsonString = JSON.toJSONString(map1);
@@ -245,11 +282,11 @@ public class jobDAOImpl extends JdbcDaoSupport{
 			stm = con.createStatement();
 
 
-				//String text2=temp.getString(2)+",以"+temp.getString(4)+"MW/MIN速率"+upDown+temp.getString(6)+"MW";
+			//String text2=temp.getString(2)+",以"+temp.getString(4)+"MW/MIN速率"+upDown+temp.getString(6)+"MW";
 
-				sql="Insert into timetask_detial (taskid,kkey,val,type) values ("+task+",'"+kkey+"',"+vv+",1)";
-                log(sql);
-				stm.addBatch(sql);
+			sql="Insert into timetask_detial (taskid,kkey,val,type) values ("+task+",'"+kkey+"',"+vv+",1)";
+			log(sql);
+			stm.addBatch(sql);
 
 
 			stm.executeBatch();
@@ -343,7 +380,7 @@ public class jobDAOImpl extends JdbcDaoSupport{
 	public String getetype()
 	{
 		String jsonString="{\"result\":0}";
-		String sql ="SELECT * from etype_info";
+		String sql ="SELECT * from dotype_info";
 		log(sql);
 		List userData = getJdbcTemplate().queryForList(sql);
 		int size=userData.size() ;
@@ -395,31 +432,31 @@ public class jobDAOImpl extends JdbcDaoSupport{
 
 			}
 		}
-			sql ="SELECT * from prtuana_fullname where ao_do=2";
+		sql ="SELECT * from prtuana_fullname where ao_do=2";
 
-			 userData = getJdbcTemplate().queryForList(sql);
-			 size=userData.size() ;
-		     Object arr2[] = new Object[size];
-			if (size> 0) {
+		userData = getJdbcTemplate().queryForList(sql);
+		size=userData.size() ;
+		Object arr2[] = new Object[size];
+		if (size> 0) {
 
-				for (int i = 0; i < size; i++) {
-					ArrayList kv = new ArrayList();
-					Map listData = (Map) userData.get(i);
-					kv.add(listData.get("name"));
-					kv.add(listData.get("kkey"));
-					kv.add(listData.get("etype"));
-					//kv.add(listData.get("description"));
-					//kv.add("<a id='subBtn' href='javascript:void(0);' title='保存'><span class='fa fa-save'></span></a>&nbsp;&nbsp;&nbsp;&nbsp;<a id='delBtn' href='javascript:void(0);' title='删除'><span class='glyphicon glyphicon-trash'></span></a>&nbsp;&nbsp;&nbsp;&nbsp;<a id='infoBtn' href='javascript:void(0);' title='权限详情'><span class='fa fa-info-circle' onclick=javascript:getuserauthor("+listData.get("id")+",'"+listData.get("name")+"')></span></a>");
-					arr2[i] = kv;
+			for (int i = 0; i < size; i++) {
+				ArrayList kv = new ArrayList();
+				Map listData = (Map) userData.get(i);
+				kv.add(listData.get("name"));
+				kv.add(listData.get("kkey"));
+				kv.add(listData.get("etype"));
+				//kv.add(listData.get("description"));
+				//kv.add("<a id='subBtn' href='javascript:void(0);' title='保存'><span class='fa fa-save'></span></a>&nbsp;&nbsp;&nbsp;&nbsp;<a id='delBtn' href='javascript:void(0);' title='删除'><span class='glyphicon glyphicon-trash'></span></a>&nbsp;&nbsp;&nbsp;&nbsp;<a id='infoBtn' href='javascript:void(0);' title='权限详情'><span class='fa fa-info-circle' onclick=javascript:getuserauthor("+listData.get("id")+",'"+listData.get("name")+"')></span></a>");
+				arr2[i] = kv;
 
 
-				}
 			}
-			java.util.Map<String,Object> map1 = new HashMap<String,Object>();
-			map1.put("result",1);
-			map1.put("aos",arr);
-			map1.put("dos",arr2);
-			jsonString = JSON.toJSONString(map1);
+		}
+		java.util.Map<String,Object> map1 = new HashMap<String,Object>();
+		map1.put("result",1);
+		map1.put("aos",arr);
+		map1.put("dos",arr2);
+		jsonString = JSON.toJSONString(map1);
 
 		return jsonString;
 	}
@@ -495,33 +532,33 @@ public class jobDAOImpl extends JdbcDaoSupport{
 		}
 		return jsonString;
 	}
-	  public String getcronstr(String cron)  {
-		  String jsonString="{\"result\":0}";
-		  String ncron="";
-		  java.util.Map<String,Object> map1 = new HashMap<String,Object>();
-		  String[] croncnt=cron.split(" ");
-		  ncron = croncnt[0];
-		  for(int i=1;i<6;i++)
-		  	ncron =ncron +" "+ croncnt[i];
-		  CronSequenceGenerator cronSequenceGenerator = new CronSequenceGenerator(ncron);
+	public String getcronstr(String cron)  {
+		String jsonString="{\"result\":0}";
+		String ncron="";
+		java.util.Map<String,Object> map1 = new HashMap<String,Object>();
+		String[] croncnt=cron.split(" ");
+		ncron = croncnt[0];
+		for(int i=1;i<6;i++)
+			ncron =ncron +" "+ croncnt[i];
+		CronSequenceGenerator cronSequenceGenerator = new CronSequenceGenerator(ncron);
 
 
-		  SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-		  List<String> list = new ArrayList<>(10);
+		List<String> list = new ArrayList<>(10);
 
-		  Date nextTimePoint = new Date();
-		  for (int i = 0; i < 10; i++) {
-			  // 计算下次时间点的开始时间
-			  nextTimePoint = cronSequenceGenerator.next(nextTimePoint);
-			  list.add(sdf.format(nextTimePoint));
-		  }
-		  map1.put("data",list);
-		  map1.put("result",1);
-		  jsonString = JSON.toJSONString(map1);
+		Date nextTimePoint = new Date();
+		for (int i = 0; i < 10; i++) {
+			// 计算下次时间点的开始时间
+			nextTimePoint = cronSequenceGenerator.next(nextTimePoint);
+			list.add(sdf.format(nextTimePoint));
+		}
+		map1.put("data",list);
+		map1.put("result",1);
+		jsonString = JSON.toJSONString(map1);
 
-	  	return jsonString;
-	  }
+		return jsonString;
+	}
 	public String getcronstr_prv(String cron)throws ParseException, InterruptedException  {
 		String jsonString="{\"result\":0}";
 
@@ -544,10 +581,10 @@ public class jobDAOImpl extends JdbcDaoSupport{
 
 		return jsonString;
 	}
-	 public void log(Object msg) 
-	  {
-		   System.out.println(df.format(new Date())+":"+msg);
-		  
-		 
-	  }
+	public void log(Object msg)
+	{
+		System.out.println(df.format(new Date())+":"+msg);
+
+
+	}
 }

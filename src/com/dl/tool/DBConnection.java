@@ -16,9 +16,9 @@ public class DBConnection  {
 	private String dataBaseName="shcs";
 	private String dataBasePassword="@Shcs2017";*/
 	//private String dataBasePassword="Shcs123";
-	private Connection con=null;
-	private PreparedStatement pstmt=null;
-	private ResultSet rs=null;
+	public Connection con=null;
+	public PreparedStatement pstmt=null;
+	public ResultSet rs=null;
     public JdbcTemplate jdbcTemplate;
 	private String project_id;
 	private static final Logger logger = LogManager.getLogger(DBConnection.class);

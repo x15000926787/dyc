@@ -12,12 +12,8 @@ import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -44,9 +40,8 @@ public  class UpdateDataJob extends JdbcDaoSupport implements Job {
 	
 	static   String luaStr = null;
 	static 	 String kk = "";
-	static   String dbname = null; 
-	static  String dbname2 = null;  
-	static  String savet=null;	
+
+	//static  String savet=null;
 	//static   String up,down,rtuno,sn;
 	//static  SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//设置日期格式
 	static String pattern=".*_.value*";
@@ -63,7 +58,9 @@ public  class UpdateDataJob extends JdbcDaoSupport implements Job {
 	    static  Map<String,String> result = new HashMap<String,String>();
 	    static Map umap=new HashMap<String, Map<String,String>>();
 	    static  Map<String,Response<String>> responses = null;
+	    Pipeline p = null;//jedis.pipelined();
 	    JSONObject anaobj =null;
+	    Set<String> sinter_yc= null;//anaobj.keySet();
 		//static ScriptEngineManager scriptEngineManager = new ScriptEngineManager();
 		//static ScriptEngine scriptEngine ;//= scriptEngineManager.getEngineByName("nashorn");
 	   //public static AnaUtil myana=new AnaUtil();
@@ -207,29 +204,30 @@ public  class UpdateDataJob extends JdbcDaoSupport implements Job {
 
 		//JSONObject anaobj =myana.objana ;
 		//logger.info(anaobj.toJSONString());
-		   Set<String> sinter_yc= anaobj.keySet();
+		sinter_yc= anaobj.keySet();
 
-		HashMap<String,String>  map = new HashMap<String,String>();
+		//HashMap<String,String>  map = new HashMap<String,String>();
 
 
-		//logger.error("dddss");
+		//logger.error("ask data...");
 
 		   responses = new HashMap<String,Response<String>>(sinter_yc.size());
+		   responses.clear();
 	   	   map.clear();
 	   	   result.clear();
-	   	   responses.clear();
+
 	      
 			try {
 				jedis = RedisUtil.getJedis();
 				
-				 Pipeline p = jedis.pipelined();
+				 p = jedis.pipelined();
 				
-				 SimpleDateFormat df = new SimpleDateFormat("YYMMdd");//设置日期格式
-				 SimpleDateFormat df2 = new SimpleDateFormat("HHmmss");//设置日期格式
-				 savet = (df.format(new Date()));// new Date()为获取当前系统时间
-				 Calendar c = Calendar.getInstance();//可以对每个时间域单独修改
-				 dbname = "hevtyc"+(c.get(Calendar.YEAR)%10); 
-				 dbname2 = "hevt"+(c.get(Calendar.YEAR)%10);  
+				// SimpleDateFormat df = new SimpleDateFormat("YYMMdd");//设置日期格式
+				// SimpleDateFormat df2 = new SimpleDateFormat("HHmmss");//设置日期格式
+				// Calendar c = Calendar.getInstance();//可以对每个时间域单独修改
+				// savet = (df.format(new Date()));// new Date()为获取当前系统时间
+
+
 				
 		         //String up,down,rtuno,sn;
 		        result.clear();
@@ -243,6 +241,7 @@ public  class UpdateDataJob extends JdbcDaoSupport implements Job {
 		         responses.put(key1+"_.value", p.get(key1+"_.value"));
 
 		        }
+				//logger.error("ask data 1...");
 		        try {
 		         if (p!=null)  p.sync();
 		        }
@@ -258,7 +257,7 @@ public  class UpdateDataJob extends JdbcDaoSupport implements Job {
 				//logger.warn(responses);
 				for(String k : responses.keySet()) {
                     //logger.warn(k);
-					if (Pattern.matches(pattern, k)||Pattern.matches(patternVtl, k))
+					if (Pattern.matches(pattern, k))
 					{
 						try {
 							//logger.warn("lua err: "+(k) +  responses.get(k).get().toString() );
@@ -280,9 +279,10 @@ public  class UpdateDataJob extends JdbcDaoSupport implements Job {
 								umap.put(kk,nvl);
 							}
 							//s = k.replace("_.value", "");
-							myana.handleEvt(k.replace("_.value",""),luaStr,dbcon.jdbcTemplate,ckt);
+							//if (k.contains("ai")) myana.handleMaxMin(k.replace("_.value",""),luaStr,dbcon.jdbcTemplate);
+							//myana.handleEvt(k.replace("_.value",""),luaStr,dbcon.jdbcTemplate,ckt);
 
-							myana.handleCondition(luaStr,k.replace("_.value",""),jedis);
+							//myana.handleCondition(luaStr,k.replace("_.value",""),jedis);
 
 						} catch (Exception e) {
 							//logger.warn("实时库中没有："+k);
@@ -290,6 +290,7 @@ public  class UpdateDataJob extends JdbcDaoSupport implements Job {
 						}
 					}  //if ch_
 				}
+				//logger.error("ask data 2...");
 				/**
                 //读取定时任务锁状态,谭小波项目不涉及do,ao,注销此过程
 				//get_time_lock();
@@ -442,6 +443,7 @@ public  class UpdateDataJob extends JdbcDaoSupport implements Job {
 		         responses.clear();
 		         result.clear();
 		         umap.clear();
+		         //umap=null;
 
 			 } 
 			

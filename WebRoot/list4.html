@@ -65,13 +65,19 @@
 
                                 <form class="form-inline" role="form">
                                     <div class="form-group">
-                                        <label for="f1">类别</label>
-                                        <select class="form-control" name="" id="sel_prtu">
+                                        <label for="f1">变压器</label>
+                                        <select class="form-control" name="" id="sel_prtu" onchange="loadroom()">
 
                                         </select>
                                     </div>
                                     <div class="form-group">
-                                        <label for="f2">时间</label>
+                                        <label for="f2">设备类别</label>
+                                        <select class="form-control" name="" id="sel_room">
+
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="f3">时间</label>
                                         <input class="form-control"  type="text" id="dateBox"/>
                                     </div>
                                     <button id="searchBtn" type="button" class="btn btn-success btn-sm">确定</button>
@@ -101,10 +107,7 @@
 <script src="js/jquery-2.4.0.min.js"></script>
 <!-- jQuery UI 1.11.4 -->
 <script src="js/jquery-ui-2.4.0.min.js"></script>
-<!-- Resolve conflict in jQuery UI tooltip with Bootstrap tooltip -->
-<script>
-    $.widget.bridge('uibutton', $.ui.button);
-</script>
+
 <!-- Bootstrap 3.3.7 -->
 <script src="js/bootstrap.min.js"></script>
 
@@ -140,8 +143,20 @@
     }
     function loadprtu() {
         // console.log(nowMode);
+        /*console.log('dddd');
+        console.log(localStorage.length);
+        for(var i=0;i<localStorage.length;i++)
+        {
+            //调用key方法获取localStorage中数据对应的键名
+            //如这里键名是从test1开始递增到testN的，那么localStorage.key(0)对应test1
+            var getKey=localStorage.key(i);
+        //华丽分割，看下面的注意
 
-        $.ajax({
+        //通过键名获取值，这里的值包括内容和日期
+        var getVal=localStorage.getItem(getKey);
+           console.log(i+":"+getVal);
+      }*/
+    $.ajax({
             url: httpIp + '/mysqltest',
             type: 'POST',
             async: true,
@@ -160,7 +175,39 @@
                     }
                     // $("#sel_prtu").get(0).selectedIndex=0;
                 }
-                loadPlan(1,0);
+                //loadPlan(1,0);
+            },
+            error: function (xhr, textStatus) {
+
+            }
+        })
+
+    }
+    function loadroom() {
+        // console.log(nowMode);
+        var rtuno=$("#sel_prtu").val();
+        if (rtuno==null) rtuno=0;
+        $.ajax({
+            url: httpIp + '/getrooms',
+            type: 'POST',
+            async: true,
+            data: {pno:rtuno},
+            timeout: timeOutNum,
+            dataType: 'json',
+            beforeSend:beforeSend, //发送请求
+            complete:complete,//请求完成
+            success: function (data, textStatus, jqXHR) {
+                if (data.result == 1) {
+                    tnm=data.data[0][1];
+                    console.log(tnm);
+                    $("#sel_room").find('option').remove();
+                    for(var i = 0; i<data.data.length; i++){
+
+                        $("#sel_room").append(" <option value='"+data.data[i][0]+"'>"+data.data[i][1]+"</option>");
+                    }
+                    // $("#sel_prtu").get(0).selectedIndex=0;
+                }
+                //loadPlan(1,0);
             },
             error: function (xhr, textStatus) {
 
@@ -172,12 +219,15 @@
         // console.log(nowMode);
         var dtstr=$("#dateBox").val();
         var rtuno=$("#sel_prtu").val();
+        if (rtuno==null) rtuno=0;
         var nms=$("#sel_prtu").find("option:selected").text();
         if (nms.length==0)
         {		console.log("ddfd");
             nms=tnm;
         }
         if (rtuno==null) rtuno=0;
+        var roomno=$("#sel_room").val();
+        if (roomno==null) roomno=0;
         if (dtstr.length==0)
         {
             $("#dateBox").val(s);
@@ -192,7 +242,7 @@
             url: httpIp + '/get_vals',
             type: 'POST',
             async: true,
-            data: { dt: dtstr,nm:nms, dno:rtuno,pno:prono,userId:uid },
+            data: { dt: dtstr,nm:nms, dno:rtuno,pno:roomno,userId:uid },
             timeout: timeOutNum,
             dataType: 'json',
             beforeSend:beforeSend, //发送请求
@@ -211,6 +261,9 @@
 
                         $("#cont"+data.data3[i]).append(" <li class=\"item item1\"><div class=\"title\"><span>"+data.data[i]+"</span></div><span style='color:"+color_arr[data.data6[i]]+"'>"+data.data2[i]+"</span> </li>");
                     }
+
+
+
                 }
             },
             error: function (xhr, textStatus) {
@@ -228,7 +281,8 @@
         window.open("exp_excel.jsp?lb="+rtuno+"&dt="+dtstr);
     });
     loadprtu();
-
+    loadroom();
+    loadPlan(0,0);
 </script>
 </body>
 
