@@ -10,7 +10,10 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
+import redis.clients.jedis.Jedis;
 
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import java.util.*;
@@ -20,7 +23,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 
-public class FirstClass  implements ServletContextListener {
+public final  class FirstClass  implements ServletContextListener {
 	//定时任务统一放在本线程中添加，包含：定时开关机(myjob.class)，定时执行lua脚本(myjob.class)，5分钟存储历史遥测、历史电量数据(savehistyc),定期取得实时数据+发送给http客户端(UpdateDataJob)+判断遥信变位和遥测越限（以及恢复），并存入Mysql库
 	//private ThreadTimer T1 = null; //原定时任务（cmd发送命令给周），现已停用
 	//private ThreadLua T2 = null;    //定时执行lua脚本，现已停用。	
@@ -45,10 +48,11 @@ public class FirstClass  implements ServletContextListener {
 
 	public String url;
 
-	
+	public static ScriptEngineManager manager = new ScriptEngineManager();
+	public static ScriptEngine engine = manager.getEngineByName("nashorn");
 
 	//private static  JSONObject taskarray = new JSONObject();
-	private static final Logger logger = LogManager.getLogger(FirstClass.class);
+	public static final Logger logger = LogManager.getLogger(FirstClass.class);
 	
 	private WebApplicationContext springContext;  
 	public static JdbcTemplate jdbcTemplate;
@@ -60,14 +64,15 @@ public class FirstClass  implements ServletContextListener {
 			FirstClass.jdbcTemplate = jdbcTemplate;
 		}
 
-	JSONObject objana = new JSONObject();
-	public static AnaUtil myana=new AnaUtil();
+	//public static JSONObject objana = new JSONObject();
+	//public static AnaUtil myana=new AnaUtil();
 	public static ThreadPoolExecutor executor = null;
 	//public UpdateCkzJob upckz=new UpdateCkzJob();
     public FirstClass() {
 		super();
-		executor = new ThreadPoolExecutor(5, 10, 200, TimeUnit.MILLISECONDS,
-				new LinkedBlockingQueue<Runnable>(), Executors.defaultThreadFactory(),new ThreadPoolExecutor.DiscardOldestPolicy());
+		executor = new ThreadPoolExecutor(10, 20, 60000, TimeUnit.MILLISECONDS,
+				 new LinkedBlockingQueue<Runnable>(), Executors.defaultThreadFactory(),new ThreadPoolExecutor.DiscardOldestPolicy());
+		 executor.allowCoreThreadTimeOut(true);
 
 
    	 
@@ -86,16 +91,17 @@ public class FirstClass  implements ServletContextListener {
 	@Override
 	public void contextDestroyed(ServletContextEvent arg0) {
 		// TODO Auto-generated method stub
+
+		QuartzManager.shutdownJobs();
 		try {
 			Thread.sleep(30000);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		QuartzManager.shutdownJobs();
 		executor.shutdown();
 		T4.stoplisten();
 
-		//T4.killThreadByName("lisner_data");
+		T4.killThreadByName("lisner_data");
 		logger.warn("应用程序关闭!");
 	}
 	 
@@ -123,14 +129,17 @@ public class FirstClass  implements ServletContextListener {
 		 
 		// T1 = new ThreadTimer("timer");
 				 //   T1.start();
-		myana.loadAna_v(jdbcTemplate);
-		myana.load_author(jdbcTemplate);
+		AnaUtil.loadAna_v();
+		AnaUtil.load_author();
 
-		myana.load_condition(jdbcTemplate);
-		myana.load_msguser(jdbcTemplate);
-		myana.load_onlinewarn(jdbcTemplate);
-		//logger.warn(myana.msg_author);
-		objana =myana.objana_v ;
+		AnaUtil.load_condition();
+		AnaUtil.load_msguser();
+		AnaUtil.load_onlinewarn();
+		//myana.tjedis = RedisUtil.getJedis();
+		//myana.mjedis = RedisUtil.getJedis(1);
+		//myana.conn_redis();
+		//logger.warn(myana.tjedis.info());
+		//objana =myana.objana_v ;
        // logger.warn(objana);
 		int i=0;
 
@@ -264,40 +273,45 @@ public class FirstClass  implements ServletContextListener {
 					break;
 				case 3:
 
-					QuartzManager.addJob("saveHistyc",saveHistyc.class,tmap.get("cronstr").toString(),objana);
+					QuartzManager.addJob("saveHistyc",saveHistyc.class,tmap.get("cronstr").toString());
 					logger.warn("存储5分钟历史数据任务:"+tmap.get("cronstr").toString());
 					break;
 				case 4:	
-					QuartzManager.addJob("UpdateDataJob",UpdateDataJob.class,tmap.get("cronstr").toString(),objana);
+					QuartzManager.addJob("UpdateDataJob",UpdateDataJob.class,tmap.get("cronstr").toString());
 					logger.warn("请求实时数据任务:"+tmap.get("cronstr").toString());
 					break;
 				case 5:
-						QuartzManager.addJob("checkonlinetime",checkOnlineTime.class,tmap.get("cronstr").toString(),objana);
+						QuartzManager.addJob("checkonlinetime",checkOnlineTime.class,tmap.get("cronstr").toString());
 						logger.warn("check在线时长任务:"+tmap.get("cronstr").toString());
 						break;
 				case 6:
-						QuartzManager.addJob("reportjob",ReportJob.class,tmap.get("cronstr").toString(),new JSONObject());
+						QuartzManager.addJob("reportjob",ReportJob.class,tmap.get("cronstr").toString());
 						logger.warn("yc报表任务:"+tmap.get("cronstr").toString());
 						break;
 				case 8:
-						QuartzManager.addJob("reportdnjob",ReportdnJob.class,tmap.get("cronstr").toString(),new JSONObject());
+						QuartzManager.addJob("reportdnjob",ReportdnJob.class,tmap.get("cronstr").toString());
+						logger.warn("dn报表任务:"+tmap.get("cronstr").toString());
+						break;
+					case 9:
+						QuartzManager.addJob("reportdnjob",ReportdnJob.class,tmap.get("cronstr").toString());
 						logger.warn("dn报表任务:"+tmap.get("cronstr").toString());
 						break;
 				case 10:
-						QuartzManager.addJob("reportdnjob",ReportDycJob.class,tmap.get("cronstr").toString(),new JSONObject());
+						QuartzManager.addJob("reportdnjob",ReportDycJob.class,tmap.get("cronstr").toString());
 						logger.warn("大悦城报表任务:"+tmap.get("cronstr").toString());
 						break;
 				case 7:
-						QuartzManager.addJob("maxmindayjob",saveMaxMin.class,tmap.get("cronstr").toString(),new JSONObject());
+						QuartzManager.addJob("maxmindayjob",saveMaxMin.class,tmap.get("cronstr").toString());
 						logger.warn("daymaxmin任务:"+tmap.get("cronstr").toString());
 						break;
-				case 9:
+				case 11:
 						Map<String, Object> xmap = new HashMap<String,Object>();
 						xmap.put("txtname",tmap.get("luaname").toString());
 
-						QuartzManager.addJob("zjdyjob",zjdyJob.class,tmap.get("cronstr").toString(),xmap);
+						QuartzManager.addJob("zjdyjob",zjdyJob.class,tmap.get("cronstr").toString());
 						logger.warn("电量总加任务:"+tmap.get("cronstr").toString());
 						break;
+
 				default:
 					break;
 				}
@@ -311,11 +325,13 @@ public class FirstClass  implements ServletContextListener {
 		}catch(Exception e){
 			logger.error("生成定时任务出错了"+e.toString());
 		}
-		Date tdate = new Date();
+		//Date tdate = new Date();
+		logger.warn("实时数据监听开启");
+		T4 = new ThreadSubscriber("lisner_data");
+		T4.start();
 
 
-		    T4 = new ThreadSubscriber("lisner_data");
-		    T4.start();
+		tasktype1=null;
 		/**
 		 *
 		 * 添加延时任务

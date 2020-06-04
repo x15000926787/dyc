@@ -31,7 +31,7 @@ public  class checkOnlineTime implements Job {
 	  private static final Logger logger = LogManager.getLogger(checkOnlineTime.class);
 
 
-	  public static AnaUtil myana=new AnaUtil();
+	  //public static AnaUtil myana=new AnaUtil();
 	  private    long gno=0,vno=0;
 	Jedis jedis = null;
 	  private String vv = null;
@@ -51,7 +51,7 @@ public  class checkOnlineTime implements Job {
     	DBConnection dbcon=new DBConnection();
 
 		jedis = RedisUtil.getJedis();
-		JSONObject onlineobj =myana.online_warn;
+		JSONObject onlineobj =AnaUtil.online_warn;
        // logger.warn(anaobj);
 
 		 Set<String> save_set= onlineobj.keySet();
@@ -81,7 +81,7 @@ public  class checkOnlineTime implements Job {
 				 {
 					 vv = jedis.get(key+"_.value");
 					 //logger.info(key+":"+vv);
-					 myana.checkTime(key,vv,dbcon.jdbcTemplate,ckt);
+					 AnaUtil.checkTime(key,vv);
 
 				 }
 				//

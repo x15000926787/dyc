@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="aspose-cells-8.5.2">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/WebRoot/WEB-INF/lib/aspose-cells-8.5.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/WebRoot/WEB-INF/lib/aspose-words-jdk16-14.6.0.0.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

@@ -35,7 +35,7 @@ public  class ReportdnJob implements Job {
 	   {
 		   reportPath = PropertyUtil.getProperty("reportPath");
 		   jdbcTemplate=FirstClass.jdbcTemplate;
-		   executor = FirstClass.executor;
+		  // executor = FirstClass.executor;
 
 	   }
 

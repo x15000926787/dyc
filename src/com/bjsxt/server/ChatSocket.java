@@ -13,7 +13,7 @@ import java.util.*;
 
 
 @ServerEndpoint("/chatSocket")
-public class ChatSocket {
+public final  class ChatSocket {
 
 
 	/**
@@ -33,25 +33,25 @@ public class ChatSocket {
 		ChatSocket.sockets = sockets;
 	}
 
-	private  static  Set<ChatSocket>  sockets=new HashSet<ChatSocket>();
+	public  static  Set<ChatSocket>  sockets=new HashSet<ChatSocket>();
 	//	private  static  Map<String, ChatSocket>  sMap=new HashMap<String, ChatSocket>();
 	private static final Logger logger = LogManager.getLogger(ThreadSubscriber.class);
-	private  static  List<String>   names=new ArrayList<String>();
-
-	private  Session  session;
-	private String username;
-	private String groupKey;
-	private String uId;
+	public  static  List<String>   names=new ArrayList<String>();
+	public static ChatSocket chatSocket=null;
+	public static Session  session;
+	public static String username;
+	public static String groupKey;
+	public static String uId;
 	//private ThreadDemo T1 = null;
 	//private ThreadSubscriber T2 = null;
-	private Gson  gson=new Gson();
 
-
+	private static Gson  gson=new Gson();
+	static JSONObject msgmap = null;
 	@OnOpen
 	public  void open(Session  session){
 
 		this.session=session;
-		sockets.add(this);
+
 
 		String  queryString = session.getQueryString().split("&")[0];
 
@@ -60,6 +60,7 @@ public class ChatSocket {
 		this.groupKey = queryString.substring(queryString.indexOf("=")+1);;
 		queryString = session.getQueryString().split("&")[2];
 		this.uId = queryString.substring(queryString.indexOf("=")+1);;
+		sockets.add(this);
 		names.add(this.username);
 		logger.info("欢迎你："+this.username+"("+this.groupKey+")"+this.uId);
 
@@ -108,35 +109,40 @@ public class ChatSocket {
 		//broadcast(sockets, gson.toJson(message));
 	}
 
-	public void broadcast(Set<ChatSocket>  ss ,String msg ,long tt){
-		int j=0;
+	public static void broadcast(Set<ChatSocket>  ss ,String msg ,long tt){
+
+
 		//logger.warn(msg);
-		JSONObject msgmap = JSONObject.parseObject(msg);
+		msgmap = JSONObject.parseObject(msg);
 		if (tt<0) {                                                         //发送redis中的 key-value
 
 			for (Iterator iterator = ss.iterator(); iterator.hasNext(); ) {
 
-				ChatSocket chatSocket = (ChatSocket) iterator.next();
+				 chatSocket = (ChatSocket) iterator.next();
 
 				try {
 					synchronized (chatSocket.session) {
 
-							if (chatSocket.groupKey.matches("un_all_")) {
 
-								for (String str : msgmap.keySet()) {
-									chatSocket.session.getBasicRemote().sendText(gson.toJson(msgmap.get(str)));
+								if (chatSocket.groupKey.matches("un_all_")) {
+
+									for (String str : msgmap.keySet()) {
+										if (chatSocket.session.isOpen()) {
+										chatSocket.session.getBasicRemote().sendText(gson.toJson(msgmap.get(str)));
+										}
+									}
+								} else {
+									if (msgmap.containsKey(chatSocket.groupKey))
+										chatSocket.session.getBasicRemote().sendText(gson.toJson(msgmap.get(chatSocket.groupKey)));
 								}
-							} else {
-								if (msgmap.containsKey(chatSocket.groupKey))
-									chatSocket.session.getBasicRemote().sendText(gson.toJson(msgmap.get(chatSocket.groupKey)));
-							}
+
 
 
 					}
 				} catch (IOException e) {
 					//e.printStackTrace();
 				}
-				j++;
+
 			}
 		}
 		else
@@ -144,23 +150,24 @@ public class ChatSocket {
 			//logger.info(msg);
 			for (Iterator iterator = ss.iterator(); iterator.hasNext(); ) {
 
-				ChatSocket chatSocket = (ChatSocket) iterator.next();
+				chatSocket = (ChatSocket) iterator.next();
 				try {
 					synchronized(chatSocket.session){
 						//logger.warn(chatSocket.groupKey);
-						if(chatSocket.groupKey.matches("un_all_"))
-						{
 
-							for (String str:msgmap.keySet()) {
-								chatSocket.session.getBasicRemote().sendText(gson.toJson(msgmap.get(str)));
+							if (chatSocket.groupKey.matches("un_all_")) {
+
+								for (String str : msgmap.keySet()) {
+									if (chatSocket.session.isOpen()) {
+									chatSocket.session.getBasicRemote().sendText(gson.toJson(msgmap.get(str)));
+									}
+								}
+							} else {
+								if (msgmap.containsKey(chatSocket.groupKey))
+
+									chatSocket.session.getBasicRemote().sendText(gson.toJson(msgmap.get(chatSocket.groupKey)));
 							}
-						}
-						else
-						{
-							if (msgmap.containsKey(chatSocket.groupKey))
 
-								chatSocket.session.getBasicRemote().sendText(gson.toJson(msgmap.get(chatSocket.groupKey)));
-						}
 
 
 
@@ -170,6 +177,9 @@ public class ChatSocket {
 				}
 			}
 		}
+
+		//msgmap=null;
+
 	}
 
 

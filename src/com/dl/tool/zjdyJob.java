@@ -11,7 +11,6 @@ import javax.script.ScriptEngineManager;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.HashMap;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -21,22 +20,15 @@ import java.util.regex.Pattern;
  * Created by xx on 2020/04/26.
  */
 public  class zjdyJob implements Job {
-	private static final org.apache.logging.log4j.Logger logger = LogManager.getLogger(zjdyJob.class);
-	public  String zjdyPath ,bbname;
-	Jedis jedis = null;
-	String result=null;
-	String key = null,val=null;
-	BufferedReader br = null;
-	ScriptEngineManager manager = new ScriptEngineManager();
-	ScriptEngine engine = manager.getEngineByName("js");
-	String[] calc = null;
-	HashMap<String, Object> taskdetial = null;//(HashMap<String, Object>) (arg0.getJobDetail().getJobDataMap().get("taskdetial"));
-	String luaname = null;//(String)taskdetial.get("txtname");
-	public ThreadPoolExecutor executor = null;
+
+
+	//(String)taskdetial.get("txtname");
+	//public ThreadPoolExecutor executor = null;
 
 	public zjdyJob()
 	   {
-		   zjdyPath = PropertyUtil.getProperty("zjdyPath");
+
+		   //logger.warn("create zjdyjob");
 
 	   }
 
@@ -44,16 +36,31 @@ public  class zjdyJob implements Job {
 
 	@Override
 	public void execute(JobExecutionContext arg0) throws JobExecutionException {
+		String zjdyPath ;
+		zjdyPath = PropertyUtil.getProperty("zjdyPath")+"zjdy.txt";
+		BufferedReader br = null;
+		FileReader fileReader = null;
+		String[] calc = null;
+		Jedis jedis = null;
+		String result=null;
+		String key = null,val=null;
+		Pattern p = null;//Pattern.compile("val\\{[^\\}]+");
+		Matcher m = null;//p.matcher(calc[1]);//strTmp替换成你的字符串
 
-		taskdetial = (HashMap<String, Object>) (arg0.getJobDetail().getJobDataMap().get("taskdetial"));
-		luaname =(String)taskdetial.get("txtname");
+		String s = null;
+		//HashMap<String, Object> taskdetial = null;//(HashMap<String, Object>) (arg0.getJobDetail().getJobDataMap().get("taskdetial"));
+
+		//taskdetial = (HashMap<String, Object>) (arg0.getJobDetail().getJobDataMap().get("taskdetial"));
+		//luaname ="zjdy.txt";
 
 		try {
-			jedis = RedisUtil.getJedis();
+			jedis= JedisUtil.getInstance().getJedis();
+
 
 			try{
-				 br = new BufferedReader(new FileReader(zjdyPath+luaname));//构造一个BufferedReader类来读取文件
-				String s = null;
+				 fileReader = new FileReader(zjdyPath);
+				 br = new BufferedReader(fileReader);//构造一个BufferedReader类来读取文件
+
 				//System.out.println("ddd");
 				while((s = br.readLine())!=null){//使用readLine方法，一次读一行
 					//result.append(System.lineSeparator()+s);
@@ -62,8 +69,8 @@ public  class zjdyJob implements Job {
 					//System.out.println(calc);
 
 
-					Pattern p = Pattern.compile("val\\{[^\\}]+");
-					Matcher m = p.matcher(calc[1]);//strTmp替换成你的字符串
+					 p = Pattern.compile("val\\{[^\\}]+");
+					 m = p.matcher(calc[1]);//strTmp替换成你的字符串
 					while (m.find()) {
 						//logger.warn("find: "+m.group(0));
 						key = m.group(0).replace("val{","")+"_.value";
@@ -79,25 +86,46 @@ public  class zjdyJob implements Job {
 							calc[1] = calc[1].replace(m.group(0)+"}","0");
 						}
 					}
+
 					//logger.warn(calc[1]);
-					 result =  engine.eval(calc[1]).toString();
+					 result =  FirstClass.engine.eval(calc[1]).toString();
 					//logger.warn(result);
 					jedis.set(calc[0]+"_.value",String.valueOf(result));
 
 					calc=null;
 				}
 				br.close();
+				br=null;
+				fileReader.close();
+				fileReader=null;
 				//br = null;
 			}catch(Exception e){
 				//logger.warn(e.toString());
 				e.printStackTrace();
 			}
 
-			RedisUtil.close(jedis);
-			//jedis=null;
+			JedisUtil.getInstance().returnJedis(jedis);
+
+			s = null;
+			// br = null;
+			//fileReader = null;
+
+			//RedisUtil.close(jedis);
+
+			result=null;
+			key = null;
+			val=null;
+			p = null;
+			m = null;
+			//manager = null;
+			//engine = null;
+
+			//taskdetial = null;//(HashMap<String, Object>) (arg0.getJobDetail().getJobDataMap().get("taskdetial"));
+
+			zjdyPath=null;
 
 		} catch (Exception e) {
-			logger.warn("readfile()   Exception:" + e.getMessage());
+
 		}
 		//taskdetial.clear();
 		//taskdetial = null;

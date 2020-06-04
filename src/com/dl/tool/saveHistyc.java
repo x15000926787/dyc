@@ -1,8 +1,7 @@
 package com.dl.tool;
 
-import com.alibaba.fastjson.JSONObject;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+
+
 import org.quartz.*;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Pipeline;
@@ -10,11 +9,12 @@ import redis.clients.jedis.Response;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
@@ -27,51 +27,38 @@ import java.util.regex.Pattern;
 @DisallowConcurrentExecution
 public  class saveHistyc implements Job {
 	   
-	   Jedis jedis = null;
-	   private static final Logger logger = LogManager.getLogger(saveHistyc.class);
 
-	   private String dzt = PropertyUtil.getProperty("dztime");
-	   private String patter=".*ai.*";
-	   private String patterdt=".*"+dzt+".*";
-	      HashMap<String,Object>  anamap = new HashMap<String,Object>();
-	   public static AnaUtil myana=new AnaUtil();
-	  //	DBConnection dbcon=null;//
-	  //	PreparedStatement pstmt=null;
-		//ResultSet rs;
-	  private   int maxanaSaveno = 0,maxdnSaveno = 0;
-	  private    long gno=0,vno=0;
-	  private   long saveno =0;
-	  private String vv = null;
-	  static Map<String,Response<String>> responses = null;
-	/*public static boolean isNumber(String string) {
-		if (string == null)
-			return false;
-		Pattern pattern = Pattern.compile("^-?\\d+(\\.\\d+)?$");
-		return pattern.matcher(string).matches();
-	}*/
-		public saveHistyc() {
-
-		}
-		
-   
 	@SuppressWarnings("unchecked")
 	@Override
     public void execute(JobExecutionContext arg0) throws JobExecutionException {
-       //
-		logger.warn("saveHistyc start");
-    	DBConnection dbcon=new DBConnection();
+		 Jedis jedis = null;
+		 String patter=null;//".*ai.*";
+		String savet = null;
+		String dbname =null;
+		 //HashMap<String,Object>  anamap =null;// new HashMap<String,Object>();
+		 String sql = null;
+		 String vv = null;
+		 Map<String,Response<String>> responses = null;
+		 int maxanaSaveno = 0,maxdnSaveno = 0;
+		 long gno=0,vno=0;
+		 long saveno =0;
+		patter=".*ai.*";
+		Connection con = null;
+		PreparedStatement pstm = null;
+		System.out.println("saveHistyc start");
+    	//DBConnection dbcon=new DBConnection();
 		int t =0;
        // JSONObject anaobj =(JSONObject) (arg0.getJobDetail().getJobDataMap().get("taskdetial"));
-		JSONObject anaobj =myana.objana_v;
+		//JSONObject anaobj =AnaUtil.objana_v;
        // logger.warn(anaobj);
-         maxanaSaveno = Integer.parseInt(anaobj.get("maxsav").toString());
-		 maxdnSaveno = Integer.parseInt(anaobj.get("maxdnsav").toString());
+         maxanaSaveno = Integer.parseInt(AnaUtil.objana_v.get("maxsav").toString());
+		 maxdnSaveno = Integer.parseInt(AnaUtil.objana_v.get("maxdnsav").toString());
 		// logger.warn(maxdnSaveno);
-		 Set<String> sinter_yc= anaobj.keySet();
+		// Set<String> sinter_yc= AnaUtil.objana_v.keySet();
 		 saveno = 0;
 		 gno=0;
 		 vno=0;
-		String sql = "";
+
 		 String[] collist = new String[((int)(maxanaSaveno/200)+1)];
 		 String[] vallist = new String[((int)(maxanaSaveno/200)+1)];
 
@@ -82,21 +69,21 @@ public  class saveHistyc implements Job {
 		LocalDateTime rightnow = LocalDateTime.now();
 		DateTimeFormatter df = DateTimeFormatter.ofPattern("MMddHHmm");
 		DateTimeFormatter df2 = DateTimeFormatter.ofPattern("yyyyMMddHHmm");
-		responses = new HashMap<String, Response<String>>(sinter_yc.size());
+		responses = new HashMap<String, Response<String>>();
 
 
          //logger.info(dzt);
     	try {
-
-			jedis = RedisUtil.getJedis();
+			con = FirstClass.getJdbcTemplate().getDataSource().getConnection();
+			jedis= JedisUtil.getInstance().getJedis();
 			//sinter_yc =  jedis.keys("*ai*");
 			Pipeline p = jedis.pipelined();
 
 			//SimpleDateFormat df = new SimpleDateFormat("MMddHHmm");//设置日期格式
 			//SimpleDateFormat df2 = new SimpleDateFormat("yyyyMMddHHmm");//设置日期格式
-			String savet = rightnow.format(df);
+			savet = rightnow.format(df);
 			// Calendar c = Calendar.getInstance();//可以对每个时间域单独修改
-			String dbname = "hyc" + (rightnow.getYear() % 10);
+			 dbname = "hyc" + (rightnow.getYear() % 10);
 			double timechuo = System.currentTimeMillis();
 			for (int i = 0; i < vallist.length; i++) {
 				collist[i] = "";
@@ -106,7 +93,7 @@ public  class saveHistyc implements Job {
 				dncollist[i] = "";
 				dnvallist[i] = "";
 			}
-			for (String key1 : sinter_yc) {
+			for (String key1 : AnaUtil.objana_v.keySet()) {
 				if (Pattern.matches(patter, key1) )
 				responses.put(key1 + "_.value", p.get(key1 + "_.value"));
 
@@ -114,7 +101,7 @@ public  class saveHistyc implements Job {
 			try {
 				if (p != null) p.sync();
 			} catch (JedisConnectionException e) {
-				logger.error("lua err: " + e.toString());
+				System.out.println("lua err: " + e.toString());
 				e.printStackTrace();
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -133,13 +120,13 @@ public  class saveHistyc implements Job {
 
 						try {
 
-							anamap = (HashMap<String, Object>) anaobj.get(key.replace("_.value",""));
+							//anamap = (HashMap<String, Object>) AnaUtil.objana_v.get(key.replace("_.value",""));
 
 							try {
 
-								saveno = (long) (anamap.get("saveno"));
+								saveno = (long) ((HashMap<String, Object>) AnaUtil.objana_v.get(key.replace("_.value",""))).get("saveno");
 							} catch (Exception e) {
-								logger.warn("err saveno:" + anamap + "  " + e.toString());
+								System.out.println("err saveno:" + ((HashMap<String, Object>) AnaUtil.objana_v.get(key.replace("_.value",""))) + "  " + e.toString());
 								saveno = 0;
 							}
 							if (saveno != -1) {
@@ -154,7 +141,7 @@ public  class saveHistyc implements Job {
 
 
 									try {
-										saveno = (long) (anamap.get("pulsaveno"));
+										saveno = (long) (((HashMap<String, Object>) AnaUtil.objana_v.get(key.replace("_.value",""))).get("pulsaveno"));
 
 										if (saveno != -1) {
 											//logger.warn(saveno);
@@ -180,7 +167,7 @@ public  class saveHistyc implements Job {
 										}*/
 										}
 									} catch (Exception e) {
-										logger.error("pulsaveno:" + key + ":" + anamap.toString());
+										System.out.println("pulsaveno:" + key + ":" + ((HashMap<String, Object>) AnaUtil.objana_v.get(key.replace("_.value",""))).toString());
 										e.printStackTrace();
 										//saveno=0;
 									}
@@ -189,7 +176,7 @@ public  class saveHistyc implements Job {
 							}      //pul对应的ana表的saveno必须要有
 
 						} catch (Exception e) {
-							logger.error(key + ":" + e.toString());
+							System.out.println(key + ":" + e.toString());
 							e.printStackTrace();
 						}
 
@@ -205,17 +192,17 @@ public  class saveHistyc implements Job {
 					//if(rand.equalsIgnoreCase(imagerand)){
 					try {
 
-						dbcon.setPreparedStatement(sql);
-						 t = dbcon.getexecuteUpdate();
-						if (t==0) logger.error(sql);
+						pstm = con.prepareStatement(sql);
+						 t = pstm.executeUpdate();
+
 
 
 					} catch (Exception e) {
-                        logger.warn( e.toString());
+						System.out.println( e.toString());
 					}
 				}
 
-				logger.warn("save histyc:" + savet);
+			System.out.println("save histyc:" + savet);
 				//logger.warn(dnvallist.length);
 				jedis.set("delay_active", rightnow.format(df2));
 
@@ -230,33 +217,29 @@ public  class saveHistyc implements Job {
 					//if(rand.equalsIgnoreCase(imagerand)){
 					try {
 
-						dbcon.setPreparedStatement(sql);
-						 t = dbcon.getexecuteUpdate();
-                        if (t==0) logger.error(sql);
+						pstm = con.prepareStatement(sql);
+						t = pstm.executeUpdate();
+
 
 
 					} catch (Exception e) {
-                        logger.warn( e.toString());
+						System.out.println( e.toString());
 					}
 				}
-				logger.warn("save hdn:" + savet);
-				//logger.warn(sql);
+			System.out.println("save hdn:" + savet);
 
-
-				//结算点时间，重新读取anaobj
-				if (Pattern.matches(patterdt, savet)) {
-					AnaUtil.loadAna_v(dbcon.jdbcTemplate);
-				}
 				try {
 					p.close();
 				} catch (IOException ee) {
 				}
 				//System.gc();
-				dbcon.getClose();
-				dbcon = null;
-				RedisUtil.close(jedis);
-				jedis = null;
+			pstm.close();
+			pstm = null;
+			con.close();
+			con = null;
+			JedisUtil.getInstance().returnJedis(jedis);
 				responses.clear();
+				responses=null;
 
 
 
@@ -267,14 +250,28 @@ public  class saveHistyc implements Job {
 	    	 catch (Exception es) {
 	            es.printStackTrace();
 	        }
-    	//anaobj.clear();
-    	//anaobj = null;
-    	//sinter_yc.clear();
-		//sinter_yc= null;
+		savet = null;
+
+		dbname = null;
     	collist= null;
 	    vallist= null;
 	    dncollist= null;
 	    dnvallist= null;
+
+	    patter=null;//".*ai.*";
+
+		//anamap =null;// new HashMap<String,Object>();
+		sql = null;
+		vv = null;
+
+		// logger.warn(maxdnSaveno);
+		 //sinter_yc= null;
+
+		 rightnow = null;
+		 df = null;
+		 df2 = null;
+
+
 		Runtime.getRuntime().gc();
     }
     	

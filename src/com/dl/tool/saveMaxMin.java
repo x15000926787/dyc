@@ -1,5 +1,6 @@
 package com.dl.tool;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -9,6 +10,9 @@ import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjusters;
@@ -28,17 +32,7 @@ public  class saveMaxMin implements Job {
 
 	   private static final Logger logger = LogManager.getLogger(saveMaxMin.class);
 
-	   private Jedis mjedis;
-	   private String dzt = PropertyUtil.getProperty("dztime");
-	   private String patter=".*ai.*";
-	   private String patterdt=".*"+dzt+".*";
-	      HashMap<String,Object>  anamap = new HashMap<String,Object>();
-	   public static AnaUtil myana=new AnaUtil();
-	  //	DBConnection dbcon=null;//
-	  //	PreparedStatement pstmt=null;
-		//ResultSet rs;
-	  static Map<String,Response<String>> responses = null;
-	  private String sql = null;
+
 	/*public static boolean isNumber(String string) {
 		if (string == null)
 			return false;
@@ -46,38 +40,59 @@ public  class saveMaxMin implements Job {
 		return pattern.matcher(string).matches();
 	}*/
 		public saveMaxMin() {
-			mjedis = RedisUtil.getJedis(1);
+
 		}
 		
    
 	@SuppressWarnings("unchecked")
 	@Override
     public void execute(JobExecutionContext arg0) throws JobExecutionException {
-       //
-		//logger.warn("saveHistyc");
-    	DBConnection dbcon=new DBConnection();
-    	
-       // JSONObject anaobj =(JSONObject) (arg0.getJobDetail().getJobDataMap().get("taskdetial"));
-		JSONObject anaobj =myana.objana_v;
-       // logger.warn(anaobj);
-		PreparedStatement ps = null;
+
+
+
+
+		//HashMap<String,Object>  anamap = new HashMap<String,Object>();
+		 Map<String,Response<String>> responses = null;
+		 String sql = null;
+		Jedis mjedis = JedisUtil.getInstance().getJedis(1);
+
 
 		LocalDateTime rightnow = LocalDateTime.now();
 		//rightnow = rightnow.minusDays(1);
 
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
+
+		Connection con = null;
+		PreparedStatement pstm = null;
+		//Statement stm = null;
+
+		int hhmmop = 0;
+		int hhmmcl = 0;
+		try
+		{
+			con = FirstClass.getJdbcTemplate().getDataSource().getConnection();
+			con.setAutoCommit(false);
+
+
+
+
+
+
+
+
+
 		responses = new HashMap<String, Response<String>>();
 
 		// logger.warn(anaobj);
 
 		// logger.warn(maxdnSaveno);
-		Set<String> sinter_yc= anaobj.keySet();
+		//Set<String> sinter_yc= AnaUtil.objana_v.keySet();
          //logger.info(dzt);
     	try {
 
 			Pipeline p = mjedis.pipelined();
-			for (String key1 : sinter_yc) {
+			for (String key1 : AnaUtil.objana_v.keySet()) {
                 if (key1.contains("ai")) {
 					responses.put(key1 + "_.maxv", p.get(key1 + "_.maxv"));
 					responses.put(key1 + "_.maxt", p.get(key1 + "_.maxt"));
@@ -97,22 +112,22 @@ public  class saveMaxMin implements Job {
 			int i=0;
 			sql="";
 			sql="REPLACE INTO everyday (tdate,saveno,maxv,maxt,minv,mint) VALUES (?,?,?,?,?,?);";
-			ps=dbcon.setPreparedStatement(sql);
-			for (String key1 : sinter_yc) {
+			pstm = con.prepareStatement(sql);
+			for (String key1 : AnaUtil.objana_v.keySet()) {
 				if (key1.contains("ai") && mjedis.exists(key1+"_.maxv") && mjedis.exists(key1+"_.maxt")&& mjedis.exists(key1+"_.minv")&& mjedis.exists(key1+"_.mint")) {
 					i++;
-					anamap = (HashMap<String,Object>)anaobj.get(key1);
+					//anamap = (HashMap<String,Object>)AnaUtil.objana_v.get(key1);
 
 					//sql=sql+"REPLACE INTO everyday (tdate,saveno,maxv,maxt,minv,mint) VALUES ('"+rightnow.format(formatter)+"',"+anamap.get("saveno")+","+responses.get(key1+"_.maxv").get().toString()+",'"+responses.get(key1+"_.maxt").get().toString()+"',"+responses.get(key1+"_.minv").get().toString()+",'"+responses.get(key1+"_.mint").get().toString()+"');";
 					//logger.warn(sql);
-					ps.setString(1, rightnow.format(formatter));
-					ps.setString(2, anamap.get("saveno").toString());
-					ps.setString(3, responses.get(key1+"_.maxv").get().toString());
-					ps.setString(4, responses.get(key1+"_.maxt").get().toString());
-					ps.setString(5, responses.get(key1+"_.minv").get().toString());
-					ps.setString(6, responses.get(key1+"_.mint").get().toString());
+					pstm.setString(1, rightnow.format(formatter));
+					pstm.setString(2, ((HashMap<String,Object>)AnaUtil.objana_v.get(key1)).get("saveno").toString());
+					pstm.setString(3, responses.get(key1+"_.maxv").get());
+					pstm.setString(4, responses.get(key1+"_.maxt").get());
+					pstm.setString(5, responses.get(key1+"_.minv").get().toString());
+					pstm.setString(6, responses.get(key1+"_.mint").get().toString());
 
-					ps.addBatch();
+					pstm.addBatch();
 
 					/*sql="REPLACE INTO everyday (tdate,saveno,maxv,maxt,minv,mint) VALUES ('"+rightnow.format(formatter)+"',"+anamap.get("saveno")+","+responses.get(key1+"_.maxv").get().toString()+",'"+responses.get(key1+"_.maxt").get().toString()+"',"+responses.get(key1+"_.minv").get().toString()+",'"+responses.get(key1+"_.mint").get().toString()+"');";
 					//logger.warn(sql);
@@ -135,8 +150,8 @@ public  class saveMaxMin implements Job {
 			try {
 
 				//dbcon.
-				ps.executeBatch();
-				            //提交事务
+				pstm.executeBatch();
+				con.commit();           //提交事务
 
 
 
@@ -170,7 +185,7 @@ public  class saveMaxMin implements Job {
 			//Map<String,Object> map =null;
 			//if(rand.equalsIgnoreCase(imagerand)){
 			try{
-				List<Map<String, Object>> userData = dbcon.queryforList(sql);
+				List<Map<String, Object>> userData = FirstClass.getJdbcTemplate().queryForList(sql);
 				int size=userData.size() ;
 				if (size> 0)
 				{
@@ -178,12 +193,13 @@ public  class saveMaxMin implements Job {
 					for (  i = 0; i<size; i++)
 					{
 
-						anamap = (HashMap) userData.get(i);
-						sql="REPLACE INTO everymon (tdate,saveno,maxv,maxt) VALUES ('"+rightnow.with(TemporalAdjusters.firstDayOfMonth()).format(formatter)+"',"+anamap.get("saveno")+","+anamap.get("maxv")+",'"+anamap.get("maxt")+"')";
+						//anamap = (HashMap) userData.get(i);
+						sql="REPLACE INTO everymon (tdate,saveno,maxv,maxt) VALUES ('"+rightnow.with(TemporalAdjusters.firstDayOfMonth()).format(formatter)+"',"+ userData.get(i).get("saveno")+","+ userData.get(i).get("maxv")+",'"+userData.get(i).get("maxt")+"')";
 						try{
 
-							dbcon.setPreparedStatement(sql);
-							int t=dbcon.getexecuteUpdate();;
+							pstm.execute(sql);
+							con.commit();
+							//con.setAutoCommit(true);
 
 
 						}catch(Exception e){
@@ -203,7 +219,7 @@ public  class saveMaxMin implements Job {
 			//Map<String,Object> map =null;
 			//if(rand.equalsIgnoreCase(imagerand)){
 			try{
-				List<Map<String, Object>> userData = dbcon.queryforList(sql);
+				List<Map<String, Object>> userData = FirstClass.getJdbcTemplate().queryForList(sql);
 				int size=userData.size() ;
 				if (size> 0)
 				{
@@ -211,12 +227,12 @@ public  class saveMaxMin implements Job {
 					for (  i = 0; i<size; i++)
 					{
 
-						anamap = (HashMap) userData.get(i);
-						sql="REPLACE INTO everymon (tdate,saveno,minv,mint) VALUES ('"+rightnow.with(TemporalAdjusters.firstDayOfMonth()).format(formatter)+"',"+anamap.get("saveno")+","+anamap.get("minv")+",'"+anamap.get("mint")+"')";
+						//anamap = (HashMap) userData.get(i);
+						sql="REPLACE INTO everymon (tdate,saveno,minv,mint) VALUES ('"+rightnow.with(TemporalAdjusters.firstDayOfMonth()).format(formatter)+"',"+ userData.get(i).get("saveno")+","+ userData.get(i).get("minv")+",'"+ userData.get(i).get("mint")+"')";
 						try{
 
-							dbcon.setPreparedStatement(sql);
-							int t=dbcon.getexecuteUpdate();;
+							pstm.execute(sql);
+							con.commit();
 
 
 						}catch(Exception e){
@@ -236,11 +252,6 @@ public  class saveMaxMin implements Job {
 
 
 
-			 //System.gc();
-		         dbcon.getClose();
-		         dbcon=null;
-
-	        	
 	       
 	        
            } 
@@ -251,7 +262,41 @@ public  class saveMaxMin implements Job {
 	    	 catch (Exception e) {
 	            e.printStackTrace();
 	        }
-    	anaobj = null;
+
+
+			con.setAutoCommit(true);
+			pstm.close();
+			pstm = null;
+			con.close();
+			con = null;
+
+		}
+		catch (SQLException e)
+		{
+			e.printStackTrace();
+			try {
+				if(!con.isClosed()){
+				}
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+		}
+
+
+		JedisUtil.getInstance().returnJedis(mjedis);
+
+		responses.clear();
+		responses=null;
+
+
+
+		sql = null;
+		rightnow = null;
+
+		formatter = null;
+
+
+
 
     }
     	

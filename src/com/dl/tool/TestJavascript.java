@@ -21,17 +21,18 @@ import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.Reader;
 import java.util.Arrays;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 
 public class TestJavascript {
 	public static void main(String[] args) {
 
-        try{
+       /* try{
             BufferedReader br = new BufferedReader(new FileReader(System.getProperty("user.dir")+"/src/zjdy.txt"));//构造一个BufferedReader类来读取文件
             String s = null;
             //System.out.println("ddd");
@@ -51,7 +52,7 @@ public class TestJavascript {
         }catch(Exception e){
             System.out.println(e.toString());
             e.printStackTrace();
-        }
+        }*/
             try
             {
                     ScriptEngine engine = (new ScriptEngineManager()).getEngineByName("JavaScript");

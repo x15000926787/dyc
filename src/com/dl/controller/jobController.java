@@ -52,6 +52,11 @@ public class jobController
   {
     Tool.request(user.getQuartzDetail(sn,nm),response);
   }
+  @RequestMapping({"getUnionDetail"})
+  public void getUnionDetail(String sn,int tp,HttpServletResponse response) throws IOException
+  {
+    Tool.request(user.getUnionDetail(sn,tp),response);
+  }
   @RequestMapping({"saveMaxMin"})
   public void saveMaxMin(HttpServletResponse response) throws IOException
   {
@@ -99,12 +104,36 @@ public class jobController
       e.printStackTrace();
     }
   }
+  @RequestMapping({"saveUnionEdit"})
+  public void saveUnionEdit(String jsonStr,int sn , HttpServletResponse response) throws ParseException
+  {
+    try
+    {
+      Tool.request( user.saveUnionEdit(jsonStr,sn),response);
+    }
+    catch (SQLException e)
+    {
+      e.printStackTrace();
+    }
+  }
   @RequestMapping({"saveDetailEdit"})
   public void saveDetailEdit(String jsonStr,int sn , HttpServletResponse response) throws ParseException
   {
     try
     {
       Tool.request( user.saveDetailEdit(jsonStr,sn),response);
+    }
+    catch (SQLException e)
+    {
+      e.printStackTrace();
+    }
+  }
+  @RequestMapping({"saveUnionDetailEdit"})
+  public void saveUnionDetailEdit(String jsonStr,int sn , HttpServletResponse response) throws ParseException
+  {
+    try
+    {
+      Tool.request( user.saveUnionDetailEdit(jsonStr,sn),response);
     }
     catch (SQLException e)
     {
@@ -137,6 +166,11 @@ public class jobController
   public void getquartz(HttpServletResponse response) throws IOException
   {
 	   Tool.request(user.getquartz(),response);
+  }
+  @RequestMapping({"getunion"})
+  public void getunion(HttpServletResponse response) throws IOException
+  {
+    Tool.request(user.getunion(),response);
   }
   @RequestMapping({"getHisVal"})
   public void getHisVal(HttpServletResponse response) throws IOException

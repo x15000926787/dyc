@@ -11,45 +11,98 @@ import redis.clients.jedis.Jedis;
  * @create 2020-03-21 14:31
  */
 public class MyTask implements Runnable {
-    private String channel;
-    private String message;
-    private JdbcTemplate jdbcTemplate;
-    private Jedis tjedis;
-    private Jedis mjedis;
-    private ChatSocket skt;
+    public String channel;
+    public String message;
+    //public Jedis mjedis;
+    public JdbcTemplate jdbcTemplate;
+    public ChatSocket skt;
+    //public Jedis tjedis;
+
+    public String getChannel() {
+        return channel;
+    }
+
+    public void setChannel(String channel) {
+        this.channel = channel;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public JdbcTemplate getJdbcTemplate() {
+        return jdbcTemplate;
+    }
+
+    public void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
+
+    public ChatSocket getSkt() {
+        return skt;
+    }
+
+    public void setSkt(ChatSocket skt) {
+        this.skt = skt;
+    }
+
+
+/*
+
+    public Jedis getTjedis() {
+        return tjedis;
+    }
+
+    public void setTjedis(Jedis tjedis) {
+        this.tjedis = tjedis;
+    }
+
+    public Jedis getMjedis() {
+        return mjedis;
+    }
+
+    public void setMjedis(Jedis mjedis) {
+        this.mjedis = mjedis;
+    }
+*/
+
+
+
     public static AnaUtil myana=new AnaUtil();
     private static final Logger logger = LogManager.getLogger(MyTask.class);
 
     //private ScriptEngine scriptEngine ;// scriptEngineManager.getEngineByName("nashorn");
-    public MyTask(String channel,String message,JdbcTemplate jdbcTemplate, ChatSocket skt) {
-        this.channel = channel;
-        this.message = message;
-        this.jdbcTemplate = jdbcTemplate;
-        this.skt = skt;
-       // this.scriptEngine = scriptEngine;
-        //this.tjedis = tjedis;
-    }
 
     @Override
     public void run() {
-        //logger.warn("正在执行task "+channel+":"+message);
-        tjedis = RedisUtil.getJedis();
-        mjedis = RedisUtil.getJedis(1);
-        try {
-           if (channel.indexOf("expired")>0)
-               myana.handleExpired(channel,message,jdbcTemplate,tjedis);
-           else {
-               myana.handleMessage(channel, message, jdbcTemplate, tjedis,mjedis, skt);
+        logger.warn("正在执行task "+channel+":"+message);
+        //tjedis = RedisUtil.getJedis();
+        //mjedis = RedisUtil.getJedis(1);
+         {
+            /*try {
+                if (channel.indexOf("expired") > 0)
+                    myana.handleExpired(message, jdbcTemplate);
+                else {
+                    myana.handleMessage( message, jdbcTemplate, skt);
 
-           }
-        } catch (Exception e) {
-            e.printStackTrace();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }*/
         }
-        RedisUtil.close(tjedis);
-        tjedis=null;
-        RedisUtil.close(mjedis);
-        mjedis=null;
+        logger.warn("执行task结束 "+channel+":"+message);
         //logger.warn("task "+channel+":"+message+"执行完毕");
+        //this.channel=null;
+        //this.message=null;
+        //this.jdbcTemplate=null;
+        //this.skt=null;
+
+
     }
+
 }
 

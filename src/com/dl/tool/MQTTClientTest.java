@@ -5,6 +5,8 @@ import java.util.Random;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
+import com.bjsxt.vo.Message;
+import org.apache.commons.compress.utils.CharsetNames;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
@@ -23,14 +25,14 @@ public class MQTTClientTest  implements ServletContextListener {
   
   
     private MqttClient client;  
-    private String host = "tcp://192.168.3.203:1883";  
+    private String host = "tcp://218.78.29.130:1883";
 //  private String host = "tcp://iot.eclipse.org:1883";  
     private String userName = "admin";  
     private String passWord = "admin";  
     private MqttTopic topic;  
     private MqttMessage message;  
   
-    private String myTopic = "xx";  
+    private String myTopic = "RECEIVE_DATA";
    // String clientMac = StringTool.generalMacString();
     String clientMac = generalMacString();
     private static final Logger logger = LogManager.getLogger(MQTTClientTest.class);
@@ -39,8 +41,8 @@ public class MQTTClientTest  implements ServletContextListener {
         try { 
             client = new MqttClient(host, clientMac, new MemoryPersistence());  
             connect();
-            //System.out.println("connected----"+host+"-------"+clientMac); 
-            client.subscribe(myTopic, 0);
+            System.out.println("connected----"+host+"-------"+clientMac);
+            client.subscribe(myTopic, 1);
         } catch (Exception e) { 
             e.printStackTrace(); 
         }
@@ -99,8 +101,11 @@ public class MQTTClientTest  implements ServletContextListener {
                 }  
   
                 public void messageArrived(String topic, MqttMessage arg1)  
-                        throws Exception {  
-                	logger.warn("MqttMessageArrived:  "+topic+":"+arg1.toString());  
+                        throws Exception {
+                    Message message = new Message();
+                    String str_msg = new String(arg1.getPayload(),"GB2312");
+
+                	logger.warn("MqttMessageArrived:  "+topic+":"+str_msg);
                 	//logger.warn();
                    
   
@@ -111,9 +116,9 @@ public class MQTTClientTest  implements ServletContextListener {
             topic = client.getTopic(myTopic);  
             
             message = new MqttMessage();
-            message.setQos(2);  
+            message.setQos(0);
             message.setRetained(true);  
-            //System.out.println(message.isRetained()+"------ratained״̬");  
+            System.out.println(message.isRetained()+"------ratained״̬");
             message.setPayload("MqttMessageArrived---".getBytes());  
   
             client.connect(options); 

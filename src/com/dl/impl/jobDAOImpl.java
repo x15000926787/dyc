@@ -6,6 +6,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.dl.quartz.QuartzJob;
 import com.dl.quartz.QuartzManager;
 import com.dl.tool.AnaUtil;
+import com.dl.tool.FirstClass;
 import com.dl.tool.saveHistyc;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -26,14 +27,14 @@ import java.util.*;
 public class jobDAOImpl extends JdbcDaoSupport{
 	static SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-	private static final Logger logger = LogManager.getLogger(jobDAOImpl.class);
-	public static AnaUtil myana=new AnaUtil();
+	//private static final Logger logger = LogManager.getLogger(jobDAOImpl.class);
+	//public static AnaUtil myana=new AnaUtil();
 
 	public String reloadana()
 	{
 		String jsonString="{\"result\":0}";
 		try {
-			myana.loadAna_v(getJdbcTemplate());
+			AnaUtil.loadAna_v();
 			jsonString="{\"result\":1}";
 		}catch (Exception e)
 		{
@@ -90,9 +91,9 @@ public class jobDAOImpl extends JdbcDaoSupport{
 			// pstmt.close();
 			// dbcon.getClose();
 		}catch(Exception e){
-			logger.warn("出错了"+e.toString());
+			FirstClass.logger.warn("出错了"+e.toString());
 		}
-		//logger.warn(objana);
+		//FirstClass.logger.warn(objana);
 		sql="select rtuno,sn,type ,kkey,chgtime from prtudig ";
 		//if(rand.equalsIgnoreCase(imagerand)){
 		try{
@@ -108,9 +109,9 @@ public class jobDAOImpl extends JdbcDaoSupport{
 				}
 			}
 		}catch(Exception e){
-			logger.warn("出错了"+e.toString());
+			FirstClass.logger.warn("出错了"+e.toString());
 		}
-		logger.warn(objana);
+		FirstClass.logger.warn(objana);
 		sql="select cronstr from timetask where type=3 ";
 		//if(rand.equalsIgnoreCase(imagerand)){
 		try{
@@ -119,10 +120,10 @@ public class jobDAOImpl extends JdbcDaoSupport{
 				value = vmap.get("cronstr").toString();
 			}
 		}catch(Exception e){
-			logger.warn("cronstr出错了"+e.toString());
+			FirstClass.logger.warn("cronstr出错了"+e.toString());
 		}
 
-		logger.warn(value);
+		FirstClass.logger.warn(value);
 
 		try
 		{
@@ -130,7 +131,7 @@ public class jobDAOImpl extends JdbcDaoSupport{
 			QuartzManager.removeJob("saveHistyc");
 			QuartzManager.addJob("saveHistyc",saveHistyc.class,value,objana);
 		}catch(Exception e){
-			logger.warn("qmanager出错了"+e.toString());
+			FirstClass.logger.warn("qmanager出错了"+e.toString());
 		}
 
 
@@ -166,7 +167,36 @@ public class jobDAOImpl extends JdbcDaoSupport{
 		}
 		return jsonString;
 	}
+	public String getunion()
+	{
+		String jsonString="{\"result\":0}";
+		String sql ="SELECT * from unionsel where valid=1 order by id";
+		log(sql);
+		List userData = getJdbcTemplate().queryForList(sql);
+		int size=userData.size() ;
+		if (size> 0)
+		{
+			Object arr[] = new Object[size];
+			for (int i = 0; i<size; i++)
+			{
+				ArrayList kv = new ArrayList();
+				Map listData = (Map)userData.get(i);
+				kv.add(listData.get("id"));
+				kv.add(listData.get("name"));
+				kv.add(listData.get("type"));
+				kv.add(listData.get("description"));
+				//kv.add("<a id='saveBtn' href='javascript:void(0);' title='保存'><span class='fa fa-save'></span></a>&nbsp;&nbsp;&nbsp;&nbsp;<a id='delBtn' href='javascript:void(0);' title='删除'><span class='glyphicon glyphicon-trash'></span></a>&nbsp;&nbsp;&nbsp;&nbsp;<a id='infoBtn' href='javascript:void(0);' title='详情'><span class='fa fa-info-circle' onclick=javascript:getUnionDetail("+listData.get("id")+",'"+listData.get("name")+",'"+listData.get("type")+"')></span></a>");
+				arr[i]=kv;
 
+
+			}
+			java.util.Map<String,Object> map1 = new HashMap<String,Object>();
+			map1.put("result",1);
+			map1.put("data",arr);
+			jsonString = JSON.toJSONString(map1);
+		}
+		return jsonString;
+	}
 	public String savejobEdit(String jsonStr,Integer sn) throws SQLException, ParseException
 	{
 		String jsonString="{\"result\":0}";
@@ -236,14 +266,14 @@ public class jobDAOImpl extends JdbcDaoSupport{
 					//maps.put("vv", taskarray.get(""+i).toString());
 					maps.put("vv", ""+i);
 					QuartzManager.addJob("qjob"+i, QuartzJob.class,tmap.get("cronstr").toString(),maps);
-					logger.warn("add定时ao/do任务:"+tmap.get("cronstr").toString()+maps.toString());
+					FirstClass.logger.warn("add定时ao/do任务:"+tmap.get("cronstr").toString()+maps.toString());
 
 					i++;
 
 				}
 
 			}catch(Exception e){
-				logger.error("生成定时任务出错了"+e.toString());
+				FirstClass.logger.error("生成定时任务出错了"+e.toString());
 			}
 
 			QuartzManager.startJobs();
@@ -265,7 +295,104 @@ public class jobDAOImpl extends JdbcDaoSupport{
 		}
 		return jsonString;
 	}
+	public String saveUnionEdit(String jsonStr,Integer sn) throws SQLException
+	{
+		String jsonString="{\"result\":0}";
+		JSONObject jsonObj=JSON.parseObject(jsonStr);
+		JSONArray addArr= jsonObj.getJSONArray("addArr");
+		JSONArray delArr= jsonObj.getJSONArray("delArr");
+		JSONArray editArr= jsonObj.getJSONArray("editArr");
+		Connection con = null;
+		PreparedStatement pstm = null;
+		Statement stm = null;
+		String sql="";
+		int i;
+		try
+		{
+			con = getJdbcTemplate().getDataSource().getConnection();
+			con.setAutoCommit(false);
+			stm = con.createStatement();
+			for ( i = 0; i <  addArr.size(); i++)
+			{
+				JSONArray temp=addArr.getJSONArray(i);
 
+				//String text2=temp.getString(2)+",以"+temp.getString(4)+"MW/MIN速率"+upDown+temp.getString(6)+"MW";
+
+				sql="Insert into unionsel (NAME,type,description,valid) values ('"+temp.getString(1)+"','"+temp.getString(2)+"','"+temp.getString(3)+"',1)";
+
+				stm.addBatch(sql);
+
+			}
+			for (int d = 0; d <  delArr.size(); d++)
+			{
+				sql="delete from unionsel where id="+delArr.getInteger(d);
+				stm.addBatch(sql);
+				sql="delete from unionsel_detail where uid="+delArr.getInteger(d);
+				stm.addBatch(sql);
+				//log("delete:  " + sql);
+			}
+			for (int e = 0; e <  editArr.size(); e++)
+			{
+				JSONArray  temp=editArr.getJSONArray(e);
+
+				//String text2=temp.getString(2)+",以"+temp.getString(4)+"MW/MIN速率"+temp.getString(5)+"MW";
+				sql="update unionsel_detail set rate='"+temp.getString(2)+"',description='"+temp.getString(3)+"' where ID="+temp.getInteger(0);
+				log("UPDATE  " + sql);
+				stm.addBatch(sql);
+			}
+			stm.executeBatch();
+			con.commit();
+
+
+			QuartzManager.shutdownJobs();
+
+
+
+
+
+			/*sql="select * from timetask where type=1";
+			List<Map<String, Object>> tasktype1 = new ArrayList<Map<String, Object>>();
+			//if(rand.equalsIgnoreCase(imagerand)){
+			try{
+				tasktype1= getJdbcTemplate().queryForList(sql);
+
+				for (Map<String, Object> tmap:tasktype1){
+
+					i=(int)tmap.get("id");
+					QuartzManager.removeJob("qjob"+i);
+					Map<String, String> maps = new HashMap<String,String>();
+					//maps.put("vv", taskarray.get(""+i).toString());
+					maps.put("vv", ""+i);
+					QuartzManager.addJob("qjob"+i, QuartzJob.class,tmap.get("cronstr").toString(),maps);
+					FirstClass.logger.warn("add定时ao/do任务:"+tmap.get("cronstr").toString()+maps.toString());
+
+					i++;
+
+				}
+
+			}catch(Exception e){
+				FirstClass.logger.error("生成定时任务出错了"+e.toString());
+			}
+
+			QuartzManager.startJobs();*/
+
+			Map<String,Object> map1 = new HashMap<String,Object>();
+			map1.put("result",1);
+			jsonString = JSON.toJSONString(map1);
+		}
+		catch (SQLException e)
+		{
+			e.printStackTrace();
+
+		}finally
+		{
+			stm.close();
+			stm = null;
+			con.close();
+			con = null;
+		}
+		return jsonString;
+	}
 
 	public String newDetail(String task,String kkey,String vv) throws SQLException, ParseException
 	{
@@ -351,6 +478,74 @@ public class jobDAOImpl extends JdbcDaoSupport{
 				log("UPDATE  " + sql);
 				stm.addBatch(sql);
 			}*/
+			stm.executeBatch();
+			con.commit();
+			con.setAutoCommit(true);
+			Map<String,Object> map1 = new HashMap<String,Object>();
+			map1.put("result",1);
+			jsonString = JSON.toJSONString(map1);
+		}
+		catch (SQLException e)
+		{
+			e.printStackTrace();
+			try {
+				if(!con.isClosed()){
+
+				}
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+		}finally
+		{
+			stm.close();
+			stm = null;
+			con.close();
+			con = null;
+		}
+		return jsonString;
+	}
+	public String saveUnionDetailEdit(String jsonStr,Integer sn) throws SQLException, ParseException
+	{
+		String jsonString="{\"result\":0}";
+		JSONObject jsonObj=JSON.parseObject(jsonStr);
+		JSONArray addArr= jsonObj.getJSONArray("addArr");
+		JSONArray delArr= jsonObj.getJSONArray("delArr");
+		JSONArray editArr= jsonObj.getJSONArray("editArr");
+		Connection con = null;
+		PreparedStatement pstm = null;
+		Statement stm = null;
+		String sql="";
+		try
+		{
+			con = getJdbcTemplate().getDataSource().getConnection();
+			con.setAutoCommit(false);
+			stm = con.createStatement();
+			for (int i = 0; i <  addArr.size(); i++)
+			{
+				JSONArray temp=addArr.getJSONArray(i);
+
+				//String text2=temp.getString(2)+",以"+temp.getString(4)+"MW/MIN速率"+upDown+temp.getString(6)+"MW";
+
+				sql="Insert into unionsel_detail (uid,saveno,rate) values ('"+temp.getString(1)+"','"+temp.getString(2)+"','"+temp.getString(3)+"')";
+
+				stm.addBatch(sql);
+
+			}
+			for (int d = 0; d <  delArr.size(); d++)
+			{
+				sql="delete from unionsel_detail where id="+delArr.getInteger(d);
+				stm.addBatch(sql);
+				//log("delete:  " + sql);
+			}
+			for (int e = 0; e <  editArr.size(); e++)
+			{
+				JSONArray  temp=editArr.getJSONArray(e);
+
+				//String text2=temp.getString(2)+",以"+temp.getString(4)+"MW/MIN速率"+temp.getString(5)+"MW";
+				sql="update unionsel_detail set uid='"+temp.getString(1)+"' ,saveno='"+temp.getString(2)+"',rate='"+temp.getString(3)+"' where ID="+temp.getInteger(0);
+				log("UPDATE  " + sql);
+				stm.addBatch(sql);
+			}
 			stm.executeBatch();
 			con.commit();
 			con.setAutoCommit(true);
@@ -490,6 +685,42 @@ public class jobDAOImpl extends JdbcDaoSupport{
 			java.util.Map<String,Object> map1 = new HashMap<String,Object>();
 			map1.put("result",1);
 			map1.put("pnm",nm);
+			map1.put("data",arr);
+			jsonString = JSON.toJSONString(map1);
+		}
+		return jsonString;
+	}
+	public String getUnionDetail(String sn,int tp)
+	{
+		String jsonString="{\"result\":0}";
+		String sql ="SELECT id,b.fname,a.saveno,a.rate from unionsel_detail a,prtuana_fullname b where a.saveno=b.saveno and a.uid="+sn+"  order by id";
+		if (tp==1) sql ="SELECT id,b.fname,a.saveno,a.rate from unionsel_detail a,prtupul_fullname b where a.saveno=b.saveno and a.uid="+sn+"  order by id";
+		log(sql);
+		List userData = getJdbcTemplate().queryForList(sql);
+		int size=userData.size() ;
+		if (size> 0)
+		{
+			Object arr[] = new Object[size];
+			for (int i = 0; i<size; i++)
+			{
+				ArrayList kv = new ArrayList();
+				Map listData = (Map)userData.get(i);
+				kv.add(listData.get("id"));
+				//kv.add(listData.get("type"));
+				kv.add(listData.get("fname"));
+				kv.add(listData.get("saveno"));
+				kv.add(listData.get("rate"));
+
+				//kv.add("<a id='savedet' href='javascript:void(0);' title='保存'><span class='fa fa-save'></span></a>&nbsp;&nbsp;&nbsp;&nbsp;<a id='deldet' href='javascript:void(0);' title='删除'><span class='glyphicon glyphicon-trash'></span></a>");
+
+
+				arr[i]=kv;
+
+
+			}
+			java.util.Map<String,Object> map1 = new HashMap<String,Object>();
+			map1.put("result",1);
+
 			map1.put("data",arr);
 			jsonString = JSON.toJSONString(map1);
 		}

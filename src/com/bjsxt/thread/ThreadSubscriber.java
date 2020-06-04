@@ -17,10 +17,10 @@ package com.bjsxt.thread;
  *@createtime:2019-6-18
  */
 
-import com.alibaba.fastjson.JSONObject;
 import com.bjsxt.server.ChatSocket;
+import com.dl.tool.AnaUtil;
 import com.dl.tool.FirstClass;
-import com.dl.tool.MyTask;
+import com.dl.tool.JedisUtil;
 import com.dl.tool.RedisUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -28,9 +28,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPubSub;
 import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisException;
 
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.List;
@@ -47,21 +46,26 @@ public class ThreadSubscriber  extends Thread {
 	  Jedis jedis = null;
 	 //public Jedis jedis2 = null;
 	// private Session thesesion;
+	 //public Jedis ttjedis = null;
+	//public Jedis tmjedis = null;
 	 private String threadName;
-	 public ChatSocket ckt = new ChatSocket();
+	 //public ChatSocket ckt = new ChatSocket();
 	 KeyExpiredListener myListener =null;  
 	 //JedisPool pool = new JedisPool(new JedisPoolConfig(), "218.78.29.130", 6389, 10000,"Shcs123");
-	 SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//设置日期格式
+	 //SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//设置日期格式
 	 private static final Logger logger = LogManager.getLogger(ThreadSubscriber.class);
 	 String pId = FirstClass.projectId;
-	 public ThreadPoolExecutor executor = null;
+	 //public ThreadPoolExecutor executor = null;
 	 public ThreadSubscriber(String name){
 		// thesesion = sess;
 		 threadName = name;
 		 logger.warn(threadName+":   start the subscriber thread");
 		 Thread.currentThread().setName(threadName);
-		 executor = new ThreadPoolExecutor(5, 10, 200, TimeUnit.MILLISECONDS,
-				 new LinkedBlockingQueue<Runnable>(), Executors.defaultThreadFactory(),new ThreadPoolExecutor.DiscardOldestPolicy());
+		 //executor = new ThreadPoolExecutor(10, 20, 60000, TimeUnit.MILLISECONDS,
+		//		 new LinkedBlockingQueue<Runnable>(), Executors.defaultThreadFactory(),new ThreadPoolExecutor.DiscardOldestPolicy());
+		// executor.allowCoreThreadTimeOut(true);
+		 //ttjedis = RedisUtil.getJedis();
+		// tmjedis = RedisUtil.getJedis(1);
 		 //logger.warn("ThreadSubscriber.jpool:"+jpool.toString());
 		// timer = new Timer();
 		
@@ -84,12 +88,13 @@ public class ThreadSubscriber  extends Thread {
 	    	//jedis2 = jpool.getJedis();
 	        while(reconn){
 	        	 try {
-	        	 jedis = RedisUtil.getJedis();
+	        	 jedis = JedisUtil.getInstance().getJedis();
 	        	
-	   	        config(jedis);  
-	   	    
-	   	        myListener= new KeyExpiredListener(ckt,executor);
-	   	    
+	   	        config(jedis);
+
+
+                     myListener= new KeyExpiredListener();
+
 	   	      
 	 	    /* timer.schedule(new TimerTask() 
 	 	       {
@@ -106,8 +111,9 @@ public class ThreadSubscriber  extends Thread {
 	        		 e.printStackTrace();
 	                logger.warn("Exception :", e.toString());
 
-	                RedisUtil.close(jedis); 
-	               jedis=null;
+	               // RedisUtil.close(jedis);
+	               //jedis=null;
+					 JedisUtil.getInstance().returnJedis(jedis);
 
 	            }
 	        	 catch (ClassCastException e) {
@@ -150,18 +156,10 @@ public class ThreadSubscriber  extends Thread {
 		   logger.warn("Stop " +  "thread_subscriber" );
 		   reconn= false;
 		   myListener.punsubscribe("__keyevent@"+pId+"__:*");
-		   executor.shutdown();
-		     /* try {
-				  if (jedis != null) {
-
-		              jedis.close();
-
-			          }
-				  } catch (JedisException e) {
-						e.printStackTrace();
-					}catch (Exception e) {
-						e.printStackTrace();
-					}*/
+		     //RedisUtil.close(ttjedis);
+		     //ttjedis=null;
+		  // RedisUtil.close(tmjedis);
+		   //  tmjedis=null;
 		   }
 	   public  boolean killThreadByName(String name ) {
 		    stoplisten ();
@@ -205,25 +203,33 @@ public class ThreadSubscriber  extends Thread {
 
 
 class KeyExpiredListener extends JedisPubSub {
-	public ChatSocket skt;
+	//public ChatSocket skt;
 
-	public ThreadPoolExecutor executor;
+	//public ThreadPoolExecutor executor;
 	// public JSONObject objana = new JSONObject();
 	// public JSONObject msg_user = new JSONObject();
 	// public JSONObject msg_author = new JSONObject();
 	// public JSONObject objcondition = new JSONObject();
 	 //public DBConnection dbcon=new DBConnection();
-	 public Jedis tjedis = null;
-	 public static JdbcTemplate jdbcTemplate;
+	//public Jedis tjedis;
+	//public Jedis mjedis;
+	 public  JdbcTemplate jdbcTemplate;
+	// MyTask myTask = new MyTask();
+	 public  String mess = null;
 	//public ScriptEngineManager scriptEngineManager = new ScriptEngineManager();
 	//public ScriptEngine scriptEngine;// = scriptEngineManager.getEngineByName("nashorn");
 	 //SendViaWs sendmsg = new SendViaWs();
-
+	//public static AnaUtil myana=new AnaUtil();
 	 private static final Logger logger = LogManager.getLogger(KeyExpiredListener.class);
-	 public KeyExpiredListener(ChatSocket sskt,ThreadPoolExecutor texecutor) throws SQLException{
-		 skt = sskt;
-		 executor=texecutor;
-		 jdbcTemplate=FirstClass.jdbcTemplate;
+	 public KeyExpiredListener() throws SQLException{
+
+		 //myana=FirstClass.myana;
+		 //executor=texecutor;
+		// jdbcTemplate=FirstClass.jdbcTemplate;
+		 //logger.warn(myana.tjedis.get("un_1_.ai_0_0_.value"));
+		// myana.tjedis=tjedis;
+		 //myana.mjedis=mjedis;
+		// logger.warn(tjedis.info());
 		// scriptEngine = scriptEngineManager.getEngineByName("nashorn");
 		// logger.warn(msg_user);
 		// logger.warn(msg_author);
@@ -232,15 +238,16 @@ class KeyExpiredListener extends JedisPubSub {
     @Override
     public void onPSubscribe(String pattern, int subscribedChannels) {
     	logger.warn("onPSubscribe " + pattern + " " + subscribedChannels);
-    	tjedis = RedisUtil.getJedis();
+
     	//https://www.cnblogs.com/dafanjoy/p/9729358.html
 
     }
     @Override
     public void onPUnsubscribe(String pattern, int subscribedChannels) {
-    	  RedisUtil.close(tjedis);
-    	  tjedis=null;
-
+    	//  RedisUtil.close(tjedis);
+    	//  tjedis=null;
+		//RedisUtil.close(mjedis);
+		//mjedis=null;
     	/*try {
     		if (tjedis != null) {
 
@@ -258,20 +265,67 @@ class KeyExpiredListener extends JedisPubSub {
     @Override
     public void onPMessage(String pattern, String channel, String message) {
 
-		String val = "0",nval = "";
-		String luaStr = null;
 
-		channel = channel.split(":")[1];
 
+		//String chan = channel.split(":")[1];
+		//mess = message;
 		//if ( message.indexOf("di_0")>0)
-		//	logger.warn("rec："+channel+" : "+message);
-		{
-			MyTask myTask = new MyTask(channel,message,jdbcTemplate,skt);
-			//if (executor.getQueue().size()<100)
-				executor.execute(myTask);
-			//logger.warn("线程池中线程数目："+executor.getPoolSize()+"，队列中等待执行的任务数目："+executor.getQueue().size()+"，已执行完毕的任务数目："+executor.getCompletedTaskCount());
-		}
+		//	logger.warn("rec："+channel+" : "+message);//channel,message,jdbcTemplate,skt
+
+		FirstClass.executor.execute( new Runnable() {
+
+			@Override
+			public void run() {
+				try {
+					//logger.warn("正在执行task "+channel+":"+message);
+				 // Jedis	tjedis = RedisUtil.getJedis();
+				 // Jedis	mjedis = RedisUtil.getJedis(1);//dddd
+
+
+					//Jedis tjedis= JedisUtil.getInstance().getJedis();
+					//Jedis mjedis= JedisUtil.getInstance().getJedis(1);
+					       /* for (int i = 0; i < 10; i++) {
+						            jedis.set("test", "test");
+						            System.out.println(i+"=="+jedis.get("test"));
+						        }*/
+
+
+
+					{
+						try {
+							if (channel.contains("expired") ) {
+								//logger.warn(message);
+								AnaUtil.handleExpired(message);
+							}
+							else {
+
+
+								//logger.warn(message+","+channel);
+								AnaUtil.handleMessage( message);
+
+							}
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+					//JedisUtil.getInstance().returnJedis(tjedis);
+					//JedisUtil.getInstance().returnJedis(mjedis);
+					//jedis = null;
+					//RedisUtil.close(tjedis);
+					//tjedis=null;
+					// RedisUtil.close(mjedis);
+					//  mjedis=null;
+					//logger.warn("执行task结束 "+channel+":"+message);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+
+			}
+		});
+		//channel=null;
+		//message=null;
 		//logger.warn("rec："+channel+" : "+message);
+		////mmmess = null;
 		/*
 
 

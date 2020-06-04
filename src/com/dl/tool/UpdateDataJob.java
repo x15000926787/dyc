@@ -26,47 +26,19 @@ import java.util.regex.Pattern;
  * 计算电量增量
  * 发送 实时数据 and 定时锁状态 到前端
  */
-
 @PersistJobDataAfterExecution
 @DisallowConcurrentExecution
-public  class UpdateDataJob extends JdbcDaoSupport implements Job {
+public  class UpdateDataJob<autoreleasepool> extends JdbcDaoSupport implements Job {
 	   
-	public static ChatSocket ckt = new ChatSocket();
+	//public static ChatSocket ckt = new ChatSocket();
 	  // RedisUtil jpool = new RedisUtil();
 	
 	
 
-	static String s = null;
-	
-	static   String luaStr = null;
-	static 	 String kk = "";
 
-	//static  String savet=null;
-	//static   String up,down,rtuno,sn;
-	//static  SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//设置日期格式
-	static String pattern=".*_.value*";
-	static String patternVtl=".*_.vtl.*";
-	//static String patterndnVtl=".*dn.*";
-	   public static Gson  gson=new Gson();
-	  // SqliteHelper h = null;
-	    Jedis jedis = null;
-	    public static AnaUtil myana=new AnaUtil();
-	    static HashMap<String,String>  map = new HashMap<String,String>();
-	    public static final Logger logger = LogManager.getLogger(UpdateDataJob.class);
-	    //String templatePath = UpdateDataJob.class.getClassLoader().getResource("/").getPath();
-		public DBConnection dbcon=null;//new DBConnection();
-	    static  Map<String,String> result = new HashMap<String,String>();
-	    static Map umap=new HashMap<String, Map<String,String>>();
-	    static  Map<String,Response<String>> responses = null;
-	    Pipeline p = null;//jedis.pipelined();
-	    JSONObject anaobj =null;
-	    Set<String> sinter_yc= null;//anaobj.keySet();
-		//static ScriptEngineManager scriptEngineManager = new ScriptEngineManager();
-		//static ScriptEngine scriptEngine ;//= scriptEngineManager.getEngineByName("nashorn");
-	   //public static AnaUtil myana=new AnaUtil();
-	    
-	  // Set<String> sinter_yx =  null;
-	  
+	   // public static final Logger logger = LogManager.getLogger(UpdateDataJob.class);
+
+
 	    
 	 
 		
@@ -74,7 +46,7 @@ public  class UpdateDataJob extends JdbcDaoSupport implements Job {
 		
 		public UpdateDataJob()
 		{
-			dbcon=new DBConnection();
+
 			//scriptEngine = scriptEngineManager.getEngineByName("nashorn");
 		}
 		 /**
@@ -164,7 +136,7 @@ public  class UpdateDataJob extends JdbcDaoSupport implements Job {
 	  public void get_time_lock()
 	  {
 
-		  List<Map<String, Object>> tasktype1 = new ArrayList<Map<String, Object>>();
+		 /* List<Map<String, Object>> tasktype1 = new ArrayList<Map<String, Object>>();
 		  String sql = "SELECT * from do_info where timeTaskLock is not null";
 		  tasktype1= dbcon.queryforList(sql);
 
@@ -191,34 +163,73 @@ public  class UpdateDataJob extends JdbcDaoSupport implements Job {
 			  }
 
 
-		  }
+		  }*/
 
 	  }
+
     @Override
     public void execute(JobExecutionContext arg0) throws JobExecutionException {
+		if (!ChatSocket.getSockets().isEmpty())    //
+		{
+		//logger.warn("start update_data...");
+		 String s = null;
+
+		  String luaStr = null;
+		 	 String kk = null;
 
 
-		anaobj =myana.objana_v;
+		 String pattern=null;
+
+
+		 Gson  gson=null;
+
+		Jedis jedis = null;
+
+		// DBConnection dbcon=null;//new DBConnection();
+		  Map<String,String> result = null;
+		 Map umap=null;
+		  Map<String,Response<String>> responses = null;
+		Pipeline p = null;//jedis.pipelined();
+		//Set<String> sinter_yc= null;//anaobj.keySet();
+
+		kk = "";
+		pattern=".*_.value*";
+
+
+		gson=new Gson();
+
+
+
+
+
+
+		result = new HashMap<String,String>();
+		umap=new HashMap<String, Map<String,String>>();
+
+		//logger.warn("updatedata ...");
+
+
+		//dbcon=new DBConnection();
+
+
     	  // DBConnection dbcon=new DBConnection();
 
 
 		//JSONObject anaobj =myana.objana ;
 		//logger.info(anaobj.toJSONString());
-		sinter_yc= anaobj.keySet();
+		//sinter_yc= AnaUtil.objana_v.keySet();
 
 		//HashMap<String,String>  map = new HashMap<String,String>();
 
 
 		//logger.error("ask data...");
 
-		   responses = new HashMap<String,Response<String>>(sinter_yc.size());
-		   responses.clear();
-	   	   map.clear();
-	   	   result.clear();
+		   responses = new HashMap<String,Response<String>>(AnaUtil.objana_v.keySet().size());
+
 
 	      
 			try {
-				jedis = RedisUtil.getJedis();
+				 jedis= JedisUtil.getInstance().getJedis();
 				
 				 p = jedis.pipelined();
 				
@@ -236,7 +247,7 @@ public  class UpdateDataJob extends JdbcDaoSupport implements Job {
 		       
 		        
 		        //start = System.currentTimeMillis();
-		        for(String key1 : sinter_yc) {
+		        for(String key1 : AnaUtil.objana_v.keySet()) {
 
 		         responses.put(key1+"_.value", p.get(key1+"_.value"));
 
@@ -277,6 +288,7 @@ public  class UpdateDataJob extends JdbcDaoSupport implements Job {
 								Map<String,String> nvl = new HashMap<String,String>();
 								nvl.put(k, luaStr);
 								umap.put(kk,nvl);
+								nvl=null;
 							}
 							//s = k.replace("_.value", "");
 							//if (k.contains("ai")) myana.handleMaxMin(k.replace("_.value",""),luaStr,dbcon.jdbcTemplate);
@@ -296,136 +308,16 @@ public  class UpdateDataJob extends JdbcDaoSupport implements Job {
 				//get_time_lock();
 				*/
 
-
-				//处理zjdy.txt
-/*
-				try{
-
-
-					BufferedReader br = new BufferedReader(new FileReader(templatePath+"/zjdy.txt"));//构造一个BufferedReader类来读取文件
-					String s = null;
-					while((s = br.readLine())!=null){//使用readLine方法，一次读一行
-						//result.append(System.lineSeparator()+s);
-						logger.info(s);
-
-
-						String[] vals=s.split("\\{|\\}");
-						for (int i=0;i<vals.length;i++)
-						{
-
-							if(Pattern.matches(pattern, vals[i])) {
-
-								try {
-									//responses.get(k).get().toString()
-									luaStr = responses.get(vals[i]+"_.value").get().toString();
-									//logger.warn(vals[i]+":"+luaStr+":"+"val{"+vals[i]+"}");
-									//s=s.replaceAll(".*val\\{"+vals[i]+"\\}.*",luaStr);
-									s=s.replace("val{"+vals[i]+"}",luaStr);
-
-								}catch (Exception e)
-								{
-									logger.warn("dot have: "+vals[i]);
-								}
-
-							}
-						}
-
-						//logger.info(s);
-
-						try
-
-						{
-
-
-							ScriptEngine engine = (new ScriptEngineManager()).getEngineByName("JavaScript");
-
-
-							File fName = new File(templatePath+"/myscript.js");
-							Reader scriptReader = new FileReader(fName);
-
-							engine.eval(scriptReader);
-
-							Invocable invocable = (Invocable) engine;
-							Pattern pp = Pattern.compile("Fun[^\\}]+");
-							Matcher m = pp.matcher(s);//
-							while (m.find()) {
-								List<Float> list = new ArrayList<>();
-
-
-
-
-
-                                String[] fs = m.group(0).split("\\{|,");
-							    for (int i=2;i<fs.length;i++) {
-							    	list.add(Float.parseFloat(fs[i]));
-									//System.out.println("para:"+fs[i]);
-								}
-								//System.out.println("find: "+m.group(0));
-                                //System.out.println("invocable:"+invocable.invokeFunction(fs[1], list));
-								s=s.replace(m.group(0)+"}",invocable.invokeFunction(fs[1], list).toString());
-                            }
-
-
-							String[] calc=s.split("=");
-							//logger.info(s);
-							try
-							{
-								//实时库存储计算总加窗口值，并被SaveHistyc线程存储5分钟历史值，再根据mysql 定时事件算5分钟增量
-								jedis.set(calc[0]+"_.value",engine.eval(calc[1]).toString());
-								//直接发送总加遥测值到htttp客户端，计算总加电量增量发送到http客户端
-								if (Pattern.matches(patterndnVtl, calc[0]))
-								{
-									map = (HashMap<String,String>)anaobj.get(calc[0]);
-
-
-									result.put(calc[0],engine.eval(calc[1].toString()+"-"+String.valueOf(map.get("ldz"))).toString());
-									logger.warn("calced: " + s.replace(calc[1], engine.eval(calc[1].toString()+"-"+String.valueOf(map.get("ldz"))).toString()));
-								}
-								else {
-									result.put(calc[0], engine.eval(calc[1]).toString());
-									logger.warn("calced: " + s.replace(calc[1], engine.eval(calc[1]).toString()));
-								}
-
-							}catch (ScriptException e) {
-								logger.error("ScriptException: " +  e.toString() );
-								e.printStackTrace();
-							}catch (Exception e) {
-								logger.error(" err: " +  e.toString() );
-								e.printStackTrace();
-							}
-
-
-						}catch(NoSuchMethodException e){
-							logger.error("NoSuchMethodException: " +  e.toString() );
-						}
-						catch(FileNotFoundException e){
-							logger.error("System.getProperty(\"user.dir\")+\"/src/myscript.js\" err: " +  e.toString() );
-						}
-						catch (ScriptException e) {
-							logger.error("ScriptException: " +  e.toString() );
-							e.printStackTrace();
-						}
-
-
-					}
-					br.close();
-				}catch(Exception e){
-					logger.error(e.toString());
-					e.printStackTrace();
-				}
-*/
-
-				if (!ckt.getSockets().isEmpty())    //
-				{
-
 					s = gson.toJson(umap);
 					//logger.warn(s);
+				//if(!ChatSocket.sockets.isEmpty()) {
 					try {
-						ckt.broadcast(ckt.getSockets(), s,-1);
+						ChatSocket.broadcast(ChatSocket.getSockets(), s, -1);
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
-				}
+				//}
+
 
 
 
@@ -435,15 +327,46 @@ public  class UpdateDataJob extends JdbcDaoSupport implements Job {
 					p.close();
 				}catch (IOException ee){}
 
-		      
 
-       	         RedisUtil.close(jedis);
-       	         jedis=null;
-				 dbcon.getClose();
+
+				JedisUtil.getInstance().returnJedis(jedis);
+				// dbcon.getClose();
 		         responses.clear();
 		         result.clear();
 		         umap.clear();
-		         //umap=null;
+
+
+
+				// RedisUtil jpool = new RedisUtil();
+
+
+
+				 s = null;
+
+				 luaStr = null;
+				 kk = null;
+
+				//static  String savet=null;
+				//static   String up,down,rtuno,sn;
+				//static  SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//设置日期格式
+				 pattern=null;
+
+				//static String patterndnVtl=".*dn.*";
+				 gson=null;
+				// SqliteHelper h = null;
+
+				 //myana=null;
+
+
+				//String templatePath = UpdateDataJob.class.getClassLoader().getResource("/").getPath();
+				//dbcon.getClose();
+				//dbcon=null;//new DBConnection();
+				result = null;
+				 umap=null;
+				 responses = null;
+				 p = null;//jedis.pipelined();
+				 //anaobj =null;
+				// sinter_yc= null;//anaobj.keySet();
 
 			 } 
 			
@@ -453,8 +376,8 @@ public  class UpdateDataJob extends JdbcDaoSupport implements Job {
 			 catch (Exception e) {
 		            e.printStackTrace();
 			}
-
-    	
+		}
+		//logger.warn("end update_data.");
 
     }
     	

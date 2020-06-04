@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.bjsxt.thread.ThreadDemo;
+import com.dl.tool.FirstClass;
 import com.dl.tool.RedisUtil;
 import com.google.common.io.CharStreams;
 import org.apache.commons.lang3.StringUtils;
@@ -44,13 +45,13 @@ public class UserDAOImpl
 	static public  Jedis  jedis = null; 
 	  
 	 static SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-    public static ScriptEngineManager scriptEngineManager = new ScriptEngineManager();
-    public static ScriptEngine scriptEngine =null;// scriptEngineManager.getEngineByName("nashorn");
+    //public static ScriptEngineManager scriptEngineManager = new ScriptEngineManager();
+    //public static ScriptEngine scriptEngine =null;// scriptEngineManager.getEngineByName("nashorn");
 	// RedisUtil jpool = new RedisUtil();
-	 private static final Logger logger = LogManager.getLogger(UserDAOImpl.class);
+
 	 private UserDAOImpl(){
-         scriptEngine = scriptEngineManager.getEngineByName("nashorn");
-		 //logger.warn("UserDAOImpl.jpool:"+jpool.toString());
+        // scriptEngine = scriptEngineManager.getEngineByName("nashorn");
+		 //FirstClass.logger.warn("UserDAOImpl.jpool:"+jpool.toString());
 		 //jedis = new Jedis("127.0.0.1",6379);
 	    }
 	 
@@ -76,7 +77,7 @@ public class UserDAOImpl
 	  before5 = before5.substring(2);
 	  
 	    String sql = "select b.ymd*1000000+b.hms qaData from etype_info a,hevt"+(beforeD.getYear()%10)+" b,prtudig c,project_info d where b.ch=c.rtuno and b.xh=c.sn and c.sound=1 and a.s_type = 1 and  a.e_type=b.EVENT and b.ymd*1000000+b.hms>d.curevttime and d.id=1  and a.e_zt=b.zt  order by ymd,hms desc limit 1 ";
-	    logger.warn(sql);
+	    FirstClass.logger.warn(sql);
 	    List userData = getJdbcTemplate().queryForList(sql);
 	    java.util.Map<String,Object> map1 = new HashMap<String,Object>();  
 	    
@@ -137,7 +138,7 @@ public class UserDAOImpl
       int len = oldArr.length;
       
       String newData = "";
-      //logger.warn("old arr" + len);
+      //FirstClass.logger.warn("old arr" + len);
       for (int i = 0; i < len; i++)
       {
         String[] temp = oldArr[i].split("-");
@@ -152,7 +153,7 @@ public class UserDAOImpl
           newData = newData + temp[0] + "-" + temp[1] + "-" + temp[2];
         }
       }
-     // logger.warn(newData);
+     // FirstClass.logger.warn(newData);
       int backR = 0;
       String aBackSql = "update user_answer" + aNum + " set qaData='" + newData + "' where uID=\t" + uid;
       backR = getJdbcTemplate().update(aBackSql);
@@ -181,7 +182,7 @@ public class UserDAOImpl
    * @date 2018-3-29
    */
   public  void startProgram(String programPath,String programName) throws IOException {  
-	    logger.warn("启动应用程序：" + programPath);  
+	    FirstClass.logger.warn("启动应用程序：" + programPath);  
 	    if (StringUtils.isNotBlank(programPath)) {  
 	        try {  
 	           // String programName = programPath.substring(programPath.lastIndexOf("/") + 1, programPath.lastIndexOf("."));  
@@ -195,12 +196,12 @@ public class UserDAOImpl
 	            pBuilder.start();  
 	        } catch (Exception e) {  
 	            e.printStackTrace();  
-	            logger.warn("应用程序：" + programPath + "不存在！");  
+	            FirstClass.logger.warn("应用程序：" + programPath + "不存在！");  
 	        }  
 	    }  
 	}  
   public  void startProc(String processName,String para) throws IOException { 
-       logger.warn("启动应用程序：" + processName);  
+       FirstClass.logger.warn("启动应用程序：" + processName);  
        try {  
            Runtime r = Runtime.getRuntime();  
            String[] cmd = new String[5];  
@@ -220,7 +221,7 @@ public class UserDAOImpl
            //Process p = Runtime.getRuntime().exec("calc.exe"); //直接运行计算器  
            BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));  
            while((line=br.readLine()) != null){  
-               logger.warn(line);  
+               FirstClass.logger.warn(line);  
                //p.waitFor();  
            }  
        } catch (IOException e) {  
@@ -231,13 +232,13 @@ public class UserDAOImpl
   
   
   public static void startProc_n(String processName,String para) { 
-	  logger.warn("启动dd应用程序：" + processName);  
+	  FirstClass.logger.warn("启动dd应用程序：" + processName);  
       if (StringUtils.isNotBlank(processName)) {  
           try {  
               Desktop.getDesktop().open(new File(processName));  
           } catch (Exception e) {  
               e.printStackTrace();  
-              logger.warn("应用程序：" + processName + "不存在！");  
+              FirstClass.logger.warn("应用程序：" + processName + "不存在！");  
           }  
       }   
  }
@@ -251,7 +252,7 @@ public class UserDAOImpl
    */
   
   public  void killProc(String processName) throws IOException, InterruptedException {  
-	  logger.warn("关闭应用程序：" + processName);  
+	  FirstClass.logger.warn("关闭应用程序：" + processName);  
       if (StringUtils.isNotBlank(processName)) {  
           executeCmd("taskkill /F /IM " + processName);  
       } 
@@ -262,12 +263,12 @@ public class UserDAOImpl
 	  String str = strcmd;
 	  if (strcmd.length()==0) str = "";
       Process p = Runtime.getRuntime().exec("cmd /c start cmd.exe /c " + strcmd+" "); 
-      logger.warn(strcmd);
+      FirstClass.logger.warn(strcmd);
       BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));   
       String readLine = br.readLine();   
       while (readLine != null) { 
           readLine = br.readLine(); 
-         // logger.warn(readLine);
+         // FirstClass.logger.warn(readLine);
       } 
       if(br!=null){ 
           br.close(); 
@@ -287,7 +288,7 @@ public class UserDAOImpl
    */
   
   public  String executeCmd(String command) throws IOException, InterruptedException {  
-	  logger.warn("Execute command :" + command);  
+	  FirstClass.logger.warn("Execute command :" + command);  
 	  int exitVal; 
       Runtime runtime = Runtime.getRuntime();  
       Process process = runtime.exec("cmd /c " + command); 
@@ -301,7 +302,7 @@ public class UserDAOImpl
       String line = null;  
       StringBuilder build = new StringBuilder();  
       while ((line = br.readLine()) != null) {  
-    	  logger.warn(line);  
+    	  FirstClass.logger.warn(line);  
           build.append(line);  
       } 
       java.util.Map<String,Object> map1 = new HashMap<String,Object>(); 
@@ -385,7 +386,7 @@ public class UserDAOImpl
           map1.put("result",1);
       } catch (Exception e) {
           // TODO: handle exception
-    	  logger.warn("杀死程序"+procName+"失败。。。");  
+    	  FirstClass.logger.warn("杀死程序"+procName+"失败。。。");  
     	  map1.put("result",0); 
       }
       }
@@ -401,7 +402,7 @@ public class UserDAOImpl
     	 // startProgram(url+procName,procName);
       } catch (Exception e) {
           // TODO: handle exception
-    	   logger.warn("重启"+procName+"程序失败。。。"); 
+    	   FirstClass.logger.warn("重启"+procName+"程序失败。。。"); 
     	  jsonString=("重启"+procName+"程序失败。。。");  
       }
       }
@@ -498,7 +499,7 @@ public class UserDAOImpl
     {
         String jsonString="{\"result\":0}";
         String sql ="SELECT roomno,roomname from room where rtuno="+pno+" order by roomno asc";
-        logger.warn(sql);
+        FirstClass.logger.warn(sql);
         List userData = getJdbcTemplate().queryForList(sql);
         int size=userData.size() ;
         if (size> 0)
@@ -598,7 +599,7 @@ public class UserDAOImpl
 
 
                 sql = "SELECT * from hyc"+(endtime.getYear()%10)+" where groupno between "+mingno+" and "+maxgno+" and  savetime between "+starttime.format(formatter)+" and "+endtime.format(formatter)+" order by savetime,groupno ";
-//logger.warn(sql);
+//FirstClass.logger.warn(sql);
                 userData = getJdbcTemplate().queryForList(sql);
                 size = userData.size();
                 if (size>0) {
@@ -612,7 +613,7 @@ public class UserDAOImpl
                         Object val[] = new Object[size/gnos];
                         for (int j = 0; j < (size / gnos); j++) {
                             Map listData = (Map) userData.get(j * gnos + (gno - mingno));
-                           // logger.warn(listData);
+                           // FirstClass.logger.warn(listData);
                             if (i==0) label[j] = listData.get("savetime");
                             val[j] =  listData.get("val"+vno);
                         }
@@ -640,10 +641,10 @@ public class UserDAOImpl
         }
         if (savenos.length()>0) savenos=savenos.substring(1);*/
         //SELECT a.name name,a.saveno saveno,a.kkey kkey  from prtuana a,dev_author b,room c where a.deviceno=b.deviceno and a.rtuno=c.rtuno  and b.roomno=c.roomno and b.domain=c.rtuno and c.rtuno=1 and c.roomno=1 and b.deviceno=31 and a.type=2  order by a.sn
-        String sql ="SELECT a.name name,a.type tp,a.kkey kkey  from prtuana a,dev_author b,room c where a.deviceno=b.deviceno and a.rtuno=c.rtuno and b.roomno=c.roomno and b.domain=c.rtuno and c.rtuno="+savs[0]+" and c.roomno="+savs[1]+" and b.deviceno="+savs[2]+"  order by a.sn ";
-        //logger.warn(sql);
+        String sql ="SELECT a.name name,a.type tp,a.kkey kkey,b.RC  from prtuana a,dev_author b,room c where a.deviceno=b.deviceno and a.rtuno=c.rtuno and b.roomno=c.roomno and b.domain=c.rtuno and c.rtuno="+savs[0]+" and c.roomno="+savs[1]+" and b.deviceno="+savs[2]+"  order by a.sn ";
+        //FirstClass.logger.warn(sql);
         List userData = getJdbcTemplate().queryForList(sql);
-
+        String rc = null;
         int size=userData.size() ;
         savenos = "";
         if (size> 0)
@@ -660,20 +661,20 @@ public class UserDAOImpl
                 //key.add(listData.get("kkey"));
                 if (map1.containsKey(listData.get("tp").toString()))
                 {
-                    //logger.warn("1");
+                    //FirstClass.logger.warn("1");
                     ((ArrayList)map1.get(listData.get("tp").toString())).add(listData.get("kkey").toString());
                 }else
                 {
-                    //logger.warn("2");
+                    //FirstClass.logger.warn("2");
                     ArrayList key = new ArrayList();
                     key.add(listData.get("kkey").toString());
                     map1.put(listData.get("tp").toString(),key);
                 }
-
+                rc= listData.get("RC").toString();
             }
 
             map1.put("result",1);
-            //map1.put("data",arr);
+            map1.put("rc",rc);
             jsonString = JSON.toJSONString(map1);
 
         }
@@ -693,12 +694,15 @@ public class UserDAOImpl
         }
         if (savenos.length()>0) savenos=savenos.substring(1);*/
         //SELECT a.name name,a.saveno saveno,a.kkey kkey  from prtuana a,dev_author b,room c where a.deviceno=b.deviceno and a.rtuno=c.rtuno  and b.roomno=c.roomno and b.domain=c.rtuno and c.rtuno=1 and c.roomno=1 and b.deviceno=31 and a.type=2  order by a.sn
-        String sql ="SELECT a.name name,a.type tp,a.kkey kkey  from prtuana a,dev_author b,room c where a.deviceno=b.deviceno and a.rtuno=c.rtuno and b.roomno=c.roomno and b.domain=c.rtuno and c.rtuno="+savs[0]+" and c.roomno="+savs[1]+" and b.deviceno="+savs[2]+"  order by a.sn ";
-        //logger.warn(sql);
+        String sql ="SELECT a.name name,a.type tp,a.kkey kkey,a.saveno sav  from prtuana a,dev_author b,room c where a.deviceno=b.deviceno and a.rtuno=c.rtuno and b.roomno=c.roomno and b.domain=c.rtuno and c.rtuno="+savs[0]+" and c.roomno="+savs[1]+" and b.deviceno="+savs[2]+"  order by a.sn ";
+        if (savs[3].matches("1")) sql ="SELECT a.name name,a.type tp,a.kkey kkey,d.saveno sav  from prtuana a,dev_author b,room c,prtupul d where a.deviceno=b.deviceno and a.rtuno=c.rtuno and b.roomno=c.roomno and b.domain=c.rtuno and a.kkey=d.kkey and c.rtuno="+savs[0]+" and c.roomno="+savs[1]+" and b.deviceno="+savs[2]+"  order by a.sn ";
+
+        //FirstClass.logger.warn(sql);
         List userData = getJdbcTemplate().queryForList(sql);
         ArrayList trr = new ArrayList();
         ArrayList arr = new ArrayList();
         ArrayList key = new ArrayList();
+        ArrayList sav = new ArrayList();
         int size=userData.size() ;
         savenos = "";
         if (size> 0)
@@ -713,13 +717,14 @@ public class UserDAOImpl
                 trr.add(listData.get("tp"));
                 arr.add(listData.get("name"));
                 key.add(listData.get("kkey"));
+                sav.add(listData.get("sav"));
                 /*if (map1.containsKey(listData.get("tp").toString()))
                 {
-                    logger.warn("1");
+                    FirstClass.logger.warn("1");
                     ((ArrayList)map1.get(listData.get("tp").toString())).add(listData.get("kkey").toString());
                 }else
                 {
-                    logger.warn("2");
+                    FirstClass.logger.warn("2");
                     ArrayList key = new ArrayList();
                     key.add(listData.get("kkey").toString());
                     map1.put(listData.get("tp").toString(),key);
@@ -729,6 +734,7 @@ public class UserDAOImpl
 
             map1.put("result",1);
             map1.put("key",key);
+            map1.put("sav",sav);
             map1.put("type",trr);
             map1.put("name",arr);
             jsonString = JSON.toJSONString(map1);
@@ -773,7 +779,7 @@ public class UserDAOImpl
         /*if (savenos.length()>0) savenos=savenos.substring(1);*/
         //SELECT a.name name,a.saveno saveno,a.kkey kkey  from prtuana a,dev_author b,room c where a.deviceno=b.deviceno and a.rtuno=c.rtuno  and b.roomno=c.roomno and b.domain=c.rtuno and c.rtuno=1 and c.roomno=1 and b.deviceno=31 and a.type=2  order by a.sn
         String sql ="SELECT a.name name,a.saveno saveno,a.kkey kkey  from prtuana a,dev_author b,room c where a.deviceno=b.deviceno and a.rtuno=c.rtuno and b.roomno=c.roomno and b.domain=c.rtuno and c.rtuno="+savs[0]+" and c.roomno="+savs[1]+" and b.deviceno="+savs[2]+" and a.type="+dtype+" order by a.sn ";
-        //logger.warn(sql);
+        //FirstClass.logger.warn(sql);
         if (dtype==1) sql ="SELECT a.name name,d.saveno saveno,a.kkey kkey  from prtuana a,dev_author b,room c,prtupul d where a.kkey=d.kkey and a.deviceno=b.deviceno and a.rtuno=c.rtuno and b.roomno=c.roomno and b.domain=c.rtuno and c.rtuno="+savs[0]+" and c.roomno="+savs[1]+" and b.deviceno="+savs[2]+" and a.type="+dtype+" order by a.sn ";
         List userData = getJdbcTemplate().queryForList(sql);
         ArrayList arr = new ArrayList();
@@ -796,7 +802,7 @@ public class UserDAOImpl
             }
             map1.put("name",arr);
             map1.put("key",key);
-logger.warn((savenos));
+FirstClass.logger.warn((savenos));
         savs = savenos.split(",");
         int maxgno=-1,mingno=99,saveno;
         for (int i=0;i<savs.length;i++)
@@ -833,7 +839,7 @@ logger.warn((savenos));
 
         sql = "SELECT * from hyc"+(starttime.getYear()%10)+" where groupno between "+mingno+" and "+maxgno+" and  savetime between "+starttime.format(formatter)+"0000 and "+starttime.format(formatter)+"2400 order by savetime,groupno ";
         if (dtype==1) sql = "SELECT * from hdz"+(starttime.getYear()%10)+" where groupno between "+mingno+" and "+maxgno+" and  savetime between "+starttime.format(formatter)+"0000 and "+starttime.format(formatter)+"2400 order by savetime,groupno ";
-            logger.warn(sql);
+            FirstClass.logger.warn(sql);
         userData = getJdbcTemplate().queryForList(sql);
 
         size = userData.size();
@@ -896,7 +902,7 @@ logger.warn((savenos));
 
 
             sql = "SELECT a.maxv,a.maxt,a.minv,a.mint,b.kkey from everyday a,prtuana b where a.saveno=b.saveno and a.saveno in ("+savenos+"-99) and  a.tdate =str_to_date('"+df3.format(starttime)+"','%Y-%m-%d') order by b.kkey ";
-            //logger.warn(sql);
+            //FirstClass.logger.warn(sql);
             userData = getJdbcTemplate().queryForList(sql);
             size = userData.size();
             if (size>0) {
@@ -996,7 +1002,7 @@ logger.warn((savenos));
         else
             sql = "SELECT * from hdz"+(starttime.getYear()%10)+" where  groupno between "+mingno+" and "+maxgno+"  and  savetime between "+starttime.format(formatter)+" and "+endtime.format(formatter)+" order by savetime,groupno ";
 
-        logger.warn(sql);
+        FirstClass.logger.warn(sql);
         userData = getJdbcTemplate().queryForList(sql);
         size = userData.size();
         if (size>0) {
@@ -1042,7 +1048,7 @@ logger.warn((savenos));
                             mint = tArr[i].toString();
                         }
                     } catch (ScriptException e) {
-                        logger.warn(calc[i].toString());
+                        FirstClass.logger.warn(calc[i].toString());
                     } catch (Exception e) {
 
                     }
@@ -1111,7 +1117,7 @@ logger.warn((savenos));
         if (savenos.length()>0) savenos=savenos.substring(1);*/
         //SELECT a.name name,a.saveno saveno,a.kkey kkey  from prtuana a,dev_author b,room c where a.deviceno=b.deviceno and a.rtuno=c.rtuno  and b.roomno=c.roomno and b.domain=c.rtuno and c.rtuno=1 and c.roomno=1 and b.deviceno=31 and a.type=2  order by a.sn
         String sql ="SELECT a.name name,a.saveno saveno,a.kkey kkey  from prtuana a,dev_author b,room c where a.deviceno=b.deviceno and a.rtuno=c.rtuno and b.roomno=c.roomno and b.domain=c.rtuno and c.rtuno="+savs[0]+" and c.roomno="+savs[1]+" and b.deviceno="+savs[2]+" and a.type="+dtype+" order by a.sn ";
-        //logger.warn(sql);
+        //FirstClass.logger.warn(sql);
         List userData = getJdbcTemplate().queryForList(sql);
         ArrayList arr = new ArrayList();
         ArrayList key = new ArrayList();
@@ -1134,7 +1140,7 @@ logger.warn((savenos));
             }
             map1.put("name",arr);
             map1.put("key",key);
-            //logger.warn(savenos);
+            //FirstClass.logger.warn(savenos);
             savs = savenos.split(",");
             int maxgno=-1,mingno=99,saveno;
             for (int i=0;i<savs.length;i++)
@@ -1167,7 +1173,7 @@ logger.warn((savenos));
 
             sql = "SELECT * from hyc"+(endtime.getYear()%10)+" where groupno between "+mingno+" and "+maxgno+" and  savetime between "+starttime.format(formatter)+" and "+endtime.format(formatter)+" order by savetime,groupno ";
 
-            //logger.warn(sql);
+            //FirstClass.logger.warn(sql);
             userData = getJdbcTemplate().queryForList(sql);
             size = userData.size();
             if (size>0) {
@@ -1180,10 +1186,10 @@ logger.warn((savenos));
                     java.util.Map<String,Object> data = new HashMap<String,Object>();
                     java.util.Map<String,Object> avgdata = new HashMap<String,Object>();
                     Object val[] = new Object[size/gnos];
-                    //logger.warn(saveno);
+                    //FirstClass.logger.warn(saveno);
                     for (int j = 0; j < (size / gnos); j++) {
                         Map listData = (Map) userData.get(j * gnos + (gno - mingno));
-                        // logger.warn(listData);
+                        // FirstClass.logger.warn(listData);
                         tlebal = String.valueOf(Integer.parseInt(listData.get("savetime").toString().replace(".0",""))%10000/100);
                         if (i==0)
                         {
@@ -1201,7 +1207,7 @@ logger.warn((savenos));
                         }
                         //val[j] =  listData.get("val"+vno);
                     }
-                    //logger.warn(data);
+                    //FirstClass.logger.warn(data);
                     if (i==0) map1.put("label",lebal);
 
                     for (String ll: lebal)
@@ -1217,7 +1223,7 @@ logger.warn((savenos));
                             }
 
                         }
-                       // logger.warn(ll+":"+total+":"+trr.size());
+                       // FirstClass.logger.warn(ll+":"+total+":"+trr.size());
                         float avg = total/trr.size();
                         avgdata.put(ll,avg);
 
@@ -1246,7 +1252,7 @@ logger.warn((savenos));
     public String ask4dndata(String keys,int len,int type)
     {
         String jsonString="{\"result\":0}";
-        //logger.warn(keys);
+        //FirstClass.logger.warn(keys);
         String[] savs = keys.split(",");
         String savenos="",cols="";
         JSONObject savmap = new JSONObject();
@@ -1259,7 +1265,7 @@ logger.warn((savenos));
         if (savenos.length()>0) savenos=savenos.substring(1);
 
         String sql ="SELECT name,saveno,kkey  from prtupul where kkey in ("+savenos+") order by sn ";
-        //logger.warn(sql);
+        //FirstClass.logger.warn(sql);
         List userData = getJdbcTemplate().queryForList(sql);
         ArrayList arr = new ArrayList();
         ArrayList key = new ArrayList();
@@ -1298,7 +1304,7 @@ logger.warn((savenos));
             }
 
         }
-        //logger.warn(savmap.toString());
+        //FirstClass.logger.warn(savmap.toString());
         //savs = savenos.split(",");
 
 
@@ -1330,20 +1336,20 @@ logger.warn((savenos));
         Iterator iter = savmap.entrySet().iterator();
         while (iter.hasNext()) {
             Map.Entry entry = (Map.Entry) iter.next();
-            //logger.warn(entry.getKey().toString());
-            //logger.warn(entry.getValue().toString());
+            //FirstClass.logger.warn(entry.getKey().toString());
+            //FirstClass.logger.warn(entry.getValue().toString());
             cols="";
             int gno=Integer.parseInt(entry.getKey().toString());
             for (int s : (ArrayList<Integer>)entry.getValue()) {
                 cols = cols+","+"ifnull(sum(val"+s+"),0)";
             }
             sql = "SELECT floor(savetime/10000) tt "+cols+" from hdz"+(endtime.getYear()%10)+" where groupno = "+entry.getKey().toString()+" and  savetime between "+starttime.format(formatter)+" and "+endtime.format(formatter)+" group by floor(savetime/10000) order by floor(savetime/10000) ";
-            //logger.warn(sql);
+            //FirstClass.logger.warn(sql);
             if (type==2)
             {
                 sql = "SELECT floor(savetime/1000000) tt "+cols+" from hdz"+(endtime.getYear()%10)+" where groupno = "+entry.getKey().toString()+" and  savetime between "+starttime.format(formatter)+" and "+endtime.format(formatter)+" group by floor(savetime/1000000) order by floor(savetime/1000000) ";
             }
-            //logger.warn(sql);
+            //FirstClass.logger.warn(sql);
             userData = getJdbcTemplate().queryForList(sql);
             size = userData.size();
             if (size>0) {
@@ -1393,7 +1399,7 @@ logger.warn((savenos));
             map1.put("result",1);
             map1.put("data",datamap);
             jsonString = JSON.toJSONString(map1);
-            //logger.warn(datamap.toJSONString());
+            //FirstClass.logger.warn(datamap.toJSONString());
         }
 
 
@@ -1406,7 +1412,7 @@ logger.warn((savenos));
         //String gkey = (String) httpSession.getAttribute("groupKey");
         //String uid = (String) httpSession.getAttribute("LOGIN_SUCCESS");
 	  	String sql ="SELECT * from msg_user where gkey = '"+gkey+"' order by id";
-	  	 logger.warn(uid);
+	  	 FirstClass.logger.warn(uid);
 	    List userData = getJdbcTemplate().queryForList(sql);
 	    int size=userData.size() ;
 	    if (size> 0)
@@ -1453,7 +1459,7 @@ logger.warn((savenos));
         else
             sql=sql+" and  a.rtuno ="+rtu;
         sql= sql +"  and (power(2,"+userId+"-1)&a.author_read)>0 order by a.sn";
-        logger.warn("aaa:"+sql);
+        FirstClass.logger.warn("aaa:"+sql);
         List userData = getJdbcTemplate().queryForList(sql);
         int size=userData.size() ;
         if (size> 0)
@@ -1499,7 +1505,7 @@ logger.warn((savenos));
         else
             sql=sql+" and  a.rtuno ="+rtu;
         sql= sql +"  and (power(2,"+userId+"-1)&a.author_read)>0 order by a.sn";
-         logger.warn("aaa:"+sql);
+         FirstClass.logger.warn("aaa:"+sql);
         List userData = getJdbcTemplate().queryForList(sql);
         int size=userData.size() ;
         if (size> 0)
@@ -1542,7 +1548,7 @@ logger.warn((savenos));
 	  String jsonString="";
 	  String rtuString="";
 	  	String sql ="SELECT rtuno,name p_name from prtu where ananum>0 and domain="+pno+" order by rtuno asc";
-	  	logger.warn("sql"+sql);	
+	  	FirstClass.logger.warn("sql"+sql);	
 	    List userData = getJdbcTemplate().queryForList(sql);
 	    int size=userData.size() ;
 	    if (size> 0)
@@ -1580,7 +1586,7 @@ logger.warn((savenos));
 	  	}else {
 	  		sql = "select get_subs(name,0) p_name,saveno rtuno from prtuana where rtuno="+dn+" and name like '"+nm+"%' order by saveno";
 		}
-	  	logger.warn(sql);		
+	  	FirstClass.logger.warn(sql);		
 	    List userData = getJdbcTemplate().queryForList(sql);
 	    int size=userData.size() ;
 	    if (size> 0)
@@ -1703,11 +1709,11 @@ logger.warn((savenos));
 	  
 	  		sql = "select name , rtuno from prtu where domain="+pno+" and  name is not null order by rtuno";
 		
-	  	logger.warn(sql);		
+	  	FirstClass.logger.warn(sql);		
 	    List userData = getJdbcTemplate().queryForList(sql);
 	    int size=userData.size() ;
 	    if (size> 0)
-	    	//logger.warn(size);
+	    	//FirstClass.logger.warn(size);
 	    {
 			
 	    	for (int i = 0; i<size; i++)
@@ -1717,7 +1723,7 @@ logger.warn((savenos));
 	    		
 	    		
 	    		rtuString = "{\"value\":\""+listData.get("rtuno")+"\",\"name\":\""+listData.get("name")+"\"}";
-	    		//logger.warn(rtuString);
+	    		//FirstClass.logger.warn(rtuString);
 	    		if (i==0)
 	    		{
 	    		  jsonString = rtuString;
@@ -1750,7 +1756,7 @@ logger.warn((savenos));
 	    List userData = getJdbcTemplate().queryForList(sql);
 	    int size=userData.size() ;
 	    if (size> 0)
-	    	//logger.warn(size);
+	    	//FirstClass.logger.warn(size);
 	    {
 			
 	    	for (int i = 0; i<size; i++)
@@ -1760,7 +1766,7 @@ logger.warn((savenos));
 	    		
 	    		
 	    		rtuString = "{\"value\":\""+listData.get("sn")+"\",\"name\":\""+listData.get("name")+"\"}";
-	    		//logger.warn(rtuString);
+	    		//FirstClass.logger.warn(rtuString);
 	    		if (i==0)
 	    		{
 	    		  jsonString = rtuString;
@@ -1793,7 +1799,7 @@ logger.warn((savenos));
 	    List userData = getJdbcTemplate().queryForList(sql);
 	    int size=userData.size() ;
 	    if (size> 0)
-	    	//logger.warn(size);
+	    	//FirstClass.logger.warn(size);
 	    {
 			
 	    	for (int i = 0; i<size; i++)
@@ -1803,7 +1809,7 @@ logger.warn((savenos));
 	    		
 	    		
 	    		rtuString = "{\"value\":\""+listData.get("sn")+"\",\"name\":\""+listData.get("name")+"\"}";
-	    		//logger.warn(rtuString);
+	    		//FirstClass.logger.warn(rtuString);
 	    		if (i==0)
 	    		{
 	    		  jsonString = rtuString;
@@ -1836,7 +1842,7 @@ logger.warn((savenos));
 	    List userData = getJdbcTemplate().queryForList(sql);
 	    int size=userData.size() ;
 	    if (size> 0)
-	    	//logger.warn(size);
+	    	//FirstClass.logger.warn(size);
 	    {
 			
 	    	for (int i = 0; i<size; i++)
@@ -1846,7 +1852,7 @@ logger.warn((savenos));
 	    		
 	    		
 	    		rtuString = "{\"value\":\""+listData.get("sn")+"\",\"name\":\""+listData.get("name")+"\"}";
-	    		//logger.warn(rtuString);
+	    		//FirstClass.logger.warn(rtuString);
 	    		if (i==0)
 	    		{
 	    		  jsonString = rtuString;
@@ -1876,7 +1882,7 @@ logger.warn((savenos));
 	  	}else {
 	  		sql = "select get_subs(name,0) p_name,saveno rtuno  from prtupul where rtuno="+dn+" and name like '%"+nm+"%' order by saveno";
 		}
-	  	logger.warn(sql);		
+	  	FirstClass.logger.warn(sql);		
 	    List userData = getJdbcTemplate().queryForList(sql);
 	    int size=userData.size() ;
 	    if (size> 0)
@@ -1900,7 +1906,7 @@ logger.warn((savenos));
 	    }
 	  
 	  	 jsonString="["+jsonString+"]"; 	
-	  //logger.warn(jsonString);
+	  //FirstClass.logger.warn(jsonString);
 	  
 	  return jsonString;
   }
@@ -1973,7 +1979,7 @@ logger.warn((savenos));
 		 	Date tempTime2=sd2.parse(endTime);
 		 	
 			 int gapDate= (int) (( tempTime2.getTime()-tempTime1.getTime())/(1000*60*60*24));
-			 //logger.warn(gapDate);
+			 //FirstClass.logger.warn(gapDate);
 			 Object[][] dateArr=new Object[ gapDate][2];
 			 SimpleDateFormat xDate=new SimpleDateFormat("yy-MM-dd");
 	    	for (int i = 0; i<gapDate; i++)
@@ -2037,7 +2043,7 @@ logger.warn((savenos));
 	  	long c2=0;
         String vv = "";
 
-      //logger.warn(dt);
+      //FirstClass.logger.warn(dt);
 	  	List<String> disno = new ArrayList<String>();
 	  	List<String> disnm = new ArrayList<String>();
 	  	//FileOutputStream os = new FileOutputStream("C://exp/exp_"+devno+"_"+dt+".xlsx");
@@ -2113,7 +2119,7 @@ logger.warn((savenos));
 	  		sql = "select get_subs(name,0) p_name,saveno rtuno from prtuana where rtuno="+dn+" and name like '%"+nm+"%' order by saveno";
 		}*/
 	  	String sql ="SELECT distinct b.devicenm dis,b.deviceno dno from  prtuana a,dev_author b,room c where (power(2,"+userId+"-1)&a.author_read)>0 and a.rtuno=c.rtuno and  a.deviceno=b.deviceno and c.roomno =b.roomno and b.domain=c.rtuno and c.roomno="+pno+" and c.rtuno="+devno+" order by   b.devicenm ";
-      logger.warn(sql);
+      FirstClass.logger.warn(sql);
 	  	List userData = getJdbcTemplate().queryForList(sql);
 	    int size=userData.size() ;
 	    Object arrdis[] = new Object[size];
@@ -2137,7 +2143,7 @@ logger.warn((savenos));
 	    	}	 
 	     }
 	    sql ="SELECT count(*) cnt, b.devicenm  from prtuana a,dev_author b,room c where (power(2,"+userId+"-1)&a.author_read)>0 and a.rtuno=c.rtuno and a.deviceno=b.deviceno and c.roomno =b.roomno  and b.domain=c.rtuno  and c.roomno="+pno+"  and c.rtuno="+devno+" group by   b.devicenm ";
-      logger.warn(sql);
+      FirstClass.logger.warn(sql);
 	     userData = getJdbcTemplate().queryForList(sql);
 	     size=userData.size() ;
 	  
@@ -2148,7 +2154,7 @@ logger.warn((savenos));
 	    	{	
 	    		Map listData = (Map)userData.get(i);
 	    		len[i] =  (long) listData.get("cnt");
-	    		//logger.warn(len[i]);
+	    		//FirstClass.logger.warn(len[i]);
 	    		//dev.add(listData.get("deviceno").toString());
 	    		
 	    	}	 
@@ -2162,7 +2168,7 @@ logger.warn((savenos));
 	  	//List<String> dev = new ArrayList<String>();
 	    saveno = 0;
 	  	 sql ="SELECT  a.name,a.saveno, b.devicenm,a.upperlimit,a.lowerlimit,a.deviceno from prtuana a,dev_author b,room c where (power(2,"+userId+"-1)&a.author_read)>0 and a.rtuno=c.rtuno and a.deviceno=b.deviceno and c.roomno =b.roomno  and b.domain=c.rtuno  and c.roomno="+pno+"  and c.rtuno="+devno+" order by   b.devicenm,a.sn ";
-      logger.warn(sql);
+      FirstClass.logger.warn(sql);
 	  	 userData = getJdbcTemplate().queryForList(sql);
 	     size=userData.size() ;
 	    Object arr[] = new Object[size];
@@ -2185,9 +2191,9 @@ logger.warn((savenos));
 	    		
 	    	}	 
 	     }
-      //logger.warn(dev);
+      //FirstClass.logger.warn(dev);
 	    sql ="SELECT * FROM hyc"+dt.substring(3,4)+" where savetime = "+dt.substring(4,12)+"   order by groupno";
-      logger.warn(sql);
+      FirstClass.logger.warn(sql);
 	    userData = getJdbcTemplate().queryForList(sql);
 	    size=userData.size() ;
 try {
@@ -2195,7 +2201,7 @@ try {
 
 	    if (size> 0)
 	    {
-            //logger.warn(sql);
+            //FirstClass.logger.warn(sql);
 	    	for (int i = 0; i<nms.size(); i++)
 	    	{	try
                 {
@@ -2207,8 +2213,8 @@ try {
                         vv = listData.get("val" + vno).toString();
                         if (vv != null) {
                             val.add(vv);
-                            // logger.warn(listData.get("val"+vno).toString()+">"+lower.get(i)+" && "+listData.get("val"+vno).toString()+"<"+up.get(i));
-                            if ((boolean) scriptEngine.eval(vv + ">" + lower.get(i) + " && " + vv + "<" + up.get(i)))
+                            // FirstClass.logger.warn(listData.get("val"+vno).toString()+">"+lower.get(i)+" && "+listData.get("val"+vno).toString()+"<"+up.get(i));
+                            if ((boolean) FirstClass.engine.eval(vv + ">" + lower.get(i) + " && " + vv + "<" + up.get(i)))
                                 color[i] = 0;
                             else
                                 color[i] = 1;
@@ -2216,7 +2222,7 @@ try {
                             val.add(" ");
                             color[i] = 0;
                         }
-                        //logger.warn(listData.get("val"+vno).toString()+">"+lower.get(i)+" && "+listData.get("val"+vno).toString()+"<"+up.get(i));
+                        //FirstClass.logger.warn(listData.get("val"+vno).toString()+">"+lower.get(i)+" && "+listData.get("val"+vno).toString()+"<"+up.get(i));
 
                         arr2[i] = val.get(i);
 
@@ -2229,7 +2235,7 @@ try {
                 }catch (Exception ee)
                     {
 
-                        logger.warn("一览表取数失败："+saveno);
+                        FirstClass.logger.warn("一览表取数失败："+saveno);
                     }
 
 	    		
@@ -2285,7 +2291,7 @@ try {
 	     }
 }catch (Exception e)
 {
-    logger.error(e.toString());
+    FirstClass.logger.error(e.toString());
 }
 	   // sheet.autoSizeColumn((short)0); //调整第一列宽度
        // sheet.autoSizeColumn((short)1); //调整第二列宽度
@@ -2321,7 +2327,7 @@ try {
 				hhmmcl = Integer.parseInt(clstr[e].substring(0, 2))*60+Integer.parseInt(clstr[e].substring(5, 7));
 				sql="UPDATE TIME_PLAN set ON_OFF = "+oofstr[e]+" , t_open ="+hhmmop+", t_close="+hhmmcl+" where week="+(e-1);
 				if (all==0) sql=sql+" AND SN="+id;
-				logger.warn(sql);
+				FirstClass.logger.warn(sql);
 				stm.addBatch(sql);
 			}
 		   stm.executeBatch();   
@@ -2377,7 +2383,7 @@ try {
 						hhmmcl = Integer.parseInt(clstr[e].substring(0, 2))*60+Integer.parseInt(clstr[e].substring(3, 5));
 						sql="INSERT INTO TIME_PLAN (SN,ON_OFF,T_OPEN,T_CLOSE,WEEK) VALUES ("+id+", "+oofstr[e]+" , "+hhmmop+", "+hhmmcl+","+wkstr[e]+")";
 						
-						logger.warn(sql);
+						FirstClass.logger.warn(sql);
 						stm.addBatch(sql);
 				   // }
 				}
@@ -2422,7 +2428,7 @@ try {
 						hhmmcl = Integer.parseInt(clstr[e].substring(0, 2))*60+Integer.parseInt(clstr[e].substring(3, 5));
 						sql="INSERT INTO TIME_PLAN (SN,ON_OFF,T_OPEN,T_CLOSE,WEEK) VALUES ("+i+", "+oofstr[e]+" , "+hhmmop+", "+hhmmcl+","+wkstr[e]+")";
 						
-						logger.warn(sql);
+						FirstClass.logger.warn(sql);
 						stm.addBatch(sql);
 					    }
 					}
@@ -2474,7 +2480,7 @@ try {
 			   con.setAutoCommit(false);
 			   stm = con.createStatement();  
 			   sql = " delete from time_plan_temp where sn="+id;
-			   logger.warn(sql);
+			   FirstClass.logger.warn(sql);
 			   stm.addBatch(sql);
 			   for (int e = 1; e <  oofstr.length; e++)//00:00
 				{  // if (Integer.parseInt(oofstr[e])>0){
@@ -2482,7 +2488,7 @@ try {
 						//hhmmcl = wkstr[e];
 						sql="INSERT INTO time_plan_temp (SN,ON_OFF,TEMP,T_SET,week) VALUES ("+id+", "+oofstr[e]+" , "+clstr[e]+" , "+hhmmop+", "+wkstr[e]+")";
 						
-						logger.warn(sql);
+						FirstClass.logger.warn(sql);
 						stm.addBatch(sql);
 				   // }
 				}
@@ -2527,7 +2533,7 @@ try {
 						//hhmmcl = Integer.parseInt(clstr[e].substring(0, 2))*60+Integer.parseInt(clstr[e].substring(3, 5));
 						sql="INSERT INTO TIME_PLAN_TEMP (SN,ON_OFF,T_SET,TEMP) VALUES ("+i+", "+oofstr[e]+" , "+hhmmop+", "+wkstr[e]+")";
 						
-						logger.warn(sql);
+						FirstClass.logger.warn(sql);
 						stm.addBatch(sql);
 					    }
 					}
@@ -2585,7 +2591,7 @@ try {
 						//hhmmcl = Integer.parseInt(clstr[e].substring(0, 2))*60+Integer.parseInt(clstr[e].substring(3, 5));
 						sql="delete from TIME_PLAN where SN="+id+" AND WEEK="+wk+" AND  T_OPEN="+op;
 						
-						logger.warn(sql);
+						FirstClass.logger.warn(sql);
 						stm.addBatch(sql);
 					   // }
 					}
@@ -2643,7 +2649,7 @@ try {
 						//hhmmcl = Integer.parseInt(clstr[e].substring(0, 2))*60+Integer.parseInt(clstr[e].substring(3, 5));
 						sql="delete from time_plan_temp where SN="+id+"  AND  T_SET="+st+" AND TEMP="+op+" AND week="+wk;
 						
-						logger.warn(sql);
+						FirstClass.logger.warn(sql);
 						stm.addBatch(sql);
 					   // }
 					}
@@ -2760,13 +2766,13 @@ try {
 				String eT=temp.getString(7)+":00";
 				sql="Insert into PLAN (SN,M_NAME,PLAN_SN,START_TIME,END_TIME,START_P,RATE_P,UP_DOWN,END_P,TEXT2) values (Plan_sn.nextval,'"+temp.getString(1)+"',"+sn+",to_date('"+sT+"','yyyy-MM-dd HH24:mi:ss'),to_date ('"+eT+"','yyyy-MM-dd HH24:mi:ss'),"+temp.getString(3)+","+temp.getString(4)+","+temp.getString(5)+","+temp.getString(6)+",'"+text2+"') ";
 				stm.addBatch(sql); 
-				//logger.warn("insert:  " + sql);
+				//FirstClass.logger.warn("insert:  " + sql);
 			}
 		   for (int d = 0; d <  delArr.size(); d++)
 			{
 			   sql="delete from PLAN where sn="+delArr.getInteger(d);
 			   stm.addBatch(sql);
-			  // logger.warn("delete:  " + sql);
+			  // FirstClass.logger.warn("delete:  " + sql);
 			}
 		   for (int e = 0; e <  editArr.size(); e++)
 			{
@@ -2778,7 +2784,7 @@ try {
 				}
 				String text2=temp.getString(2)+",以"+temp.getString(4)+"MW/MIN速率"+upDown+temp.getString(6)+"MW";
 				sql="update PLAN set M_NAME= '"+temp.getString(1)+"' , START_TIME=TO_DATE ('"+temp.getString(2)+":00"+"', 'yyyy-MM-dd hh24:mi:ss') , END_TIME=TO_DATE ('"+temp.getString(7)+":00"+"', 'yyyy-MM-dd hh24:mi:ss') ,RATE_P="+temp.getString(4)+" ,  UP_DOWN="+temp.getString(5)+" ,  START_P="+temp.getString(3)+" ,  END_P="+temp.getString(6)+" ,TEXT2='"+text2+"' where SN="+temp.getInteger(0);
-				//logger.warn("insert  " + sql);
+				//FirstClass.logger.warn("insert  " + sql);
 				stm.addBatch(sql);
 			}
 		   stm.executeBatch();   
@@ -2835,7 +2841,7 @@ try {
 			{
 			   sql="delete from PLAN_POINT where id="+delArr.getInteger(d);
 			  
-			   //logger.warn("delete:  " + sql);
+			   //FirstClass.logger.warn("delete:  " + sql);
 			}
 		   for (int e = 0; e <  editArr.size(); e++)
 			{
@@ -2855,8 +2861,8 @@ try {
 					    flag = 2;
 					}	
 				}
-				//logger.warn("UPDATE  " + sql);
-				//logger.warn((temp.getInteger(1)+","+temp.getInteger(0)+","+temp.getString(2)+","+temp.getFloat(3)+","+temp.getFloat(5)+"---"+temp.getFloat(6)+","+temp.getString(7)+","+temp.getFloat(8)+","+flag));
+				//FirstClass.logger.warn("UPDATE  " + sql);
+				//FirstClass.logger.warn((temp.getInteger(1)+","+temp.getInteger(0)+","+temp.getString(2)+","+temp.getFloat(3)+","+temp.getFloat(5)+"---"+temp.getFloat(6)+","+temp.getString(7)+","+temp.getFloat(8)+","+flag));
 				saveGd(temp.getInteger(1),temp.getInteger(0),temp.getString(2),temp.getFloat(3),temp.getFloat(5),temp.getFloat(6),temp.getString(7),temp.getFloat(8),flag);
 			}
 		 
@@ -2941,7 +2947,7 @@ try {
 	        Object[] narr = new Object[1];
 	        while (rs.next()) {
 	          
-	          logger.warn(rs.getString("sn"));
+	          FirstClass.logger.warn(rs.getString("sn"));
 	          ArrayList kv = new ArrayList();
 	          
 	          kv.add(rs.getString("sn"));
@@ -2996,7 +3002,7 @@ try {
 	    } catch (SQLException e) {
 	      e.printStackTrace();
 	    } 
-	    logger.warn(jsonString);
+	    FirstClass.logger.warn(jsonString);
 	    return jsonString;
 	  }
 	  
@@ -3037,7 +3043,7 @@ try {
 	        
 	        sql = "Insert into calc_evt (sn,key,name,enb_flg,uid,pid,value,quality,ref_time,chg_time,close_exp,close_delay_time,close_keep_time,open_exp,open_delay_time,open_keep_time,event_type,event_level,note) values (";
 	        sql = String.valueOf(sql) + nsn + ",'evt_" + nsn + "','" + temp.getString(3) + "',1," + temp.getString(1) + "," + temp.getString(2) + ",0,0,0,0,'" + str1 + "',0,0,'" + str2 + "',0,0,'o_2_c',1,0)";
-	        logger.warn("insert  " + sql);
+	        FirstClass.logger.warn("insert  " + sql);
 	        stmt.addBatch(sql);
 	      } 
 	      
@@ -3070,7 +3076,7 @@ try {
 
 	        
 	        sql = "update calc_evt set close_exp='" + str1 + "' ,open_exp='" + str2 + "' where sn=" + temp.getInteger(0);
-	        logger.warn("UPDATE  " + sql);
+	        FirstClass.logger.warn("UPDATE  " + sql);
 	        stmt.addBatch(sql);
 	      } 
 	      stmt.executeBatch();
@@ -3129,7 +3135,7 @@ try {
 	        } 
 
 	        
-	        logger.warn("UPDATE  " + sql);
+	        FirstClass.logger.warn("UPDATE  " + sql);
 	        stmt.addBatch(sql);
 	      } 
 	      stmt.executeBatch();
@@ -3228,7 +3234,7 @@ try {
 	    } else {
 	      sql = "select get_subs(name,0) p_name,rtuno*10000+sn rtunos,rtuno from prtuana where roomno=" + dn + " and name like '" + nm + "%' order by saveno";
 	    } 
-	    logger.warn(sql);
+	    FirstClass.logger.warn(sql);
 	    List userData = getJdbcTemplate().queryForList(sql);
 	    int size = userData.size();
 	    if (size > 0) {
@@ -3263,7 +3269,7 @@ try {
 	    } else {
 	      sql = "select get_subs(name,0) p_name,rtuno*10000+sn rtunos,rtuno from prtuana where rtuno=" + dn + "-1 and name like '" + nm + "%' order by saveno";
 	    } 
-	    logger.warn(sql);
+	    FirstClass.logger.warn(sql);
 	    List userData = getJdbcTemplate().queryForList(sql);
 	    int size = userData.size();
 	    if (size > 0) {
@@ -3293,15 +3299,15 @@ try {
 	  String jsonString = "";
     Map<String, Object> map1 = new HashMap<String, Object>();
     String sql = "update dev_author set author=bitnot(author ,power(2," + uid + "-1)) ";
-    logger.warn(sql);
+    FirstClass.logger.warn(sql);
     
     int re = getJdbcTemplate().update(sql);
-    logger.warn(Integer.valueOf(re));
+    FirstClass.logger.warn(Integer.valueOf(re));
     if (re > 0) {
       sql = "update dev_author set author=(author | power(2," + uid + "-1)) where deviceno in (" + devs + ")";
-      logger.warn(sql);
+      FirstClass.logger.warn(sql);
       re = getJdbcTemplate().update(sql);
-      logger.warn(Integer.valueOf(re));
+      FirstClass.logger.warn(Integer.valueOf(re));
       if (re > 0) { map1.put("result", Integer.valueOf(1)); }
       else { map1.put("result", Integer.valueOf(0)); }
     
@@ -3350,7 +3356,7 @@ try {
         String cka = " ";
         if (ck==1) cka=" and  a.readstatus=0 ";
         String sql = "select concat(get_datestr(a.ymd,a.hms),' ',b.name,' ',d.e_info) text,concat('1,',a.ymd,',',a.hms,',',a.ch,',',a.xh) id,a.readstatus readStatus,d.e_color ecl from hevt0 a,prtudig b,prtu c,etype_info d where b.author_read>0 "+cka+" and  b.type=d.e_type and a.zt=d.e_zt and  a.ch=c.rtuno and a.xh=b.sn and a.ch=b.rtuno   and c.un_x='"+gkey+"' union select concat(get_datestr(a.ymd,a.hms),' ',b.name,' ',concat(CASE WHEN a.zt = -1 THEN 'yxx' WHEN a.zt = 0 THEN 'hf' ELSE 'ysx' END ,'(',a.val,')')) text,concat('2,',a.ymd,',',a.hms,',',a.ch,',',a.xh) id,a.readstatus readStatus,abs(a.zt) ecl from hevtyc0 a,prtuana b,prtu c  where   b.author_read>0 "+cka+" and  a.ch=c.rtuno and a.xh=b.sn and a.ch=b.rtuno  and c.un_x='"+gkey+"' order by text desc LIMIT "+(sn*10)+", 10";
-        logger.warn(sql);
+        FirstClass.logger.warn(sql);
         List userData = getJdbcTemplate().queryForList(sql);
         int size = userData.size();
         Map<String, Object> map1 = new HashMap<String, Object>();
@@ -3415,7 +3421,7 @@ try {
                     tid = listData.get("tid").toString();
                 }
 				sql="Insert into msg_user (auth,NAME,PHONE,PHONEVALID,MSG_ST,MSG_ET,EMAIL,EMAILVALID,valid,leval,gkey,passwd) values ("+tid+",'"+temp.getString(1)+"','"+temp.getString(2)+"',"+temp.getString(3)+","+keys[0]+","+keys[1]+",'"+temp.getString(5)+"',"+temp.getString(6)+",1,2,'"+gkey+"','111111')";
-                //logger.warn("insert:  " + sql);
+                //FirstClass.logger.warn("insert:  " + sql);
 				stm.addBatch(sql); 
 				
 			}
@@ -3423,7 +3429,7 @@ try {
 			{
 			   sql="delete from msg_user where id="+delArr.getInteger(d);
 			   stm.addBatch(sql);
-			   //logger.warn("delete:  " + sql);
+			   //FirstClass.logger.warn("delete:  " + sql);
 			}
 		   for (int e = 0; e <  editArr.size(); e++)
 			{
@@ -3431,7 +3437,7 @@ try {
                 String[] keys=temp.getString(4).split(",");
 				//2,weswsw,13900000000,false,0/1440,111@111.com,false
 				sql="update msg_user set NAME='"+temp.getString(1)+"' ,PHONE='"+temp.getString(2)+"',phonevalid="+temp.getString(3)+",msg_st="+keys[0]+",msg_et="+keys[1]+",EMAIL='"+temp.getString(5)+"',emailvalid="+temp.getString(6)+" where ID="+temp.getInteger(0);
-				logger.warn("UPDATE  " + sql);
+				FirstClass.logger.warn("UPDATE  " + sql);
 				stm.addBatch(sql);
 			}
 		   stm.executeBatch();   
@@ -3484,7 +3490,7 @@ try {
                 //String text2=temp.getString(2)+",以"+temp.getString(4)+"MW/MIN速率"+upDown+temp.getString(6)+"MW";
 
                 sql="Insert into msg_user (NAME,PHONE,PHONEVALID,MSG_ST,MSG_ET,EMAIL,EMAILVALID) values ('"+temp.getString(1)+"','"+temp.getString(2)+"',"+temp.getString(3)+","+keys[0]+","+keys[1]+",'"+temp.getString(5)+"',"+temp.getString(6)+")";
-                logger.warn("insert:  " + sql);
+                FirstClass.logger.warn("insert:  " + sql);
                 stm.addBatch(sql);
 
             }*/
@@ -3492,7 +3498,7 @@ try {
             {
                 sql="delete from msg_user where id="+delArr.getInteger(d);
                 stm.addBatch(sql);
-                //logger.warn("delete:  " + sql);
+                //FirstClass.logger.warn("delete:  " + sql);
             }*/
             for (int e = 0; e <  editArr.size(); e++)
             {
@@ -3522,7 +3528,7 @@ try {
 
                     sql="update prtuana set upperlimit="+temp.getString(2)+" ,lowerlimit="+temp.getString(3)+",author_alert="+temp.getString(4)+",author_msg="+temp.getString(5)+",author_email="+temp.getString(6)+",timevalid="+temp.getString(7)+",timecondition='"+temp.getString(8)+"',warnline="+temp.getString(9)+" where saveno="+temp.getInteger(0);
                     try {
-                        if ((boolean)scriptEngine.eval("1"+temp.getString(8)) );
+                        if ((boolean)FirstClass.engine.eval("1"+temp.getString(8)) );
 
                         {
                             stm.addBatch(sql);
@@ -3535,22 +3541,22 @@ try {
 
 
                     } catch (ScriptException e1) {
-                        logger.warn("err ScriptException:"+e1.toString());
+                        FirstClass.logger.warn("err ScriptException:"+e1.toString());
                         map1.put("result",2);
                         //e1.printStackTrace();
                     }catch (Exception ee)
                     {
-                        logger.warn("err Exception:"+ee.toString());
+                        FirstClass.logger.warn("err Exception:"+ee.toString());
                         map1.put("result",0);
                     }
                 }
 
 
-                logger.warn("UPDATE ana : " + sql);
+                FirstClass.logger.warn("UPDATE ana : " + sql);
 
 
             }
-            logger.warn(map1);
+            FirstClass.logger.warn(map1);
             jsonString = JSON.toJSONString(map1);
 
         }
@@ -3597,7 +3603,7 @@ try {
                 //String text2=temp.getString(2)+",以"+temp.getString(4)+"MW/MIN速率"+upDown+temp.getString(6)+"MW";
 
                 sql="Insert into msg_user (NAME,PHONE,PHONEVALID,MSG_ST,MSG_ET,EMAIL,EMAILVALID) values ('"+temp.getString(1)+"','"+temp.getString(2)+"',"+temp.getString(3)+","+keys[0]+","+keys[1]+",'"+temp.getString(5)+"',"+temp.getString(6)+")";
-                logger.warn("insert:  " + sql);
+                FirstClass.logger.warn("insert:  " + sql);
                 stm.addBatch(sql);
 
             }*/
@@ -3605,7 +3611,7 @@ try {
             {
                 sql="delete from msg_user where id="+delArr.getInteger(d);
                 stm.addBatch(sql);
-                //logger.warn("delete:  " + sql);
+                //FirstClass.logger.warn("delete:  " + sql);
             }*/
             for (int e = 0; e <  editArr.size(); e++)
             {
@@ -3618,7 +3624,7 @@ try {
 
                 //2,weswsw,13900000000,fal temp.getString(6)
                 sql="update prtudig set author_alert="+temp.getString(2)+",author_msg="+temp.getString(3)+",author_email="+temp.getString(4)+",timevalid="+temp.getString(5)+",timecondition='"+temp.getString(6)+"',warnline="+temp.getString(7)+" where kkey='"+temp.getString(0)+"'";
-                logger.warn("UPDATE dig " + sql);
+                FirstClass.logger.warn("UPDATE dig " + sql);
                 try {
                    if ((boolean)scriptEngine.eval("1"+temp.getString(6))) ;
                     stm.addBatch(sql);
@@ -3655,7 +3661,7 @@ try {
 
                     sql="update prtudig set author_alert="+temp.getString(2)+",author_msg="+temp.getString(3)+",author_email="+temp.getString(4)+",timevalid="+temp.getString(5)+",timecondition='"+temp.getString(6)+"',warnline="+temp.getString(7)+" where kkey='"+temp.getString(0)+"'";
                     try {
-                        if ((boolean)scriptEngine.eval("1"+temp.getString(6)) );
+                        if ((boolean)FirstClass.engine.eval("1"+temp.getString(6)) );
 
                         {
                             stm.addBatch(sql);
@@ -3677,7 +3683,7 @@ try {
                 }
 
 
-                logger.warn("UPDATE dig: " + sql);
+                FirstClass.logger.warn("UPDATE dig: " + sql);
             }
             jsonString = JSON.toJSONString(map1);
 
@@ -3804,7 +3810,7 @@ try {
 		  //String jsonString="{\"result\":0}";
 		  String sql = "delete from PLAN_NAME where SN = "+key;
 			int i=getJdbcTemplate().update(sql);
-			//logger.warn("delete:"+i);
+			//FirstClass.logger.warn("delete:"+i);
 				Map<String, Object> map = new HashMap<String, Object>();
 				map.put("data", i);
 				map.put("result",1);  
@@ -3826,7 +3832,7 @@ try {
             //String jsonString="{\"result\":0}";
             String sql = "update "+tb[tp]+"  set online=0,checktime='"+dtstr+"',timestat=0,warntimes=0 where "+keys[tp];
             int i=getJdbcTemplate().update(sql);
-            //logger.warn("delete:"+i);
+            //FirstClass.logger.warn("delete:"+i);
             Map<String, Object> map = new HashMap<String, Object>();
             map.put("data", i);
             map.put("result",1);
@@ -3844,7 +3850,7 @@ try {
 		  //String jsonString="{\"result\":0}";
 		  String sql = "insert into del_gd values ( "+key+","+mode+")";
 			int i=getJdbcTemplate().update(sql);
-			//logger.warn("delete:"+i);
+			//FirstClass.logger.warn("delete:"+i);
 				Map<String, Object> map = new HashMap<String, Object>();
 				map.put("data", i);
 				map.put("result",1);  
@@ -3857,13 +3863,13 @@ try {
     {
         String jsonString="{\"result\":0}";
         String[] ifo = info.split(",");
-        //logger.warn(ifo[0]);
+        //FirstClass.logger.warn(ifo[0]);
         String dbname=(ifo[0].matches("1")?"hevt":"hevtyc")+ifo[1].substring(1,2);
 
         {
             //String jsonString="{\"result\":0}";
             String sql = "update "+dbname+" set readstatus=1 where ymd="+ifo[1]+" and hms="+ifo[2]+" and ch="+ifo[3]+" and xh="+ifo[4];
-            //logger.warn(sql);
+            //FirstClass.logger.warn(sql);
             try {
                 int i=getJdbcTemplate().update(sql);
 
@@ -3893,7 +3899,7 @@ try {
 	  {sql="select * from PLAN_NAME where  P_YEAR like '%"+keys[0]+"%'";}
 	  if (keys[0].length()==0 && keys[1].length()>0)
 	  {sql="select * from PLAN_NAME where P_NAME like '%"+keys[1]+"%' ";}
-      //logger.warn("sql:"+sql);
+      //FirstClass.logger.warn("sql:"+sql);
 	  List userData = getJdbcTemplate().queryForList(sql);
 		if (userData.size() > 0)
 		{
@@ -4160,7 +4166,7 @@ try {
     if (rs.next())
     {
       newID = rs.getInt(1);
-     // logger.warn(newID+":newid");
+     // FirstClass.logger.warn(newID+":newid");
     }
     ps.close();
     ps = null;
@@ -4273,7 +4279,7 @@ try {
 		  	String jsonString="";
 		  	String jzName="";
 		  	String dateString ="";
-		  	//logger.warn(crewLong);
+		  	//FirstClass.logger.warn(crewLong);
             dbnameString= "hyc";
             dbnameString2 = "prtuana";
             String sql="";
@@ -4287,7 +4293,7 @@ try {
           if (sav==-1)
           {
               sql = "select min(a.saveno) sav from prtuana a,prtu b  where (power(2,"+userId+"-1)&a.author_read)>0 and  a.rtuno=b.rtuno and b.domain="+tab;
-              //logger.warn(sql);
+              //FirstClass.logger.warn(sql);
               userData = getJdbcTemplate().queryForList(sql);
               jznm = (Map)userData.get(0);
               sav = Integer.parseInt(jznm.get("sav").toString());
@@ -4309,7 +4315,7 @@ try {
 			     userData = getJdbcTemplate().queryForList(sql);
 			     jznm = (Map)userData.get(0);
 			    jzName=jznm.get("anm").toString()+jznm.get("bnm").toString();
-			   // logger.warn(jzName);
+			   // FirstClass.logger.warn(jzName);
 		     sql = "select IFNULL(val"+vno+",0) val,savetime from "+dbnameString+(dateTime2.getYear()%10)+" where  groupno="+gno+"  and savetime>="+dateString+"0000 and savetime<"+dateString+"9999 order by savetime"; 
 		     userData.clear();
 		    
@@ -4367,7 +4373,7 @@ try {
 	        map1.put("result",1);  
 	        map1.put("jzName",jzName);
 		    jsonString = JSON.toJSONString(map1);
-		    //logger.warn(jsonString);
+		    //FirstClass.logger.warn(jsonString);
 		    return jsonString;
 	  }
 	public String getTfPlanAll_kb(String crew , String tab,int pId) throws ParseException
@@ -4379,7 +4385,7 @@ try {
 		  	String jsonString="";
 		  	String jzName="";
 		  	String dateString ="",dateString2 ="";
-		  	//logger.warn(crewLong);
+		  	//FirstClass.logger.warn(crewLong);
 		  	if (Integer.parseInt(tab) ==1) 
 		  		{
 		  		dbnameString= "hyc";
@@ -4406,7 +4412,7 @@ try {
 			    List userData = getJdbcTemplate().queryForList(sql);
 			    Map jznm = (Map)userData.get(0);
 			    jzName=jznm.get("anm").toString()+jznm.get("bnm").toString();
-			   // logger.warn(jzName);
+			   // FirstClass.logger.warn(jzName);
 		     sql = "select IFNULL(val"+vno+",0) val,savetime from "+dbnameString+(dateTime2.getYear()%10)+" where  groupno="+gno+"  and savetime>="+dateString+"0000 and savetime<"+dateString+"9999 order by savetime"; 
 		     userData.clear();
 		    
@@ -4465,7 +4471,7 @@ try {
 	        map1.put("result",1);  
 	        map1.put("jzName",jzName);
 		    jsonString = JSON.toJSONString(map1);
-		    //logger.warn(jsonString);
+		    //FirstClass.logger.warn(jsonString);
 		    return jsonString;
 	  }
 	public String getTfPlanAll_evt(String crew , String tab,int pId,int ob,String pno,int userId) throws ParseException
@@ -4480,7 +4486,7 @@ try {
 
 		  	String dateString ="";
 		  	String dateString2 ="";
-		  	//logger.warn(crewLong);
+		  	//FirstClass.logger.warn(crewLong);
 		    String[] evt_info ={" "," ","保护动作","数据越限","遥测越限","电流越限","预告警","故障告警","备用","备用","通讯中断","漏水报警","烟雾报警","照明开/关"};
 		    String[] zt_info ={"恢复","告警","告警","数据越限","数据越限","电流越限","预告警","故障告警","备用","备用"};
 		  		dbnameString= "hevt";
@@ -4499,7 +4505,7 @@ try {
               dateTime2 = LocalDateTime.parse(dateString+" 00:00:00", df);
           }catch (Exception e)
           {
-              logger.error(e.toString());
+              FirstClass.logger.error(e.toString());
           }
 
 
@@ -4523,7 +4529,7 @@ try {
           if (ob==0) sql = sql + " order by yd desc,hs desc";
           else sql= sql+ " order by bm desc,cm desc,yd desc,hs desc";
 
-logger.warn(sql);
+FirstClass.logger.warn(sql);
 			    List userData = getJdbcTemplate().queryForList(sql);
 			   
 		    
@@ -4533,7 +4539,7 @@ logger.warn(sql);
 
 		    if (size> 0)
 		    {
-               // logger.warn(sql);
+               // FirstClass.logger.warn(sql);
 		    	for (int i = 0; i<size; i++)
 		    	{
 		    		ArrayList xCell = new ArrayList();
@@ -4644,12 +4650,12 @@ logger.warn(sql);
 
 		    	}
 		    }
-          //logger.warn(sql);
+          //FirstClass.logger.warn(sql);
 			map1.put("data", arr);
 	        map1.put("result",1);  
 	        map1.put("jzName",jzName);
 		    jsonString = JSON.toJSONString(map1);
-		    //logger.warn(jsonString);
+		    //FirstClass.logger.warn(jsonString);
 		    return jsonString;
 	  }
   public String getTfPlanAll_xb(String crew , String tab,String pId,int nmd) throws ParseException
@@ -4664,7 +4670,7 @@ logger.warn(sql);
 	  	String jzName="";
 	  	String dateString ="";
 	  	String savstr = "-99";
-	  	//logger.warn(crewLong);
+	  	//FirstClass.logger.warn(crewLong);
 	  	abc[0]="A";
 	  	abc[1]="B";
 	  	abc[2]="C";
@@ -4680,7 +4686,7 @@ logger.warn(sql);
 	  		dbnameString2 = "prtuana";
 	  		String  sql = "select a.name anm,get_subs(b.name,1) bnm,b.saveno sav from prtu a,"+dbnameString2+" b where a.rtuno=b.rtuno and b.type=7 and b.name like '%"+pId+"%' order by saveno"; 
 
-	       //logger.warn(sql);
+	       //FirstClass.logger.warn(sql);
 		    List userData = getJdbcTemplate().queryForList(sql);
 		    int size=userData.size() ;
 		    String savArr[ ]=new String[size];
@@ -4710,8 +4716,8 @@ logger.warn(sql);
 	     userData.clear();
 	    
 	    userData = getJdbcTemplate().queryForList(sql);
-	    //logger.warn(sql);
-	    //logger.warn(userData.size());
+	    //FirstClass.logger.warn(sql);
+	    //FirstClass.logger.warn(userData.size());
 	     size=userData.size() ;
 	   
 	    
@@ -4759,7 +4765,7 @@ logger.warn(sql);
         map1.put("result",1);  
         map1.put("jzName",jzName);
 	    jsonString = JSON.toJSONString(map1);
-	    //logger.warn(jsonString);
+	    //FirstClass.logger.warn(jsonString);
 	    return jsonString;
   }
   public String getTfPlanAll_dl(String crew , String tab,String pId,int nmd) throws ParseException
@@ -4775,7 +4781,7 @@ logger.warn(sql);
 	  	String jzName="";
 	  	String dateString ="";
 	  	String savstr = "-99";
-	  	//logger.warn(crewLong);
+	  	//FirstClass.logger.warn(crewLong);
 	  	abc[0]="A";
 	  	abc[1]="B";
 	  	abc[2]="C";
@@ -4797,7 +4803,7 @@ logger.warn(sql);
 	  		dbnameString2 = "prtuana";
 	  		String  sql = "select a.name anm,get_subs(b.name,1) bnm,b.saveno sav from prtu a,"+dbnameString2+" b where a.rtuno=b.rtuno and b.type=2 and b.name like '%"+pId+"%' order by saveno"; 
 
-	      // logger.warn(sql);
+	      // FirstClass.logger.warn(sql);
 		    List userData = getJdbcTemplate().queryForList(sql);
 		    int size=userData.size() ;
 		    String savArr[ ]=new String[size];
@@ -4826,8 +4832,8 @@ logger.warn(sql);
 	     userData.clear();
 	    
 	    userData = getJdbcTemplate().queryForList(sql);
-	    //logger.warn(sql);
-	   // logger.warn(userData.size());
+	    //FirstClass.logger.warn(sql);
+	   // FirstClass.logger.warn(userData.size());
 	     size=userData.size() ;
 	   
 	    
@@ -4875,7 +4881,7 @@ logger.warn(sql);
         map1.put("result",1);  
         map1.put("jzName",jzName);
 	    jsonString = JSON.toJSONString(map1);
-	    //logger.warn(jsonString);
+	    //FirstClass.logger.warn(jsonString);
 	    return jsonString;
   }
   public String showgd(int aids , int pids) throws ParseException
@@ -4884,7 +4890,7 @@ logger.warn(sql);
 	    String sql ="";
 	    sql ="select a.id aid,a.p_day ap_day,a.point_id apoint_id,a.s_power as_power,a.e_power ae_power,a.rate arate,a.s_datetime as_datetime,a.e_datetime ae_datetime,a.mark amark,b.evt_id bevt_id from plan_gd a,plan_point_hd b,plan_point c where a.point_id=c.id and c.evt_id=b.evt_id and a.id=b.evt_sn  and b.jz_id=c.jz_id  and   a.POINT_ID="+pids +" and a.id="+aids;
 
-	   //logger.warn(sql);
+	   //FirstClass.logger.warn(sql);
 	    
 	    List userData = getJdbcTemplate().queryForList(sql);
 	    int size=userData.size() ;
@@ -4959,7 +4965,7 @@ logger.warn(sql);
 		map1.put("data", arr);
         map1.put("result",1);  
 	    jsonString = JSON.toJSONString(map1);
-	    //logger.warn(jsonString);
+	    //FirstClass.logger.warn(jsonString);
 	    return jsonString;
   }
   public String getyTfPlanAll(Integer sn , String jz,int tab) throws ParseException
@@ -4996,8 +5002,8 @@ logger.warn(sql);
 		    	 sql ="SELECT * from PLAN where "+selMName+" and PLAN_SN="+sn+" order by M_NAME asc ,START_TIME asc";
 		    }
 		    sql ="SELECT * from PLAN_POINT where  PLAN_ID="+sn +" and jz_id=get_jzid2('"+jz+"') order by EVT_ID asc ,S_DATETIME asc";
-           //logger.warn(sql);
-           //logger.warn(jz);
+           //FirstClass.logger.warn(sql);
+           //FirstClass.logger.warn(jz);
 	    }
 	    else
 	    {
@@ -5106,7 +5112,7 @@ logger.warn(sql);
 		map1.put("data", arr);
         map1.put("result",1);  
 	    jsonString = JSON.toJSONString(map1);
-	    //logger.warn(jsonString);
+	    //FirstClass.logger.warn(jsonString);
 	    return jsonString;
   }
   public String getyTfPlanAll11(Integer sn , String jz,int tab) throws ParseException
@@ -5145,8 +5151,8 @@ logger.warn(sql);
 		    }*/
 		    //sql ="SELECT * FROM PLAN_GD WHERE POINT_ID IN (SELECT id from PLAN_POINT where  PLAN_ID="+sn +" and jz_id=get_jzid2('"+jz+"')) ORDER BY POINT_ID,S_DATETIME";
             sql ="select a.id aid,a.point_id p_id,c.jz_name jz,b.evt_id evtid,b.info evtinfo,a.s_datetime sdate,a.e_datetime edate,a.s_power sp,a.e_power ep,a.rate ra ,a.mark mk,a.p_day pday,p_datetime pdate from plan_gd a,plan_point b,web_jz c where b.jz_id=c.sn and  a.point_id=b.id and b.PLAN_ID="+sn +" and jz_id=get_jzid2('"+jz+"') order by b.evt_id,a.s_datetime";
-		    //logger.warn("sql:"+sql);
-           //logger.warn(jz);
+		    //FirstClass.logger.warn("sql:"+sql);
+           //FirstClass.logger.warn(jz);
 	    }
 	    else
 	    {
@@ -5302,7 +5308,7 @@ logger.warn(sql);
 	    	}
 	    }
 	    sql="select count(*) jz_cnt,jz_id from plan_gd a,plan_point b,web_jz c where b.jz_id=c.sn and  a.point_id=b.id and b.PLAN_ID="+sn +" and jz_id=get_jzid2('"+jz+"') group by jz_id order by jz_id";
-	    //logger.warn(sql);
+	    //FirstClass.logger.warn(sql);
 	    userData = getJdbcTemplate().queryForList(sql);
 	     size=userData.size() ;
 	    int jz_cnt[ ]=new int[size];
@@ -5314,7 +5320,7 @@ logger.warn(sql);
     		jz_cnt[i]=cnt;
     	}
 	    sql="select count(*) evt_cnt,b.evt_id,a.point_id  from plan_gd a,plan_point b,web_jz c where b.jz_id=c.sn and  a.point_id=b.id and b.PLAN_ID="+sn +" and jz_id=get_jzid2('"+jz+"') group by b.evt_id,a.point_id order by b.evt_id,a.point_id";
-	    //logger.warn(sql);
+	    //FirstClass.logger.warn(sql);
 	    userData = getJdbcTemplate().queryForList(sql);
 	     size=userData.size() ;
 	    int evt_cnt[ ]=new int[size];
@@ -5332,7 +5338,7 @@ logger.warn(sql);
         map1.put("jz_cnt",jz_cnt);
         map1.put("evt_cnt",evt_cnt);
 	    jsonString = JSON.toJSONString(map1);
-	    //logger.warn(jsonString);
+	    //FirstClass.logger.warn(jsonString);
 	    return jsonString;
   }
   
@@ -5346,7 +5352,7 @@ logger.warn(sql);
 		    
 		    	
 		    	 sql ="SELECT * from PLAN_POINT where "+selMName+" and PLAN_id="+sn+" order by EVT_ID asc ,S_DATETIME asc";
-		 // logger.warn(sql);
+		 // FirstClass.logger.warn(sql);
 		    	 // }
 	    }
 	    else
@@ -5499,8 +5505,8 @@ logger.warn(sql);
 	    	 sql="select nvl(sum(fdl),0) fd,nvl(sum(swdl),0) sw,nvl(sum(lost),0) ls,to_char(savetime,'mm') mm,jz_name,sn from plan_points_all a,web_jz b where plan_sn="+sn+" and jz_sn =get_jzid2('"+jz+"') and a.jz_sn=b.sn group by sn,jz_name,to_char(savetime,'mm') order by sn,jz_name,to_char(savetime,'mm')";
 	    	 
 	    }
-	    //logger.warn(jz+"---"+sql);
-	    //logger.warn(jz+"---"+sql2);
+	    //FirstClass.logger.warn(jz+"---"+sql);
+	    //FirstClass.logger.warn(jz+"---"+sql2);
 	    List userData = getJdbcTemplate().queryForList(sql);
 	    int size = userData.size();
 	    String infoArr[ ]=new String[size];
@@ -5583,7 +5589,7 @@ logger.warn(sql);
 					//xCell.add(df.format(fdl));
 					//xCell2.add(df.format(swdl));
 					//xCell3.add(df.format(ls));
-					//logger.warn(data);
+					//FirstClass.logger.warn(data);
 	    	    }
 	    	    else
 	    	    {
@@ -5708,7 +5714,7 @@ logger.warn(sql);
 	   // arr[2] = xCell3;
 		Map<String, Object> map1 = new HashMap<String, Object>();
 		map1.put("data", arr);
-		//logger.warn(arr);
+		//FirstClass.logger.warn(arr);
         map1.put("result",1);  
 	    jsonString = JSON.toJSONString(map1);
 	    return jsonString;
@@ -5807,7 +5813,7 @@ logger.warn(sql);
             jznm = (Map)userData.get(0);
             sav = Integer.parseInt(jznm.get("sav").toString());
         }
-//logger.warn("ddd:"+sav);
+//FirstClass.logger.warn("ddd:"+sav);
 	  	gno = (int)sav/200;
 	  	vno = sav % 200;
 	  	dateString = crew.replace('/', '-');
@@ -5821,7 +5827,7 @@ logger.warn(sql);
 	  	java.util.Map<String,Object> map1 = new HashMap<String,Object>() ;
 	  	 sql = "select a.name anm,b.name bnm from prtu a,"+dbnameString2+" b where a.rtuno=b.rtuno and b.saveno="+sav;
 
-		   // logger.warn("ddd2:"+sql);
+		   // FirstClass.logger.warn("ddd2:"+sql);
 		     userData = getJdbcTemplate().queryForList(sql);
 		     jznm = (Map)userData.get(0);
 		    jzName=jznm.get("anm").toString()+jznm.get("bnm").toString();
@@ -5830,10 +5836,10 @@ logger.warn(sql);
         // if (ttp==0)  sql = "select IFNULL(val"+vno+",0) val,savetime from "+dbnameString+(dateTime2.getYear()%10)+" where  groupno="+gno+" and savetime>="+dateString+"0800 and savetime<"+dateString+"2005 order by savetime"; 
 
 		    userData.clear();
-	     //logger.warn(userData.size());
+	     //FirstClass.logger.warn(userData.size());
 	    userData = getJdbcTemplate().queryForList(sql);
-	   // logger.warn("ddd3:"+sql);
-	   // logger.warn(userData.size());
+	   // FirstClass.logger.warn("ddd3:"+sql);
+	   // FirstClass.logger.warn(userData.size());
 	    int size=userData.size() ;
 	    String infoArr[ ]=new String[288];
 	    java.util.Map<String,Object> map2 = new HashMap<String,Object>();  
@@ -5914,7 +5920,7 @@ logger.warn(sql);
 				
 	          map1 = getTfReal(crew,crewLong,sav);
 	          map1.put("planJson", JSON.parse(jsonString)); 
-	          //logger.warn(xArr[0]);
+	          //FirstClass.logger.warn(xArr[0]);
 	    }
   
         jsonString = JSON.toJSONString(map1);
@@ -5935,7 +5941,7 @@ logger.warn(sql);
 	  	tvmn = 9999999;
 	  	mxt = "";
 	  	mnt = "";
-	  	//logger.warn(crewLong);
+	  	//FirstClass.logger.warn(crewLong);
 	  	if (Integer.parseInt(crewLong) ==1) 
 	  		{
 	  		dbnameString= "hyc";
@@ -5958,7 +5964,7 @@ logger.warn(sql);
 	  	java.util.Map<String,Object> map1 = new HashMap<String,Object>() ;
 	  	String  sql = "select a.name anm,b.name bnm from prtu a,"+dbnameString2+" b where a.rtuno=b.rtuno and b.saveno="+pId; 
 
-		    //logger.warn(sql);
+		    //FirstClass.logger.warn(sql);
 		    List userData = getJdbcTemplate().queryForList(sql);
 		    Map jznm = (Map)userData.get(0);
 		    jzName=jznm.get("anm").toString()+jznm.get("bnm").toString();
@@ -5967,10 +5973,10 @@ logger.warn(sql);
           sql = "select IFNULL(val"+vno+",0) val,savetime from "+dbnameString+(dateTime2.getYear()%10)+" where  groupno="+gno+" and savetime>="+dateString+"0800 and savetime<"+dateString+"2005 order by savetime"; 
 
 		    userData.clear();
-	     //logger.warn(userData.size());
+	     //FirstClass.logger.warn(userData.size());
 	    userData = getJdbcTemplate().queryForList(sql);
-	    //logger.warn(sql);
-	    //logger.warn(userData.size());
+	    //FirstClass.logger.warn(sql);
+	    //FirstClass.logger.warn(userData.size());
 	    int size=userData.size() ;
 	    String infoArr[ ]=new String[144];
 	    java.util.Map<String,Object> map2 = new HashMap<String,Object>();  
@@ -6051,7 +6057,7 @@ logger.warn(sql);
 				
 	          map1 = getTfReal_gzr(crew,crewLong,pId);
 	          map1.put("planJson", JSON.parse(jsonString)); 
-	          //logger.warn(xArr[0]);
+	          //FirstClass.logger.warn(xArr[0]);
 	    }
   
         jsonString = JSON.toJSONString(map1);
@@ -6073,7 +6079,7 @@ logger.warn(sql);
 	  	tvmn = 9999999;
 	  	mxt = "";
 	  	mnt = "";
-	  	//logger.warn(crewLong);
+	  	//FirstClass.logger.warn(crewLong);
 	  	if (Integer.parseInt(crewLong) ==1) 
 	  		{
 	  		dbnameString= "hyc";
@@ -6096,7 +6102,7 @@ logger.warn(sql);
 	  	java.util.Map<String,Object> map1 = new HashMap<String,Object>() ;
 	  	String  sql = "select a.name anm,b.name bnm from prtu a,"+dbnameString2+" b where a.rtuno=b.rtuno and b.saveno="+pId; 
 
-		    //logger.warn(sql);
+		    //FirstClass.logger.warn(sql);
 		    List userData = getJdbcTemplate().queryForList(sql);
 		    Map jznm = (Map)userData.get(0);
 		    jzName=jznm.get("anm").toString()+jznm.get("bnm").toString();
@@ -6106,8 +6112,8 @@ logger.warn(sql);
 		    userData.clear();
 	     
 	    userData = getJdbcTemplate().queryForList(sql);
-	    //logger.warn(sql);
-	    //logger.warn(userData.size());
+	    //FirstClass.logger.warn(sql);
+	    //FirstClass.logger.warn(userData.size());
 	    int size=24 ;
 	    String infoArr[ ]=new String[24];
 	    float dlval[ ]=new float[24];
@@ -6191,7 +6197,7 @@ logger.warn(sql);
 	          map1 = getdlinc(crew,crewLong,pId);
 	          map1.put("planJson", JSON.parse(jsonString));
 	          map1.put("result",1);
-	          //logger.warn(xArr[0]);
+	          //FirstClass.logger.warn(xArr[0]);
 	    }
   
         jsonString = JSON.toJSONString(map1);
@@ -6240,7 +6246,7 @@ logger.warn(sql);
 	   {
 		   mode = 1;
 	   }
-	   //logger.warn("mode:"+mode);
+	   //FirstClass.logger.warn("mode:"+mode);
 	  	dateString = crew.replace('/', '-');
 	  	// DateTime dateTime2 = new DateTime(new SimpleDateFormat("yyyy-MM-dd").parse(dateString));
 	  	// dateString = ""+(dateTime2.getMonthOfYear()*100+dateTime2.getDayOfMonth());
@@ -6294,7 +6300,7 @@ logger.warn(sql);
 	    java.util.Map<String,Object> map2 = new HashMap<String,Object>();  
 	    int maxPoint=  size;
 	  
-    	//logger.warn("ss:"+size);
+    	//FirstClass.logger.warn("ss:"+size);
 	    Object xArr[ ]=new Object[maxPoint];
 		   Object yArr[ ]=new Object[maxPoint];
 		   Object yArr2[ ]=new Object[maxPoint];
@@ -6358,7 +6364,7 @@ logger.warn(sql);
 	    	  
 	         
 	          
-	          //logger.warn(xArr[0]);
+	          //FirstClass.logger.warn(xArr[0]);
 	    }
 	    
 	    
@@ -6367,7 +6373,7 @@ logger.warn(sql);
 				gno = (int)savno/200;
 			  	vno = savno % 200;   
 		     sql = "select IFNULL(val"+vno+",0) val,savetime from "+dbnameString+(dateTime2.getYear()%10)+" where  groupno="+gno+timestring+"  order by savetime"; 
-		     //logger.warn("B:"+sql);
+		     //FirstClass.logger.warn("B:"+sql);
 			   
 			 userData.clear();
 		    
@@ -6417,7 +6423,7 @@ logger.warn(sql);
 				gno = (int)savno/200;
 			  	vno = savno % 200;   
 		     sql = "select IFNULL(val"+vno+",0) val,savetime from "+dbnameString+(dateTime2.getYear()%10)+" where  groupno="+gno+timestring+"  order by savetime";  
-		     //logger.warn("C:"+sql);
+		     //FirstClass.logger.warn("C:"+sql);
 			 userData.clear();
 		    
 		    userData = getJdbcTemplate().queryForList(sql);
@@ -6523,7 +6529,7 @@ logger.warn(sql);
 	   {
 		   mode = 1;
 	   }
-	   //logger.warn("mode:"+mode);
+	   //FirstClass.logger.warn("mode:"+mode);
 	  	dateString = crew.replace('/', '-');
 	  	// DateTime dateTime2 = new DateTime(new SimpleDateFormat("yyyy-MM-dd").parse(dateString));
 	  	// dateString = ""+(dateTime2.getMonthOfYear()*100+dateTime2.getDayOfMonth());
@@ -6546,7 +6552,7 @@ logger.warn(sql);
 		  //dateTime2 =dateTime2.plusDays(1);
 	  	java.util.Map<String,Object> map1 = new HashMap<String,Object>() ;
 	  	String  sql = "select a.name anm,get_subs(b.name,1) bnm,b.saveno sav,b.upperlimit up from prtu a,"+dbnameString2+" b where a.rtuno=b.rtuno and b.type=2 and b.name like '%"+pId+"%' order by saveno"; 
-        //logger.warn(sql);
+        //FirstClass.logger.warn(sql);
 		   
 		    List userData = getJdbcTemplate().queryForList(sql);
 		    int size=userData.size() ;
@@ -6567,7 +6573,7 @@ logger.warn(sql);
 		    java.util.Map<String,Object> map2 = new HashMap<String,Object>();  
 		    int maxPoint=  size;
 		  
-	  	//logger.warn("ss:"+size);
+	  	//FirstClass.logger.warn("ss:"+size);
 		    Object xArr[ ]=new Object[maxPoint];
 			   Object yArr[ ]=new Object[maxPoint];
 			   Object yArr2[ ]=new Object[maxPoint];
@@ -6587,7 +6593,7 @@ logger.warn(sql);
 			gno = (int)savno/200;
 		  	vno = savno % 200;   
 	     sql = "select IFNULL(val,0) val,did,valtime from dl_max where  saveno="+savArr[0]+timestring +"  order by did"; 
-	     //logger.warn(sql);
+	     //FirstClass.logger.warn(sql);
 		 userData.clear();
 	    
 	    userData = getJdbcTemplate().queryForList(sql);
@@ -6617,7 +6623,7 @@ logger.warn(sql);
 	    	  
 	         
 	          
-	          //logger.warn(xArr[0]);
+	          //FirstClass.logger.warn(xArr[0]);
 	    }
 	    
 	    
@@ -6626,7 +6632,7 @@ logger.warn(sql);
 				gno = (int)savno/200;
 			  	vno = savno % 200;   
 			  	 sql = "select IFNULL(val,0) val,did,valtime from dl_max where  saveno="+savArr[1]+timestring +"  order by did"; 
-		     //logger.warn(sql);
+		     //FirstClass.logger.warn(sql);
 			   
 			 userData.clear();
 		    
@@ -6748,7 +6754,7 @@ logger.warn(sql);
 	  
 	  	String jzName="";
 	  	String dateString ="";
-	  	//logger.warn(crewLong);
+	  	//FirstClass.logger.warn(crewLong);
 	  	if (Integer.parseInt(crewLong) ==1) 
 	  		{
 	  		dbnameString= "hyc";
@@ -6853,7 +6859,7 @@ logger.warn(sql);
 	  
 	  	String jzName="";
 	  	String dateString ="";
-	  	//logger.warn(crewLong);
+	  	//FirstClass.logger.warn(crewLong);
 	  	if (Integer.parseInt(crewLong) ==1) 
 	  		{
 	  		dbnameString= "hyc";
@@ -6959,7 +6965,7 @@ logger.warn(sql);
 	    float zrdl=0;
 	  	String jzName="";
 	  	String dateString ="";
-	  	//logger.warn(crewLong);
+	  	//FirstClass.logger.warn(crewLong);
 	  	if (Integer.parseInt(crewLong) ==1) 
 	  		{
 	  		dbnameString= "hyc";
@@ -6983,7 +6989,7 @@ logger.warn(sql);
 	  	dateString = ""+(dateTime2.getMonthValue()*100+dateTime2.getDayOfMonth());
 	  	
 	  	String   sql = "select sum(IFNULL(val"+vno+",0)) val,floor(savetime/100)*100 savetime from "+dbnameString+" where   groupno="+gno+" and savetime>="+dateString+"0000 and savetime<"+dateString+"9999 group by floor(savetime/100) order by floor(savetime/100)"; 
-	  	logger.warn(sql);
+	  	FirstClass.logger.warn(sql);
 	  	List userData = getJdbcTemplate().queryForList(sql);
 	  	int size=userData.size() ; 
 	  	 msiz=288+1;
@@ -7034,7 +7040,7 @@ logger.warn(sql);
 	  
 	  	String jzName="";
 	  	String dateString ="";
-	  	//logger.warn(crewLong);
+	  	//FirstClass.logger.warn(crewLong);
 	  	if (Integer.parseInt(crewLong) ==1) 
 	  		{
 	  		dbnameString= "hyc";
@@ -7158,7 +7164,7 @@ logger.warn(sql);
   public boolean checkuser(String key,String sessid)
   {
 	  /*String sql = "select * from vo_info where kkey='" + key + "' and (whoCanSet & power (2,("+sessid+"-1)))>0";
-//	  logger.warn(sql);
+//	  FirstClass.logger.warn(sql);
     List userData = getJdbcTemplate().queryForList(sql);
     if (userData.size() > 0) {
       return true;
@@ -7192,7 +7198,7 @@ logger.warn(sql);
         String nstat = key+"_.status";
 
         String nval = val;
-        //logger.warn("username :"+username);
+        //FirstClass.logger.warn("username :"+username);
 
         if (checkuser(key,username)) {
 
@@ -7207,14 +7213,14 @@ logger.warn(sql);
                 oldval = jedis.get(okey+"_.value");
 
                 // oldval = jedis.get(ikey);
-                // logger.warn(optype+"---"+ikey+"----"+val+"---"+oldval);
+                // FirstClass.logger.warn(optype+"---"+ikey+"----"+val+"---"+oldval);
                 oldval = oldval!=null?oldval:"0";
                 switch(optype){
                     case 1:
                         nval = val;
                         break;
                     case 2:
-                        //logger.warn(oldval);
+                        //FirstClass.logger.warn(oldval);
                         nval = oldval.matches("1")?"0":"256";
                         break;
                     case 3:
@@ -7227,10 +7233,10 @@ logger.warn(sql);
                         nval = ""+(Float.parseFloat(oldval!=null?oldval:"0")+Float.parseFloat(val));
                         break;
                     default:
-                        logger.warn("类型码错误");
+                        FirstClass.logger.warn("类型码错误");
                         break;
                 }
-                //logger.warn("set :"+nkey+" value:"+nval+" status:1");
+                //FirstClass.logger.warn("set :"+nkey+" value:"+nval+" status:1");
                 jedis.set(nkey, nval);
                 jedis.setex(nstat,30,"1");
                 //jedis.set(nstat, "1");
@@ -7280,7 +7286,7 @@ logger.warn(sql);
         calendar.add(Calendar.DATE, -31);
         Date now = calendar.getTime();
         Date tdate;
-        //logger.warn("username :"+username);
+        //FirstClass.logger.warn("username :"+username);
 
         if (checkuser(key,username)) {
 
@@ -7300,7 +7306,7 @@ logger.warn(sql);
 
                         if (userData.size() > 0)
                         {
-                            //logger.warn(sql);
+                            //FirstClass.logger.warn(sql);
                             for (int i=0;i<userData.size();i++)
                             {
                                 Map userMap = (Map)userData.get(i);
@@ -7313,7 +7319,7 @@ logger.warn(sql);
                                 }
                             }
                             jedis = RedisUtil.getJedis();
-                            logger.warn("恢复定时任务状态：set "+key+"_.value="+val);
+                            FirstClass.logger.warn("恢复定时任务状态：set "+key+"_.value="+val);
                             jedis.set(key+"_.value", val);
                             jedis.setex(key+"_.status",30,"1");
                             RedisUtil.close(jedis);
@@ -7328,7 +7334,7 @@ logger.warn(sql);
                         break;
 
                     default:
-                        logger.warn("类型码错误");
+                        FirstClass.logger.warn("类型码错误");
                         break;
                 }
 
@@ -7365,14 +7371,14 @@ logger.warn(sql);
 
 			  RedisUtil.close(sjedis);
 
-          //logger.warn(result);
+          //FirstClass.logger.warn(result);
       } 
       catch (SocketException e) {
-      	logger.error("lua err: " +  e.toString() );
+      	FirstClass.logger.error("lua err: " +  e.toString() );
           e.printStackTrace();
       }
       catch (IOException e) {
-      	logger.error("lua err: " +  e.toString() );
+      	FirstClass.logger.error("lua err: " +  e.toString() );
           e.printStackTrace();
       }
   }
@@ -7495,7 +7501,7 @@ logger.warn(sql);
 			{
 			   sql="delete from SHCS_JOIN where id="+delArr.getInteger(d);
 			   stm.addBatch(sql);
-			   //logger.warn("delete:  " + sql);
+			   //FirstClass.logger.warn("delete:  " + sql);
 			}
 		   for (int e = 0; e <  editArr.size(); e++)
 			{
@@ -7506,7 +7512,7 @@ logger.warn(sql);
 				
 				stm.addBatch(sql);
 			}
-		   //logger.warn("sql:  " + sql);
+		   //FirstClass.logger.warn("sql:  " + sql);
 		   stm.executeBatch();   
 		   con.commit();
 		   con.setAutoCommit(true);
@@ -7545,7 +7551,7 @@ logger.warn(sql);
 	  	String jsonString="";
 	  	String jzName="";
 	  	String dateString ="";
-	  	//logger.warn(crewLong);
+	  	//FirstClass.logger.warn(crewLong);
 	  
 		  //dateTime2 =dateTime2.plusDays(1);
 	  	java.util.Map<String,Object> map1 = new HashMap<String,Object>() ;
@@ -7586,7 +7592,7 @@ logger.warn(sql);
 		
         map1.put("result",1);  
 	    jsonString = JSON.toJSONString(map1);
-	    //logger.warn(jsonString);
+	    //FirstClass.logger.warn(jsonString);
 	    return jsonString;
   }
   public String chgPwd(String uname,String opwd,String npwd) throws ParseException
@@ -7604,7 +7610,7 @@ logger.warn(sql);
 	  	java.util.Map<String,Object> map1 = new HashMap<String,Object>() ;
 	  	String  sql = "select * from user where pwd='"+opwd+"' and uname='"+uname+"'"; 
 
-	  	logger.warn(sql);  
+	  	FirstClass.logger.warn(sql);  
 	  	 List userData = getJdbcTemplate().queryForList(sql);
 		   
 		    
@@ -7615,7 +7621,7 @@ logger.warn(sql);
 		    if (size> 0)
 		    {
 		    	 sql = " update user set pwd='"+npwd+"' where uname='"+uname+"'"; 
-		    	 //logger.warn(sql);
+		    	 //FirstClass.logger.warn(sql);
 		    	 getJdbcTemplate().update(sql);
 		    	 map1.put("npwd", npwd);
 		 		
@@ -7626,7 +7632,7 @@ logger.warn(sql);
 		   
 		 
 	    jsonString = JSON.toJSONString(map1);
-	    //logger.warn(jsonString);
+	    //FirstClass.logger.warn(jsonString);
 	    return jsonString;
   }
   public String logred(String uname) throws ParseException
@@ -7638,7 +7644,7 @@ logger.warn(sql);
 	  	String jsonString="";
 	  	String jzName="";
 	  	String dateString ="";
-	  	//logger.warn(crewLong);
+	  	//FirstClass.logger.warn(crewLong);
 	  
 		  //dateTime2 =dateTime2.plusDays(1);
 	  	java.util.Map<String,Object> map1 = new HashMap<String,Object>() ;
@@ -7679,7 +7685,7 @@ logger.warn(sql);
 		
         map1.put("result",1);  
 	    jsonString = JSON.toJSONString(map1);
-	    //logger.warn(jsonString);
+	    //FirstClass.logger.warn(jsonString);
 	    return jsonString;
   }
   public String login(String uname,String pwd,int userId)
@@ -7688,7 +7694,7 @@ logger.warn(sql);
 		 String jsonString="";
 	     String ov = "0";
 	     String sql = "select * from msg_user  where name='" + uname+"' and passwd='"+pwd+"' and valid=1";
-	     //logger.warn(sql);
+	     //FirstClass.logger.warn(sql);
 	     List qaData = getJdbcTemplate().queryForList(sql);
 	     if (qaData.size() > 0)
 	     {
@@ -7696,10 +7702,10 @@ logger.warn(sql);
 	       //httpSession.setAttribute("username", userMap.get("uname").toString());
 	    	 username=userMap.get("name").toString();
 	       map1.put("result",userMap.get("leval").toString());
-	       //logger.warn((String) httpSession.getAttribute("username"));
+	       //FirstClass.logger.warn((String) httpSession.getAttribute("username"));
 	       int backR = 0;
 	       String aBackSql = "insert into loginred  (uname) values ('"+uname+"')";
-	       //logger.warn(aBackSql);
+	       //FirstClass.logger.warn(aBackSql);
 	       backR = getJdbcTemplate().update(aBackSql);
 	     }else {
 	    	 map1.put("result",0);
@@ -7715,7 +7721,7 @@ logger.warn(sql);
         String jsonString="";
         String ov = "0";
         String sql = "select * from msg_user  where id=" + us+" and passwd='"+op+"' and valid=1";
-        //logger.warn(sql);
+        //FirstClass.logger.warn(sql);
         List qaData = getJdbcTemplate().queryForList(sql);
         if (qaData.size() > 0)
         {
@@ -7723,10 +7729,10 @@ logger.warn(sql);
 
 
 
-            //logger.warn((String) httpSession.getAttribute("username"));
+            //FirstClass.logger.warn((String) httpSession.getAttribute("username"));
             int backR = 0;
             String aBackSql = "update msg_user set passwd='"+np+"' where id="+us;
-           // logger.warn(aBackSql);
+           // FirstClass.logger.warn(aBackSql);
             backR = getJdbcTemplate().update(aBackSql);
             map1.put("result",1);
         }else {
@@ -7745,7 +7751,7 @@ logger.warn(sql);
 
             int backR = 0;
             String aBackSql = "update msg_user set phone='"+op+"',email='"+np+"' where id="+us;
-            //logger.warn(aBackSql);
+            //FirstClass.logger.warn(aBackSql);
             try {
 
                 backR = getJdbcTemplate().update(aBackSql);
@@ -7765,7 +7771,7 @@ logger.warn(sql);
 		
 		 String jsonString="";
 		
-		 //logger.warn("22:"+(String) httpSession.getAttribute("username"));  
+		 //FirstClass.logger.warn("22:"+(String) httpSession.getAttribute("username"));  
 	  jsonString = "{\"result\":\""+username+"\"}";
 	  return jsonString;
 
@@ -7780,7 +7786,7 @@ logger.warn(sql);
         java.util.Map<String,Object> map1 = new HashMap<String,Object>() ;
         String  sql = "select * from prtu where un_x='"+gkey+"'";
 
-        logger.warn(sql);
+        FirstClass.logger.warn(sql);
         List userData = getJdbcTemplate().queryForList(sql);
 
 
@@ -7862,7 +7868,7 @@ logger.warn(sql);
         java.util.Map<String,Object> map1 = new HashMap<String,Object>() ;
         String  sql = "select * from prtu where un_x='"+gkey+"'";
 
-        logger.warn(sql);
+        FirstClass.logger.warn(sql);
         List userData = getJdbcTemplate().queryForList(sql);
 
 
@@ -7965,7 +7971,7 @@ logger.warn(sql);
   public boolean exec_sql(String sqls)
   {
     String sql = sqls;
-    //logger.warn(sql);
+    //FirstClass.logger.warn(sql);
     int re = getJdbcTemplate().update(sql);
     if (re == 1) {
       return true;
@@ -7977,7 +7983,7 @@ logger.warn(sql);
   {
     String jsonString = "";
     String sql = "SELECT * FROM user LIMIT 0,20";
-    //logger.warn("getUserID  " + sql);
+    //FirstClass.logger.warn("getUserID  " + sql);
     List userData = getJdbcTemplate().queryForList(sql);
     if (userData.size() <= 0) {
       jsonString = "{\"result\":-1}";
@@ -7996,7 +8002,7 @@ logger.warn(sql);
     String jsonString = "";
     
     String sql = "select id,uName ,uEmail ,`lock`,treeLv,uScore,loginTime from user order by id desc LIMIT " + start + "," + length;
-    //logger.warn("getUserList  " + sql);
+    //FirstClass.logger.warn("getUserList  " + sql);
     List userData = getJdbcTemplate().queryForList(sql);
     Map userMap = new HashMap();
     userMap.put("draw", Integer.valueOf(draw));
@@ -8019,7 +8025,7 @@ logger.warn(sql);
  /* public String exec_sql(String sqls)
   {
     String sql = sqls;
-    logger.warn(sql);
+    FirstClass.logger.warn(sql);
     getJdbcTemplate().update(sql);
     
     String jsonString =;
@@ -8030,7 +8036,7 @@ logger.warn(sql);
   {
     String jsonString = "";
     String sql = "select * from admin where uName='" + uName + "'  and uPwd='" + pwd + "'";
-    //logger.warn("adminLogin  " + sql);
+    //FirstClass.logger.warn("adminLogin  " + sql);
     List userData = getJdbcTemplate().queryForList(sql);
     if (userData.size() > 0) {
       jsonString = "ok";
@@ -8042,7 +8048,7 @@ logger.warn(sql);
   
   public void log(Object msg)
   {
-	   logger.warn(LocalDateTime.now().toString()+":"+msg);
+	   FirstClass.logger.warn(LocalDateTime.now().toString()+":"+msg);
 	  
 	 
   }

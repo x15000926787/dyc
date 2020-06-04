@@ -161,5 +161,6 @@ public class RedisUtil {
         if (jedis != null) {
             jedis.close();
         }
+
     }
 }
