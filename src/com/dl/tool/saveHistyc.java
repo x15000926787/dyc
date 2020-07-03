@@ -45,7 +45,7 @@ public  class saveHistyc implements Job {
 		patter=".*ai.*";
 		Connection con = null;
 		PreparedStatement pstm = null;
-		System.out.println("saveHistyc start");
+		//System.out.println("saveHistyc start");
     	//DBConnection dbcon=new DBConnection();
 		int t =0;
        // JSONObject anaobj =(JSONObject) (arg0.getJobDetail().getJobDataMap().get("taskdetial"));
@@ -126,8 +126,8 @@ public  class saveHistyc implements Job {
 
 								saveno = (long) ((HashMap<String, Object>) AnaUtil.objana_v.get(key.replace("_.value",""))).get("saveno");
 							} catch (Exception e) {
-								System.out.println("err saveno:" + ((HashMap<String, Object>) AnaUtil.objana_v.get(key.replace("_.value",""))) + "  " + e.toString());
-								saveno = 0;
+								FirstClass.logger.error("err saveno:" + key + "  " + e.toString());
+								saveno = -1;
 							}
 							if (saveno != -1) {
 								gno = saveno / 200;                     //luaStr = responses.get(k).get().toString();
@@ -167,7 +167,7 @@ public  class saveHistyc implements Job {
 										}*/
 										}
 									} catch (Exception e) {
-										System.out.println("pulsaveno:" + key + ":" + ((HashMap<String, Object>) AnaUtil.objana_v.get(key.replace("_.value",""))).toString());
+										FirstClass.logger.error("pulsaveno:" + key + ":" + ((HashMap<String, Object>) AnaUtil.objana_v.get(key.replace("_.value",""))).toString());
 										e.printStackTrace();
 										//saveno=0;
 									}
@@ -176,7 +176,7 @@ public  class saveHistyc implements Job {
 							}      //pul对应的ana表的saveno必须要有
 
 						} catch (Exception e) {
-							System.out.println(key + ":" + e.toString());
+							FirstClass.logger.error(key + ":" + e.toString());
 							e.printStackTrace();
 						}
 
@@ -198,11 +198,11 @@ public  class saveHistyc implements Job {
 
 
 					} catch (Exception e) {
-						System.out.println( e.toString());
+						FirstClass.logger.error( e.toString()+"---->"+sql);
 					}
 				}
 
-			System.out.println("save histyc:" + savet);
+			FirstClass.logger.warn("save histyc:" + savet);
 				//logger.warn(dnvallist.length);
 				jedis.set("delay_active", rightnow.format(df2));
 
@@ -226,7 +226,7 @@ public  class saveHistyc implements Job {
 						System.out.println( e.toString());
 					}
 				}
-			System.out.println("save hdn:" + savet);
+			FirstClass.logger.warn("save hdn:" + savet);
 
 				try {
 					p.close();

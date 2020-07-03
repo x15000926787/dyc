@@ -312,7 +312,7 @@ public  class UpdateDataJob<autoreleasepool> extends JdbcDaoSupport implements J
 					//logger.warn(s);
 				//if(!ChatSocket.sockets.isEmpty()) {
 					try {
-						ChatSocket.broadcast(ChatSocket.getSockets(), s, -1);
+						ChatSocket.broadcast( s, -1);
 					} catch (Exception e) {
 						e.printStackTrace();
 					}

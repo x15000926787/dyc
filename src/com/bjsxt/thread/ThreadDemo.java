@@ -477,7 +477,7 @@ public class ThreadDemo extends Thread {
 				       
 				         s = gson.toJson(result);
 				         try {
-				        	 ckt.broadcast(ckt.getSockets(), s,-1);
+				        	 ckt.broadcast( s,-1);
 							} catch (Exception e) {
 								e.printStackTrace();
 							}

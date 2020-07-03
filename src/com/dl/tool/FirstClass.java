@@ -1,5 +1,7 @@
 package com.dl.tool;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.bjsxt.thread.ThreadSubscriber;
 import com.dl.quartz.LuaJob;
@@ -126,15 +128,17 @@ public final  class FirstClass  implements ServletContextListener {
 		   return;  
 		  }  
 		  //
-		 
+		 String jsonstr=null,token=null;
+		  JSONObject job = new JSONObject();
 		// T1 = new ThreadTimer("timer");
 				 //   T1.start();
 		AnaUtil.loadAna_v();
-		AnaUtil.load_author();
-
+		//AnaUtil.load_author();
+		AnaUtil.loaddev();
 		AnaUtil.load_condition();
 		AnaUtil.load_msguser();
 		AnaUtil.load_onlinewarn();
+		AnaUtil.saveno_kkey();
 		//myana.tjedis = RedisUtil.getJedis();
 		//myana.mjedis = RedisUtil.getJedis(1);
 		//myana.conn_redis();
@@ -142,8 +146,19 @@ public final  class FirstClass  implements ServletContextListener {
 		//objana =myana.objana_v ;
        // logger.warn(objana);
 		int i=0;
+		token=HttpRequest.getToken("http://ddc.top0578.com/index.php/Home/Dispatch/getTokens.html","appKey=lishuidianli&appsecret=sgKbzWT48j1X7UwpfsunfS0cbWiPmLMm");
+		//FirstClass.logger.warn(JSON.parseObject(token).getJSONObject("data").get("token"));
 
-		
+		token = JSON.parseObject(token).getJSONObject("data").get("token").toString();
+		FirstClass.logger.warn(token);
+		jsonstr=HttpRequest.doGet("http://ddc.top0578.com/index.php/Home/Dispatch/GetStationsInfo.html?token="+token,"");
+		job= JSON.parseObject(jsonstr);
+		Iterator iter = job.entrySet().iterator();
+		while (iter.hasNext()) {
+			Map.Entry entry = (Map.Entry) iter.next();
+			FirstClass.logger.warn(entry.getKey().toString()+":"+entry.getValue().toString());
+
+		}
         /*
 		String sql="select rtuno,sn,kkey,ttype,saveno,upperlimit,lowerlimit,pulsaveno,chgtime,ldz from prtuana_v ";
 
@@ -265,17 +280,34 @@ public final  class FirstClass  implements ServletContextListener {
 					//QuartzManager.addJob("job"+i,MyJob.class,rs.getString("cronstr"),taskstr); 	
 					break;
 				case 2:
-					Map<String, Object> fmap = new HashMap<String,Object>();
+					Map<String, Object> fmap = new HashMap<String,Object>();logger.warn("存储5分钟历史数据任务:"+tmap.get("cronstr").toString());
 					fmap.put("luaname",tmap.get("luaname").toString());	
 					logger.warn("定时脚本任务:"+tmap.get("cronstr").toString()+fmap.toString());
 					QuartzManager.addJob("ljob"+i, LuaJob.class,tmap.get("cronstr").toString(),fmap);
 					//SchedulerUtil.hadleCronTrigger(rs.getString("id"), rs.getString("type"),""+i, ""+j,MyJob.class,rs.getString("cronstr"),taskstr); 	saveMaxMin
 					break;
 				case 3:
+					/**
+					 * 台式机不启用此服务
+					 */
+					if (!PropertyUtil.getProperty("mqtt.clientId").matches("webClientId_1"))
+					{
+						QuartzManager.addJob("saveHistyc",saveHistyc.class,tmap.get("cronstr").toString());
+						logger.warn("存储5分钟历史数据任务:"+tmap.get("cronstr").toString());
+					}
 
-					QuartzManager.addJob("saveHistyc",saveHistyc.class,tmap.get("cronstr").toString());
-					logger.warn("存储5分钟历史数据任务:"+tmap.get("cronstr").toString());
 					break;
+				case 12:
+						/**
+						 * wxdt展示项目
+						 */
+						if (PropertyUtil.getProperty("project_id").matches("1"))
+						{
+							QuartzManager.addJob("saveRedis",saveRedis.class,tmap.get("cronstr").toString());
+							logger.warn("存储5分钟redis数据任务:"+tmap.get("cronstr").toString());
+						}
+
+						break;
 				case 4:	
 					QuartzManager.addJob("UpdateDataJob",UpdateDataJob.class,tmap.get("cronstr").toString());
 					logger.warn("请求实时数据任务:"+tmap.get("cronstr").toString());

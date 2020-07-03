@@ -53,7 +53,7 @@ public class ThreadSubscriber  extends Thread {
 	 KeyExpiredListener myListener =null;  
 	 //JedisPool pool = new JedisPool(new JedisPoolConfig(), "218.78.29.130", 6389, 10000,"Shcs123");
 	 //SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//设置日期格式
-	 private static final Logger logger = LogManager.getLogger(ThreadSubscriber.class);
+	 private static final Logger logger = FirstClass.logger;
 	 String pId = FirstClass.projectId;
 	 //public ThreadPoolExecutor executor = null;
 	 public ThreadSubscriber(String name){
@@ -220,7 +220,7 @@ class KeyExpiredListener extends JedisPubSub {
 	//public ScriptEngine scriptEngine;// = scriptEngineManager.getEngineByName("nashorn");
 	 //SendViaWs sendmsg = new SendViaWs();
 	//public static AnaUtil myana=new AnaUtil();
-	 private static final Logger logger = LogManager.getLogger(KeyExpiredListener.class);
+	 private static final Logger logger = FirstClass.logger;
 	 public KeyExpiredListener() throws SQLException{
 
 		 //myana=FirstClass.myana;
@@ -287,7 +287,16 @@ class KeyExpiredListener extends JedisPubSub {
 					       /* for (int i = 0; i < 10; i++) {
 						            jedis.set("test", "test");
 						            System.out.println(i+"=="+jedis.get("test"));
-						        }*/
+						        }
+
+
+						        {
+			MyTask myTask = new MyTask(channel,message,jdbcTemplate, tjedis,skt);
+			//if (executor.getQueue().size()<100)
+				executor.execute(myTask);
+			//logger.warn("线程池中线程数目："+executor.getPoolSize()+"，队列中等待执行的任务数目："+executor.getQueue().size()+"，已执行完毕的任务数目："+executor.getCompletedTaskCount());
+		}
+						        */
 
 
 

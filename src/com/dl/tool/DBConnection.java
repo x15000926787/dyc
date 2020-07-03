@@ -21,7 +21,7 @@ public class DBConnection  {
 	public ResultSet rs=null;
     public JdbcTemplate jdbcTemplate;
 	private String project_id;
-	private static final Logger logger = LogManager.getLogger(DBConnection.class);
+	private static final Logger logger = FirstClass.logger;
 	public DBConnection(){
 		
 		

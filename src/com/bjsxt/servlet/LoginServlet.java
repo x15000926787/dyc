@@ -67,7 +67,7 @@ public class LoginServlet extends HttpServlet   {
 		//System.out.println(rand);
 		//System.out.println(imagerand);
 		String sql="select a.name,a.passwd,a.id,a.gkey,a.leval,a.phone,a.email,b.domain,a.auth from msg_user a,prtu b where a.gkey=b.un_x and  a.name=? and a.passwd=?";
-		//logger.warn(sql);
+		logger.warn(sql);
 		//if(rand.equalsIgnoreCase(imagerand)){
 			try{
 				pstmt=dbcon.setPreparedStatement(sql);
@@ -88,6 +88,7 @@ public class LoginServlet extends HttpServlet   {
 
 						t=dbcon.getexecuteUpdate();
 					} catch (Exception e) {
+						logger.warn(e.toString());
 						// TODO: handle exception
 					}
 
@@ -96,7 +97,7 @@ public class LoginServlet extends HttpServlet   {
 						jsonString="{\"result\":1}";
 					}catch (Exception e)
 					{
-
+						logger.warn(e.toString());
 					}
 
 

@@ -17,6 +17,7 @@ import java.sql.ResultSet;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,7 +41,7 @@ import org.apache.poi.ss.formula.eval.FunctionEval;
  * Created by xx on 2020/04/13.
  */
 public  class ReportDycJob implements Job {
-	private static final org.apache.logging.log4j.Logger logger = LogManager.getLogger(ReportDycJob.class);
+	private static final org.apache.logging.log4j.Logger logger = FirstClass.logger;
 	public  String reportPath ,bbname;
 	File file = null;
 	String bbid ;//tmap.get("id").toString();
@@ -49,6 +50,8 @@ public  class ReportDycJob implements Job {
 	File exportFile;
 	ResultSet rs=null;
 	LocalDate rightnow = LocalDate.now().minusDays(1);
+	LocalDate m1 = rightnow.with(TemporalAdjusters.firstDayOfMonth());
+	LocalDate m2 = rightnow.plusDays(1);//LocalDate.now();
 	List<Map<String, Object>> rptlist = new ArrayList<Map<String, Object>>();
 	DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 	//private static final Logger logger = LogManager.getLogger(ReportDailyTask.class);
@@ -264,6 +267,9 @@ public  class ReportDycJob implements Job {
 				case "100":
 					data.put("0",df3.format(rightnow));
 					break;
+				case "999":
+					data.put("0",df3.format(m1)+" - "+df3.format(m2.minusDays(1)));
+					break;
 				case "102":
 					hv = 1;
 					data.put("0",df5.format(rightnow));
@@ -281,12 +287,14 @@ public  class ReportDycJob implements Job {
 		//logger.warn(hv);
 		switch (timetype){
 			case 0:
-				rightnow=rightnow.minusDays(1);
+				rightnow = rightnow.minusDays(1);
 				break;
 			case 1:
-				rightnow=rightnow.minusMonths(1);
+				rightnow = rightnow.minusDays(1);
+				rightnow = rightnow.minusMonths(1);
 				break;
 			case 2:
+				rightnow = rightnow.minusDays(1);
 				rightnow = rightnow.minusYears(1);
 			default:
 				break;
@@ -304,7 +312,7 @@ public  class ReportDycJob implements Job {
 				if (dtp==0)                  //当日固定点值，从property文件读取时间点序列
 				{
 					sql="select (savetime mod 10000) dd,TRUNCATE(ifnull(val"+vno+",0),2) vv from "+bbname+" where (savetime mod 10000) in ("+PropertyUtil.getProperty("data_points_"+code[5],"0")+") and  groupno="+gno+" and savetime between "+dfm.format(rightnow)+"0000 and "+dfm.format(rightnow)+"2400 order by (savetime mod 10000)";
-
+					//logger.warn(sql);
 				}
 				if(dtp==1)                   //当月日平均
 				{
@@ -322,6 +330,20 @@ public  class ReportDycJob implements Job {
 					// logger.warn(sql);
 				}
 				break;
+			case "11":
+				bbname = "hyc"+rightnow.getYear()%10;
+				if (dtp==0)                  //固定点值电表抄表值
+				{
+//logger.warn(code[6]);CASE sva
+//WHEN 1 THEN '男'
+//　　ELSE '女'
+//END AS
+					// sql="select mod(floor(savetime/10000),100)-"+code[6]+" dd,ifnull(val"+vno+",0) vv from "+bbname+" where (savetime mod 10000) in ("+PropertyUtil.getProperty("data_points_"+code[5],"0")+") and  groupno="+gno+" and savetime between "+df2.format(rightnow)+code[6]+"0000 and "+df2.format(rightnow)+code[7]+"2400 order by mod(floor(savetime/10000),100)";
+					sql="select case savetime when "+Integer.parseInt(dfm.format(m1))+"0000 then 0 else 1 end as  dd,floor(ifnull(val"+vno+",0)) vv from "+bbname+" where (savetime mod 10000) in (0) and  groupno="+gno+" and savetime in ("+dfm.format(m1)+"0000,"+dfm.format(m2)+"0000) order by mod(floor(savetime/10000),100)";
+
+					 logger.warn(sql);
+				}
+				break;
 			case "2":
 				bbname = "hdz"+rightnow.getYear()%10;
 				if (dtp==0)                  //日电量
@@ -333,29 +355,43 @@ public  class ReportDycJob implements Job {
 			case "3":
 
 				bbname = "everyday";
-				if (dtp==0)                  //maxv
-				{
-					sql="select 0 dd,ifnull(maxv,0) vv from "+bbname+" where   saveno="+saveno+" and str_to_date('"+df3.format(rightnow)+"','%Y-%m-%d') =tdate";
-				}
-				if (dtp==201)                  //大悦城特例，此处根据一个存档号查询连续的三个数据点的极值
-				{
-					sql="select 0 dd,max(ifnull(maxv,0)) vv from "+bbname+" where   (saveno between "+saveno+" and "+saveno+"+2) and str_to_date('"+df3.format(rightnow)+"','%Y-%m-%d') =tdate";
-				}
-				if (dtp==1)                  //maxt
-				{
-					sql="select 0 dd,ifnull(maxt,0) vv from "+bbname+" where   saveno="+saveno+" and str_to_date('"+df3.format(rightnow)+"','%Y-%m-%d') =tdate";
-				}
-				if (dtp==2)                  //minv
-				{
-					sql="select 0 dd,ifnull(minv,0) vv from "+bbname+" where   saveno="+saveno+" and str_to_date('"+df3.format(rightnow)+"','%Y-%m-%d') =tdate";
-				}
-				if (dtp==3)                  //mint
-				{
-					sql="select 0 dd,ifnull(mint,0) vv from "+bbname+" where   saveno="+saveno+" and str_to_date('"+df3.format(rightnow)+"','%Y-%m-%d') =tdate";
-				}
-				if (dtp==4)                  //月极值，极值时间
-				{
-					sql="select Day(tdate) dd,ifnull(maxv,0) vv from "+bbname+" where   saveno="+saveno+" and  tdate between '"+df3.format(rightnow.withDayOfMonth(1))+"' and '"+df3.format(rightnow.with(TemporalAdjusters.lastDayOfMonth()))+"'";
+				switch ( dtp) {
+					case (0) :                 //maxv
+					{
+						sql = "select 0 dd,ifnull(maxv,0) vv from " + bbname + " where   saveno=" + saveno + " and str_to_date('" + df3.format(rightnow) + "','%Y-%m-%d') =tdate";
+						break;
+					}
+					case (201):                   //大悦城特例，此处根据一个存档号查询连续的三个数据点的极值
+					{
+						sql = "select 0 dd,max(ifnull(maxv,0)) vv from " + bbname + " where   (saveno between " + saveno + " and " + saveno + "+2) and str_to_date('" + df3.format(rightnow) + "','%Y-%m-%d') =tdate";
+						//logger.warn(sql);
+						break;
+					}
+					case ( 1) :                  //maxt
+					{
+						sql = "select 0 dd,ifnull(maxt,0) vv from " + bbname + " where   saveno=" + saveno + " and str_to_date('" + df3.format(rightnow) + "','%Y-%m-%d') =tdate";
+						break;
+					}
+					case (2) :                  //minv
+					{
+						sql = "select 0 dd,ifnull(minv,0) vv from " + bbname + " where   saveno=" + saveno + " and str_to_date('" + df3.format(rightnow) + "','%Y-%m-%d') =tdate";
+						break;
+					}
+					case (3):                   //mint
+					{
+						sql = "select 0 dd,ifnull(mint,0) vv from " + bbname + " where   saveno=" + saveno + " and str_to_date('" + df3.format(rightnow) + "','%Y-%m-%d') =tdate";
+						break;
+					}
+					case (4) :                  //月极值，极值时间
+					{
+						sql = "select Day(tdate) dd,ifnull(maxv,0) vv from " + bbname + " where   saveno=" + saveno + " and  tdate between '" + df3.format(rightnow.withDayOfMonth(1)) + "' and '" + df3.format(rightnow.with(TemporalAdjusters.lastDayOfMonth())) + "'";
+						break;
+					}
+					case (202) :                  //月极值，极值时间   大悦城特例，此处根据一个存档号查询连续的三个数据点的极值
+					{
+						sql = "select Day(tdate)-1 dd,max(ifnull(maxv,0)) vv from " + bbname + " where   (saveno between " + saveno + " and " + saveno + "+2) and  tdate between '" + df3.format(rightnow.withDayOfMonth(1)) + "' and '" + df3.format(rightnow.with(TemporalAdjusters.lastDayOfMonth())) + "' group by Day(tdate)";
+						break;
+					}
 				}
 				break;
 			case "4":
@@ -374,7 +410,7 @@ public  class ReportDycJob implements Job {
 
 		//        logger.warn(sql);
 		//if(rand.equalsIgnoreCase(imagerand)){
-		// logger.warn(sql);
+
 		try{
 			List<Map<String, Object>> userData = jdbcTemplate.queryForList(sql);
 			int size=userData.size() ;
@@ -411,7 +447,7 @@ public  class ReportDycJob implements Job {
 							{
 								data.put(String.valueOf(i), "");
 							}
-							logger.warn(calccode+","+sql);
+							//logger.warn(calccode+","+sql);
 						}
 
 					}
@@ -493,8 +529,16 @@ public  class ReportDycJob implements Job {
 	public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
 
 		HashMap paraobj =(HashMap) (jobExecutionContext.getJobDetail().getJobDataMap().get("taskdetial"));
-		if (paraobj.containsKey("dtstr")) rightnow = LocalDate.parse(paraobj.get("dtstr").toString(),df);
-
+		if(paraobj!=null) {
+			if (paraobj.containsKey("dtstr")) {
+				rightnow = LocalDate.parse(paraobj.get("dtstr").toString(), df);
+				m1 = rightnow.with(TemporalAdjusters.firstDayOfMonth());
+				m2 = m1.plusMonths(1);//LocalDate.now();
+				FirstClass.logger.warn((int) ChronoUnit.DAYS.between(LocalDate.now(),m2));
+				if ((int) ChronoUnit.DAYS.between(LocalDate.now(),m2)>0)
+					m2 = LocalDate.now();
+			}
+		}
 		try {
 			file = new File(reportPath+"/"+rightnow.getYear());
 			if (!file.exists()) {

@@ -30,7 +30,7 @@ import java.sql.PreparedStatement;
 public  class saveMaxMin implements Job {
 
 
-	   private static final Logger logger = LogManager.getLogger(saveMaxMin.class);
+	   private static final Logger logger = FirstClass.logger;
 
 
 	/*public static boolean isNumber(String string) {
@@ -124,8 +124,8 @@ public  class saveMaxMin implements Job {
 					pstm.setString(2, ((HashMap<String,Object>)AnaUtil.objana_v.get(key1)).get("saveno").toString());
 					pstm.setString(3, responses.get(key1+"_.maxv").get());
 					pstm.setString(4, responses.get(key1+"_.maxt").get());
-					pstm.setString(5, responses.get(key1+"_.minv").get().toString());
-					pstm.setString(6, responses.get(key1+"_.mint").get().toString());
+					pstm.setString(5, responses.get(key1+"_.minv").get());
+					pstm.setString(6, responses.get(key1+"_.mint").get());
 
 					pstm.addBatch();
 
@@ -158,6 +158,10 @@ public  class saveMaxMin implements Job {
 			} catch (Exception e) {
 				logger.error("出错了" + e.toString());
 			}
+			for (String key1 : AnaUtil.objana_v.keySet()) {
+				mjedis.set(key1+"_.maxv","-99999999");
+				mjedis.set(key1+"_.minv","99999999");
+			}
 			/*Iterator iter = anaobj.entrySet().iterator();
 			while (iter.hasNext()) {
 				Map.Entry entry = (Map.Entry) iter.next();
@@ -178,10 +182,10 @@ public  class saveMaxMin implements Job {
 				}
 			}*/
 
-			 logger.warn("save maxmin of day:"+rightnow.format(formatter));
+			//logger.warn("start save maxmin of day:"+rightnow.format(formatter));
 			 //logger.warn(sql);
 
-			sql="select * from everyday a where not exists(select 1 from everyday b where b.saveno=a.saveno and MONTH(a.tdate)=MONTH(b.tdate) and b.maxv>a.maxv and YEAR(a.tdate)=YEAR(b.tdate) ) and  a.tdate between STR_TO_DATE('"+rightnow.with(TemporalAdjusters.firstDayOfMonth()).format(formatter)+"','%Y-%m-%d') and STR_TO_DATE('"+rightnow.with(TemporalAdjusters.lastDayOfMonth()).format(formatter)+"','%Y-%m-%d')";
+			/*sql="select * from everyday a where not exists(select 1 from everyday b where b.saveno=a.saveno and MONTH(a.tdate)=MONTH(b.tdate) and b.maxv>a.maxv and YEAR(a.tdate)=YEAR(b.tdate) ) and  a.tdate between STR_TO_DATE('"+rightnow.with(TemporalAdjusters.firstDayOfMonth()).format(formatter)+"','%Y-%m-%d') and STR_TO_DATE('"+rightnow.with(TemporalAdjusters.lastDayOfMonth()).format(formatter)+"','%Y-%m-%d')";
 			//Map<String,Object> map =null;
 			//if(rand.equalsIgnoreCase(imagerand)){
 			try{
@@ -198,7 +202,7 @@ public  class saveMaxMin implements Job {
 						try{
 
 							pstm.execute(sql);
-							con.commit();
+
 							//con.setAutoCommit(true);
 
 
@@ -208,7 +212,7 @@ public  class saveMaxMin implements Job {
 
 
 					}
-
+					con.commit();
 				}
 
 			}catch(Exception e){
@@ -232,7 +236,7 @@ public  class saveMaxMin implements Job {
 						try{
 
 							pstm.execute(sql);
-							con.commit();
+
 
 
 						}catch(Exception e){
@@ -241,6 +245,7 @@ public  class saveMaxMin implements Job {
 
 
 					}
+					con.commit();
 
 				}
 
@@ -248,10 +253,9 @@ public  class saveMaxMin implements Job {
 				logger.warn("出错了"+e.toString());
 			}
 			 //logger.warn(sql);
+*/
 
-
-
-
+			logger.warn("ed save maxmin of day:"+rightnow.format(formatter));
 	       
 	        
            } 
@@ -268,7 +272,7 @@ public  class saveMaxMin implements Job {
 			pstm.close();
 			pstm = null;
 			con.close();
-			con = null;
+			//con = null;
 
 		}
 		catch (SQLException e)

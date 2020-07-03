@@ -4303,9 +4303,9 @@ try {
           gno = (int)sav/200;
           vno = sav % 200;
 		  	dateString = crew.replace('/', '-');
-          DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+          DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-          LocalDateTime dateTime2 = LocalDateTime.parse(dateString, formatter);
+          LocalDateTime dateTime2 = LocalDateTime.parse(dateString+" 00:00:00", formatter);
 		  	 dateString = ""+(dateTime2.getMonthValue()*100+dateTime2.getDayOfMonth());
 
 		  	java.util.Map<String,Object> map1 = new HashMap<String,Object>() ;
@@ -4400,9 +4400,9 @@ try {
 		  	dateString = crew.replace('/', '-');
 		  	dateString2 = dateString;
 
-          DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+          DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-          LocalDateTime dateTime2 = LocalDateTime.parse(dateString, formatter);
+          LocalDateTime dateTime2 = LocalDateTime.parse(dateString+" 00:00:00", formatter);
           dateString = ""+(dateTime2.getMonthValue()*100+dateTime2.getDayOfMonth());
 			  //dateTime2 =dateTime2.plusDays(1);
 		  	java.util.Map<String,Object> map1 = new HashMap<String,Object>() ;
@@ -4516,12 +4516,12 @@ try {
 		  	dateString = dateString.substring(2);
 		  	dateString2 = dateString2.substring(2);
 
-		  	String  sql = "select a.ymd yd,a.hms hs,a.event evt,' ' sm,a.zt tz,d.e_info ifo,c.name cm,concat(e.roomname,f.devicenm,b.name) bm from hevt"+(dateString.substring(1,2))+" a,prtudig b,prtu c,etype_info d,room e,dev_author f where (power(2,"+userId+"-1) & b.author_read)>0 and b.type=d.e_type and a.zt=d.e_zt and  a.ch=c.rtuno and e.rtuno=c.rtuno and e.roomno=f.roomno and f.deviceno=b.deviceno and a.xh=b.sn and a.ch=b.rtuno and a.ymd>="+dateString+" and a.ymd<="+dateString2+" ";
+		  	String  sql = "select a.ymd yd,a.hms hs,a.event evt,' ' sm,a.zt tz,d.e_info ifo,c.name cm,concat(e.roomname,f.devicenm,b.name) bm from hevt"+(dateString.substring(1,2))+" a,prtudig b,prtu c,etype_info d,room e,dev_author f where (power(2,"+userId+"-1) & b.author_read)>0 and b.type=d.e_type and a.zt=d.e_zt and  a.ch=c.rtuno and e.rtuno=c.rtuno and e.roomno=f.roomno and f.deviceno=b.deviceno and f.domain=b.rtuno and c.rtuno=b.rtuno and a.xh=b.sn and a.ch=b.rtuno and a.ymd>="+dateString+" and a.ymd<="+dateString2+" ";
           if (pId>=0) sql= sql+" and a.ch="+pId;
           else {
         	  sql= sql+" and c.domain="+pno;
 		}
-          sql = sql + " union select a.ymd yd,a.hms hs,'yc' evt,a.val sm,a.zt tz,a.tlimit ifo,c.name cm,concat(e.roomname,f.devicenm,b.name) bm from hevtyc"+(dateString.substring(1,2))+" a,prtuana b,prtu c,room e,dev_author f  where  (power(2,"+userId+"-1) & b.author_read)>0 and  a.ch=c.rtuno and a.xh=b.sn and a.ch=b.rtuno and e.rtuno=c.rtuno and e.roomno=f.roomno and f.deviceno=b.deviceno  and a.ymd>="+dateString+" and a.ymd<="+dateString2;
+          sql = sql + " union select a.ymd yd,a.hms hs,'yc' evt,a.val sm,a.zt tz,a.tlimit ifo,c.name cm,concat(e.roomname,f.devicenm,b.name) bm from hevtyc"+(dateString.substring(1,2))+" a,prtuana b,prtu c,room e,dev_author f  where  (power(2,"+userId+"-1) & b.author_read)>0 and  a.ch=c.rtuno and a.xh=b.sn and a.ch=b.rtuno and e.rtuno=c.rtuno and e.roomno=f.roomno and f.deviceno=b.deviceno and f.domain=b.rtuno and c.rtuno=b.rtuno and a.ymd>="+dateString+" and a.ymd<="+dateString2;
           if (pId>=0) sql= sql+" and a.ch="+pId;
           else {
         	  sql= sql+" and c.domain="+pno;
@@ -4706,9 +4706,9 @@ FirstClass.logger.warn(sql);
 	  	// DateTime dateTime2 = new DateTime(new SimpleDateFormat("yyyy-MM-dd").parse(dateString));
 	  	// dateString = ""+(dateTime2.getYear()*100+dateTime2.getMonthOfYear());
 
-      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-      LocalDateTime dateTime2 = LocalDateTime.parse(dateString, formatter);
+      LocalDateTime dateTime2 = LocalDateTime.parse(dateString+" 00:00:00", formatter);
       dateString = ""+(dateTime2.getYear()*100+dateTime2.getMonthValue());
 		  //dateTime2 =dateTime2.plusDays(1);
 	  	java.util.Map<String,Object> map1 = new HashMap<String,Object>() ;
@@ -4822,9 +4822,9 @@ FirstClass.logger.warn(sql);
 	  	dateString = crew.replace('/', '-');
 	  	// DateTime dateTime2 = new DateTime(new SimpleDateFormat("yyyy-MM-dd").parse(dateString));
 	  	// dateString = ""+(dateTime2.getYear());
-      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-      LocalDateTime dateTime2 = LocalDateTime.parse(dateString, formatter);
+      LocalDateTime dateTime2 = LocalDateTime.parse(dateString+" 00:00:00", formatter);
       dateString = String.valueOf(dateTime2.getMonthValue());
 		  //dateTime2 =dateTime2.plusDays(1);
 	  	java.util.Map<String,Object> map1 = new HashMap<String,Object>() ;
@@ -5819,9 +5819,11 @@ FirstClass.logger.warn(sql);
 	  	dateString = crew.replace('/', '-');
 	  	// DateTime dateTime2 = new DateTime(new SimpleDateFormat("yyyy-MM-dd").parse(dateString));
 	  	// dateString = ""+(dateTime2.getMonthOfYear()*100+dateTime2.getDayOfMonth());
-      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+      DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+      LocalDateTime dateTime2 = LocalDateTime.parse(dateString+" 00:00:00",df);
+      //DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-      LocalDateTime dateTime2 = LocalDateTime.parse(dateString, formatter);
+      //LocalDateTime dateTime2 = LocalDateTime.parse("2020-06-05", formatte
       dateString = ""+(dateTime2.getMonthValue()*100+dateTime2.getDayOfMonth());
 		  //dateTime2 =dateTime2.plusDays(1);
 	  	java.util.Map<String,Object> map1 = new HashMap<String,Object>() ;
@@ -5905,7 +5907,7 @@ FirstClass.logger.warn(sql);
 	           }
 	           
 	    	//xArr[i]=dateString;
-	    		tooltipArr[idx]=" 时间:"+userMap.get("VAL").toString();
+	    		tooltipArr[idx]=" 时间:"+userMap.get("savetime").toString();
    			 	
 	    	}
 	    	 map2.put("mx","当日最大值: "+tvmx+" 最大时间: "+mxt);
@@ -5956,9 +5958,9 @@ FirstClass.logger.warn(sql);
 	  	dateString = crew.replace('/', '-');
 	  	// DateTime dateTime2 = new DateTime(new SimpleDateFormat("yyyy-MM-dd").parse(dateString));
 	  	// dateString = ""+(dateTime2.getMonthOfYear()*100+dateTime2.getDayOfMonth());
-      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-      LocalDateTime dateTime2 = LocalDateTime.parse(dateString, formatter);
+      LocalDateTime dateTime2 = LocalDateTime.parse(dateString+" 00:00:00", formatter);
       dateString = ""+(dateTime2.getMonthValue()*100+dateTime2.getDayOfMonth());
 		  //dateTime2 =dateTime2.plusDays(1);
 	  	java.util.Map<String,Object> map1 = new HashMap<String,Object>() ;
@@ -6094,9 +6096,9 @@ FirstClass.logger.warn(sql);
 	  	dateString = crew.replace('/', '-');
 	  	// DateTime dateTime2 = new DateTime(new SimpleDateFormat("yyyy-MM-dd").parse(dateString));
 	  	// dateString = ""+(dateTime2.getMonthOfYear()*100+dateTime2.getDayOfMonth());
-      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-      LocalDateTime dateTime2 = LocalDateTime.parse(dateString, formatter);
+      LocalDateTime dateTime2 = LocalDateTime.parse(dateString+" 00:00:00", formatter);
       dateString = ""+(dateTime2.getMonthValue()*100+dateTime2.getDayOfMonth());
 		  //dateTime2 =dateTime2.plusDays(1);
 	  	java.util.Map<String,Object> map1 = new HashMap<String,Object>() ;
@@ -6250,9 +6252,9 @@ FirstClass.logger.warn(sql);
 	  	dateString = crew.replace('/', '-');
 	  	// DateTime dateTime2 = new DateTime(new SimpleDateFormat("yyyy-MM-dd").parse(dateString));
 	  	// dateString = ""+(dateTime2.getMonthOfYear()*100+dateTime2.getDayOfMonth());
-      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-      LocalDateTime dateTime2 = LocalDateTime.parse(dateString, formatter);
+      LocalDateTime dateTime2 = LocalDateTime.parse(dateString+" 00:00:00", formatter);
       dateString = ""+(dateTime2.getMonthValue()*100+dateTime2.getDayOfMonth());
 	  	 year = dateTime2.getYear(); 
 	  	if((year%4==0 && year%100 != 0)|| year%400==0 ) 
@@ -6533,9 +6535,9 @@ FirstClass.logger.warn(sql);
 	  	dateString = crew.replace('/', '-');
 	  	// DateTime dateTime2 = new DateTime(new SimpleDateFormat("yyyy-MM-dd").parse(dateString));
 	  	// dateString = ""+(dateTime2.getMonthOfYear()*100+dateTime2.getDayOfMonth());
-      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-      LocalDateTime dateTime2 = LocalDateTime.parse(dateString, formatter);
+      LocalDateTime dateTime2 = LocalDateTime.parse(dateString+" 00:00:00", formatter);
       dateString = ""+(dateTime2.getMonthValue()*100+dateTime2.getDayOfMonth());
 	  	 year = dateTime2.getYear(); 
 	  	if((year%4==0 && year%100 != 0)|| year%400==0 ) 
@@ -6769,9 +6771,9 @@ FirstClass.logger.warn(sql);
 	  	dateString = crew.replace('/', '-');
 	  	// DateTime dateTime2 = new DateTime(new SimpleDateFormat("yyyy-MM-dd").parse(dateString));
 	  	//dateString = ""+(dateTime2.getMonthOfYear()*100+dateTime2.getDayOfMonth());
-      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-      LocalDateTime dateTime2 = LocalDateTime.parse(dateString, formatter);
+      LocalDateTime dateTime2 = LocalDateTime.parse(dateString+" 00:00:00", formatter);
       dateString = ""+(dateTime2.getMonthValue()*100+dateTime2.getDayOfMonth());
 	  	String   sql = "select IFNULL(val"+vno+",0) val,savetime from "+dbnameString+(dateTime2.getYear()%10)+" where   groupno="+gno+" and savetime>="+dateString+"0000 and savetime<"+dateString+"9999 order by savetime"; 
 	  	List userData = getJdbcTemplate().queryForList(sql);
@@ -6874,9 +6876,9 @@ FirstClass.logger.warn(sql);
 	  	dateString = crew.replace('/', '-');
 	  	// DateTime dateTime2 = new DateTime(new SimpleDateFormat("yyyy-MM-dd").parse(dateString));
 	  	//dateString = ""+(dateTime2.getMonthOfYear()*100+dateTime2.getDayOfMonth());
-      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-      LocalDateTime dateTime2 = LocalDateTime.parse(dateString, formatter);
+      LocalDateTime dateTime2 = LocalDateTime.parse(dateString+" 00:00:00", formatter);
       dateString = ""+(dateTime2.getMonthValue()*100+dateTime2.getDayOfMonth());
 	  	
 	  	String   sql = "select IFNULL(val"+vno+",0) val,savetime from "+dbnameString+(dateTime2.getYear()%10)+" where   groupno="+gno+" and savetime>="+dateString+"0800 and savetime<"+dateString+"2005 order by savetime"; 
@@ -6980,9 +6982,9 @@ FirstClass.logger.warn(sql);
 	  	dateString = crew.replace('/', '-');
 	  	
 	  	// DateTime dateTime2 = new DateTime(new SimpleDateFormat("yyyy-MM-dd").parse(dateString));
-      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-      LocalDateTime dateTime2 = LocalDateTime.parse(dateString, formatter);
+      LocalDateTime dateTime2 = LocalDateTime.parse(dateString+" 00:00:00", formatter);
       dateString = ""+(dateTime2.getMonthValue()*100+dateTime2.getDayOfMonth());
 	  	SimpleDateFormat xDate=new SimpleDateFormat("yyyyMMdd");
 	  	dateTime2 =dateTime2.plusDays(-1);
@@ -7055,9 +7057,9 @@ FirstClass.logger.warn(sql);
 	  	dateString = crew.replace('/', '-');
 	  	// DateTime dateTime2 = new DateTime(new SimpleDateFormat("yyyy-MM-dd").parse(dateString));
 	  	//dateString = ""+(dateTime2.getMonthOfYear()*100+dateTime2.getDayOfMonth());
-      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-      LocalDateTime dateTime2 = LocalDateTime.parse(dateString, formatter);
+      LocalDateTime dateTime2 = LocalDateTime.parse(dateString+" 00:00:00", formatter);
       dateString = ""+(dateTime2.getMonthValue()*100+dateTime2.getDayOfMonth());
 	  	String   sql = "select IFNULL(val"+vno+",0) val,savetime from "+dbnameString+(dateTime2.getYear()%10)+" where   groupno="+gno+" and savetime>="+dateString+"0000 and savetime<"+dateString+"9999 order by savetime"; 
 	  	List userData = getJdbcTemplate().queryForList(sql);

@@ -336,7 +336,7 @@ public class jobDAOImpl extends JdbcDaoSupport{
 				JSONArray  temp=editArr.getJSONArray(e);
 
 				//String text2=temp.getString(2)+",以"+temp.getString(4)+"MW/MIN速率"+temp.getString(5)+"MW";
-				sql="update unionsel_detail set rate='"+temp.getString(2)+"',description='"+temp.getString(3)+"' where ID="+temp.getInteger(0);
+				sql="update unionsel set name='"+temp.getString(1)+"',description='"+temp.getString(3)+"' where ID="+temp.getInteger(0);
 				log("UPDATE  " + sql);
 				stm.addBatch(sql);
 			}
@@ -344,12 +344,12 @@ public class jobDAOImpl extends JdbcDaoSupport{
 			con.commit();
 
 
-			QuartzManager.shutdownJobs();
 
 
 
 
 
+//QuartzManager.shutdownJobs();
 			/*sql="select * from timetask where type=1";
 			List<Map<String, Object>> tasktype1 = new ArrayList<Map<String, Object>>();
 			//if(rand.equalsIgnoreCase(imagerand)){
@@ -606,7 +606,7 @@ public class jobDAOImpl extends JdbcDaoSupport{
 	{
 		String jsonString="{\"result\":0}"; //SELECT ID,NAME FROM A WHERE　NOT EXIST (SELECT * FROM B WHERE A.ID=B.AID)
 		//String sql ="SELECT * from prtuana_fullname where ao_do=1 and not exist (select * from timetask_detial where prtuana_fullname.kkey=timetask_detial.kkey)";
-		String sql ="SELECT * from prtuana_fullname where ao_do=1 and kkey not in (select kkey from timetask_detial )";
+		String sql ="SELECT * from ao_do_fullname where ao_do=1 and name is not null";//" and kkey not in (select kkey from timetask_detial )";
 		List userData = getJdbcTemplate().queryForList(sql);
 		int size=userData.size() ;
 		Object arr[] = new Object[size];
@@ -627,7 +627,7 @@ public class jobDAOImpl extends JdbcDaoSupport{
 
 			}
 		}
-		sql ="SELECT * from prtuana_fullname where ao_do=2";
+		sql ="SELECT * from ao_do_fullname where ao_do=2 and name is not null";//and kkey not in (select kkey from timetask_detial )";
 
 		userData = getJdbcTemplate().queryForList(sql);
 		size=userData.size() ;
@@ -658,7 +658,7 @@ public class jobDAOImpl extends JdbcDaoSupport{
 	public String getQuartzDetail(String sn,String nm)
 	{
 		String jsonString="{\"result\":0}";
-		String sql ="SELECT * from timetask_detial a,prtuana_fullname b where a.kkey=b.kkey and a.taskid="+sn+" order by name";
+		String sql ="SELECT * from timetask_detial a,ao_do_fullname b where a.kkey=b.kkey and a.taskid="+sn+" order by name";
 		log(sql);
 		List userData = getJdbcTemplate().queryForList(sql);
 		int size=userData.size() ;

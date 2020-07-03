@@ -32,40 +32,39 @@ import java.util.Map;
 
  
  
-public class jdbcutils {
+ final public class jdbcutils {
 	//数据库用户名
-	private static final String USERNAME = "shcs";
+	private static final String USERNAME = "root";
 	//数据库密码
-	private static final String PASSWORD = "Shcs123";
+	private static final String PASSWORD = "Shcs2017@";
 	//驱动信息 
 	private static final String DRIVER = "com.mysql.jdbc.Driver";
 	//数据库地址
-	private static final String URL = "jdbc:mysql://localhost:3306/scada";
-	private Connection connection;
-	private PreparedStatement pstmt;
-	private ResultSet resultSet;
-	public jdbcutils() {
-		// TODO Auto-generated constructor stub
-		try{
-			Class.forName(DRIVER);
-			System.out.println("数据库连接成功！");
- 
-		}catch(Exception e){
- 
-		}
-	}
+	private static final String URL = "jdbc:mysql://58.247.132.78:3306/scada";
+	private static Connection connection;
+	private static PreparedStatement pstmt;
+	private static ResultSet resultSet;
+
 	
 	/**
 	 * 获得数据库的连接
 	 * @return
 	 */
-	public Connection getConnection(){
-		try {
-			connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+	public static Connection getConnection(){
+		try{
+			Class.forName(DRIVER);
+			try {
+				connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			//System.out.println("数据库连接成功！");
+
+		}catch(Exception e){
+
 		}
+
 		return connection;
 	}
  
@@ -77,7 +76,7 @@ public class jdbcutils {
 	 * @return
 	 * @throws SQLException
 	 */
-	public boolean updateByPreparedStatement(String sql, List<Object>params)throws SQLException{
+	public static boolean updateByPreparedStatement(String sql, List<Object>params)throws SQLException{
 		boolean flag = false;
 		int result = -1;
 		pstmt = connection.prepareStatement(sql);
@@ -99,7 +98,7 @@ public class jdbcutils {
 	 * @return
 	 * @throws SQLException
 	 */
-	public Map<String, Object> findSimpleResult(String sql, List<Object> params) throws SQLException{
+	public static Map<String, Object> findSimpleResult(String sql, List<Object> params) throws SQLException{
 		Map<String, Object> map = new HashMap<String, Object>();
 		int index  = 1;
 		pstmt = connection.prepareStatement(sql);
@@ -130,7 +129,7 @@ public class jdbcutils {
 	 * @return
 	 * @throws SQLException
 	 */
-	public List<Map<String, Object>> findModeResult(String sql, List<Object> params) throws SQLException{
+	public static List<Map<String, Object>> findModeResult(String sql, List<Object> params) throws SQLException{
 		List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
 		int index = 1;
 		pstmt = connection.prepareStatement(sql);
@@ -165,7 +164,7 @@ public class jdbcutils {
 	 * @return
 	 * @throws Exception
 	 */
-	public <T> T findSimpleRefResult(String sql, List<Object> params,
+	public static <T> T findSimpleRefResult(String sql, List<Object> params,
 			Class<T> cls )throws Exception{
 		T resultObject = null;
 		int index = 1;
@@ -203,7 +202,7 @@ public class jdbcutils {
 	 * @return
 	 * @throws Exception
 	 */
-	public <T> List<T> findMoreRefResult(String sql, List<Object> params,
+	public static <T> List<T> findMoreRefResult(String sql, List<Object> params,
 			Class<T> cls )throws Exception {
 		List<T> list = new ArrayList<T>();
 		int index = 1;
@@ -237,7 +236,7 @@ public class jdbcutils {
 	/**
 	 * 释放数据库连接
 	 */
-	public void releaseConn(){
+	public static void releaseConn(){
 		if(resultSet != null){
 			try{
 				resultSet.close();

@@ -28,18 +28,18 @@ import java.util.regex.Pattern;
 public  class checkOnlineTime implements Job {
 
 
-	  private static final Logger logger = LogManager.getLogger(checkOnlineTime.class);
+	  private static final Logger logger = FirstClass.logger;
 
 
 	  //public static AnaUtil myana=new AnaUtil();
 	  private    long gno=0,vno=0;
 	Jedis jedis = null;
 	  private String vv = null;
-	public DBConnection dbcon=null;//new DBConnection();
-	  private HashMap<String,Object> onlinemap =null;
+	//public DBConnection dbcon=null;//new DBConnection();
+	 // private HashMap<String,Object> onlinemap =null;
 	//static ScriptEngineManager scriptEngineManager = new ScriptEngineManager()
 	//static ScriptEngine scriptEngine ;//= scriptEngineManager.getEngineByName("nashorn");
-	public static ChatSocket ckt = new ChatSocket();
+	//public static ChatSocket ckt = new ChatSocket();
 
 		
    
@@ -48,9 +48,9 @@ public  class checkOnlineTime implements Job {
     public void execute(JobExecutionContext arg0) throws JobExecutionException {
        //
 		//logger.warn("saveHistyc");
-    	DBConnection dbcon=new DBConnection();
+    	//DBConnection dbcon=new DBConnection();
 
-		jedis = RedisUtil.getJedis();
+		jedis = JedisUtil.getInstance().getJedis();
 		JSONObject onlineobj =AnaUtil.online_warn;
        // logger.warn(anaobj);
 
@@ -101,8 +101,8 @@ public  class checkOnlineTime implements Job {
 
 
 			 //System.gc();
-		         dbcon.getClose();
-		         dbcon=null;
+		        // dbcon.getClose();
+		       //  dbcon=null;
 
 	        	
 	       
@@ -115,8 +115,7 @@ public  class checkOnlineTime implements Job {
 	    	 catch (Exception e) {
 	            e.printStackTrace();
 	        }
-		RedisUtil.close(jedis);
-		jedis=null;
+		JedisUtil.getInstance().returnJedis(jedis);
 
 
 

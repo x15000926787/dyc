@@ -362,6 +362,11 @@ public class TfController
   {
 	  Tool.request( user.loadconfig_dn(dno,nm,lev),response);
   }
+    @RequestMapping({"getTfData"})
+    public void getTfData(String crew,String crewLong, int pId, int userId,HttpServletResponse response) throws ParseException
+    {
+        Tool.request( user.getTfData(crew, crewLong,pId,userId),response);
+    }
     @RequestMapping({"resetpasswd"})
     public void resetpasswd(String op,String np,String us,HttpServletResponse response) throws ParseException, IOException
     {
@@ -466,11 +471,7 @@ public class TfController
   {
 	    Tool.request( user.getdlData(crew, crewLong,pId),response);
   }
-  @RequestMapping({"getTfData"})
-  public void getTfData(String crew,String crewLong, int pId,int userId,HttpServletResponse response) throws ParseException
-  {
-	    Tool.request( user.getTfData(crew, crewLong,pId,userId),response);
-  }
+
   @RequestMapping({"getTfData_gzr"})
   public void getTfData_gzr(String crew,String crewLong, int pId,HttpServletResponse response) throws ParseException
   {

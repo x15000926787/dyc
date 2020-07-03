@@ -92,7 +92,25 @@ extends JdbcDaoSupport{
 		    jsonString = JSON.toJSONString(map1);
 		  return jsonString;
 	  }
-	 
+
+	/**
+	 * kk=1  无锡大通模式
+	 * kk=2  大悦城模式
+	 *
+	 * rtu   站号
+	 *
+	 * pno   room号
+	 * kk==1:
+	 * 返回数据格式 {"data":[[148,"房间环境","温度（℃）",9,2326,-1],[148,"房间环境","湿度（%RH）",10,2327,-1]],"result":1}
+	 *
+	 *                     devinceno,devincenm,name,type,saveno,pulsaveno
+	 * kk==2:
+	 *       (留待来日补充)
+	 * @param kk
+	 * @param rtu
+	 * @param pno
+	 * @return
+	 */
 	 public String get_tree_3(String kk,String rtu,String pno)
 	  {
 		  String jsonString="";
@@ -114,15 +132,14 @@ extends JdbcDaoSupport{
 				// TODO: handle exception
 			}
 		    // king = 1 小项目（三级） ,=2 大项目（四级）
-		  /**
-		   * kind=1 sql有问题，以后再说，目前固定kk=2
-		   */
-		  String sql = "select b.devicenm s_name,a.name p_name,a.saveno p_no from  dev_author b,prtuana a,room c where  a.deviceno=b.deviceno and b.roomno=c.roomno and c.rtuno="+rtu+" and a.deviceno ="+rtu+" order by saveno";
-		    if (kind == 2)
+
+		  String sql = "select b.deviceno,b.devicenm ,a.name aname,a.type,a.saveno,a.pulsaveno  from  dev_author b,prtuana_v a,room c where  a.deviceno=b.deviceno and a.rtuno=c.rtuno and b.roomno=c.roomno and b.domain=c.rtuno  and a.rtuno="+rtu+" and c.roomno="+pno+" and a.kkey like '%ai%' order by saveno";
+		  if (kind == 2)
 		    {
 		    	sql = "select devicenm,deviceno,domain,roomno from dev_author where  domain="+rtu+" and roomno="+pno+" order by deviceno";
 		    }else {
-		    	 //map1.put("result",0);  
+				sql = "select b.deviceno,b.devicenm ,a.name aname,a.type,a.saveno,a.pulsaveno  from  dev_author b,prtuana_v a,room c where  a.deviceno=b.deviceno and a.rtuno=c.rtuno and b.roomno=c.roomno and b.domain=c.rtuno  and a.rtuno="+rtu+" and c.roomno="+pno+" and a.kkey like '%ai%' order by saveno";
+
 			}
 		    	log(sql);
 		    	List userData = getJdbcTemplate().queryForList(sql);
@@ -130,19 +147,39 @@ extends JdbcDaoSupport{
 		  if (size> 0)
 		  {
 			  Object arr[] = new Object[size];
-			  for ( i = 0; i<size; i++)
-			  {
-				  ArrayList kv = new ArrayList();
-				  Map listData = (Map)userData.get(i);
+		  	if(kind==2) {
 
-				  kv.add(listData.get("devicenm"));
+				for (i = 0; i < size; i++) {
+					ArrayList kv = new ArrayList();
+					Map listData = (Map) userData.get(i);
 
-				  kv.add(listData.get("domain"));
-				  kv.add(listData.get("roomno"));
-				  kv.add(listData.get("deviceno"));
-				  arr[i]=kv;
+					kv.add(listData.get("devicenm"));
+
+					kv.add(listData.get("domain"));
+					kv.add(listData.get("roomno"));
+					kv.add(listData.get("deviceno"));
+					arr[i] = kv;
 
 
+				}
+			}
+			  if(kind==1) {
+
+				  for (i = 0; i < size; i++) {
+					  ArrayList kv = new ArrayList();
+					  Map listData = (Map) userData.get(i);
+					  kv.add(listData.get("deviceno"));
+					  kv.add(listData.get("devicenm"));
+
+					  kv.add(listData.get("aname"));
+					  kv.add(listData.get("type"));
+					  kv.add(listData.get("saveno"));
+					  kv.add(listData.get("pulsaveno"));
+
+					  arr[i] = kv;
+
+
+				  }
 			  }
 			  map1.put("result",1);
 			  map1.put("data",arr);
