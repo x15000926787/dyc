@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.dl.impl.jobDAOImpl;
 import com.dl.quartz.QuartzManager;
 import com.dl.tool.ReportDycJob;
+import com.dl.tool.ReportJob;
 import com.dl.tool.Tool;
 import com.dl.tool.saveMaxMin;
 import com.google.gson.Gson;
@@ -92,6 +93,32 @@ public class jobController
     }
     return jsonString;
   }
+
+
+  @RequestMapping({"calcycbb"})
+  public void calcycbb(String tdatestr,HttpServletResponse response) throws IOException
+  {
+    HashMap<String,String> tdate =new HashMap<>();
+
+    Gson gson = new Gson();
+    //Map<String, Object> map = new HashMap<String, Object>();
+    tdate = gson.fromJson("{\"dtstr\":"+tdatestr+"}", tdate.getClass());
+    Tool.request(calcycbbjob(tdate),response);
+  }
+  public  String calcycbbjob(HashMap tdate)
+  {
+    String jsonString="{\"result\":0}";
+    try {
+      qjob.addJob("dycbb", "gdycbb", "tdycbb", "tgdycbb",
+              ReportJob.class,  tdate, 5,5 ,0);
+      jsonString="{\"result\":1}";
+    }catch (Exception e)
+    {
+
+    }
+    return jsonString;
+  }
+
   @RequestMapping({"savejobEdit"})
   public void savejobEdit(String jsonStr,int sn , HttpServletResponse response) throws ParseException
   {

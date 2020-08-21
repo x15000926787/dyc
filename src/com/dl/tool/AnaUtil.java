@@ -6,16 +6,27 @@ import com.bjsxt.thread.ThreadSubscriber;
 import com.dl.quartz.LuaJob;
 import com.google.common.io.CharStreams;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
+import org.joda.time.DateTime;
 import redis.clients.jedis.Jedis;
 
-
+import net.sf.json.JSONArray;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -35,6 +46,8 @@ public final  class AnaUtil  {
     public static JSONObject msg_author = new JSONObject();
     public static JSONObject objcondition = new JSONObject();
     public static JSONObject online_warn = new JSONObject();
+    public static JSONObject ana_fullname = new JSONObject();
+    public static JSONArray dev_array = new JSONArray();
     public static HashMap<String,String> saveno_kkey = new HashMap<>();
     public static String[] ycEvtInfo ={"越下限","恢复","越上限"};
     public static ScriptEngineManager scriptEngineManager = new ScriptEngineManager();
@@ -50,7 +63,7 @@ public final  class AnaUtil  {
    /* static{
         loadAna(jdbcTemplate);
     }*/
-    public AnaUtil(){
+    private AnaUtil(){
         //scriptEngine = scriptEngineManager.getEngineByName("nashorn");
         //tjedis = RedisUtil.getJedis();
         //mjedis = RedisUtil.getJedis(1);
@@ -152,7 +165,7 @@ public final  class AnaUtil  {
             FirstClass.logger.error("出错了"+e.toString());
         }*/
         //FirstClass.logger.warn(objana);
-        FirstClass.logger.warn(objana_v.toJSONString());
+        FirstClass.logger.warn(objana_v.size());
         FirstClass.logger.info("加载ana内容完成.");
 
     }
@@ -161,12 +174,14 @@ public final  class AnaUtil  {
         FirstClass.logger.info("开始读取dev内容.......");
 
         LocalDateTime tt = null;//LocalDateTime.parse(map.get("checktime").toString(), formatter);
-
+        String nm = null,tm = null;
         int i,j;
 
         i=0;j=0;
         Map<String,Object> map =null;//new HashMap<>();// (HashMap)userData.get(i);
-        String sql="select deviceno,domain,author,author_mail,type,RC  from dev_author";
+        String sql="select concat(`d`.`NAME`,`c`.`roomname`,`b`.`devicenm`) AS `name`,(((`d`.`rtuno` * 10000) + (`c`.`roomno` * 100)) + `b`.`deviceno`) AS `deviceno`,b.domain,b.author,b.author_mail,b.alert_type,b.alert_stay,b.RC" +
+                " from (((`dev_author` `b`) join `room` `c`) join `prtu` `d`) " +
+                " where ( (`d`.`rtuno` = `c`.`rtuno`) and (`b`.`roomno` = `c`.`roomno`) and (`b`.`domain` = `c`.`rtuno`) and d.rtuno=1) ";
 
         //if(rand.equalsIgnoreCase(imagerand)){
         try{
@@ -181,7 +196,82 @@ public final  class AnaUtil  {
                     map = (HashMap) userData.get(i);
 
 
-                    dev_author.put(map.get("domain").toString()+"_"+map.get("deviceno").toString(),map);
+                    dev_author.put(map.get("deviceno").toString(),map);
+
+                }
+
+            }
+
+        }catch(Exception e){
+            FirstClass.logger.warn("出错了"+e.toString());
+            e.printStackTrace();
+        }
+        sql="select * from prtuana_fullname where type in (3,4) and fname like '%A相%'";
+
+        //if(rand.equalsIgnoreCase(imagerand)){
+        try{
+            List<Map<String, Object>> userData = FirstClass.jdbcTemplate.queryForList(sql);
+            int size=userData.size() ;
+            if (size> 0)
+            {
+
+                for ( i = 0; i<size; i++)
+                {
+
+                    map = (HashMap) userData.get(i);
+                    nm = map.get("fname").toString();
+                    if (nm.contains("电压")) tm = "voltage_";
+                    else tm = "electricCurrent_";
+                    if (nm.contains("A相")) tm = tm +"A";
+                        else if (nm.contains("B相")) tm = tm +"B";
+                        else tm = tm +"C";
+                   // FirstClass.logger.warn(dev_author.get(map.get("deviceid").toString()));
+                    if (dev_author.containsKey(map.get("deviceid").toString()))
+                    ((HashMap) dev_author.get(map.get("deviceid").toString())).put(tm,map.get("kkey").toString());
+
+                }
+
+            }
+
+        }catch(Exception e){
+            FirstClass.logger.warn("出错了"+e.toString());
+            e.printStackTrace();
+        }
+
+        //FirstClass.logger.warn(objana);
+        FirstClass.logger.warn(dev_author.size());
+        FirstClass.logger.info("加载dev内容完成.");
+
+    }
+
+    /**
+     *
+     */
+    public static void load_fullname(){
+        FirstClass.logger.info("开始读取ana_fullname内容.......");
+
+        LocalDateTime tt = null;//LocalDateTime.parse(map.get("checktime").toString(), formatter);
+
+        int i,j;
+
+        i=0;j=0;
+        Map<String,Object> map =null;//new HashMap<>();// (HashMap)userData.get(i);
+        String sql="select fname,rtuno,sn,kkey,saveno,deviceid  from prtuana_fullname union select fname,rtuno,sn,kkey,event as saveno,deviceid  from prtudig_fullname";
+
+        //if(rand.equalsIgnoreCase(imagerand)){
+        try{
+            List<Map<String, Object>> userData = FirstClass.jdbcTemplate.queryForList(sql);
+            int size=userData.size() ;
+            if (size> 0)
+            {
+
+                for ( i = 0; i<size; i++)
+                {
+
+                    map = (HashMap) userData.get(i);
+
+
+                    ana_fullname.put(map.get("kkey").toString(),map);
 
                 }
 
@@ -217,8 +307,8 @@ public final  class AnaUtil  {
             FirstClass.logger.error("出错了"+e.toString());
         }*/
         //FirstClass.logger.warn(objana);
-        FirstClass.logger.warn(dev_author.toJSONString());
-        FirstClass.logger.info("加载dev内容完成.");
+        FirstClass.logger.warn(ana_fullname.size());
+        FirstClass.logger.info("加载ana_fullname内容完成.");
 
     }
     /**
@@ -262,7 +352,7 @@ public final  class AnaUtil  {
             FirstClass.logger.error("出错了"+e.toString());
             e.printStackTrace();
         }
-        FirstClass.logger.warn(saveno_kkey);
+        FirstClass.logger.warn(saveno_kkey.size());
         FirstClass.logger.info("加载saveno_kkey内容完成.");
         //FirstClass.logger.warn(tobj);
 
@@ -315,7 +405,7 @@ public final  class AnaUtil  {
             FirstClass.logger.error("出错了"+e.toString());
             e.printStackTrace();
         }
-        FirstClass.logger.warn(msg_user);
+        FirstClass.logger.warn(msg_user.size());
         FirstClass.logger.info("加载msg_user内容完成.");
         //FirstClass.logger.warn(tobj);
 
@@ -358,7 +448,7 @@ public final  class AnaUtil  {
             FirstClass.logger.error("出错了"+e.toString());
             e.printStackTrace();
         }
-        FirstClass.logger.warn(msg_author);
+        FirstClass.logger.warn(msg_author.size());
         FirstClass.logger.info("加载msg_author内容完成.");
     }
     /**
@@ -398,7 +488,7 @@ public final  class AnaUtil  {
             FirstClass.logger.error("出错了"+e.toString());
             e.printStackTrace();
         }
-        FirstClass.logger.warn(online_warn);
+        FirstClass.logger.warn(online_warn.size());
         FirstClass.logger.info("加载online_warn内容完成.");
     }
     /**
@@ -442,7 +532,7 @@ public final  class AnaUtil  {
             FirstClass.logger.error("condition出错了"+e.toString());
             e.printStackTrace();
         }
-        FirstClass.logger.info(objcondition);
+        FirstClass.logger.info(objcondition.size());
         FirstClass.logger.info("加载objcondition内容完成.");
 
     }
@@ -527,7 +617,7 @@ public final  class AnaUtil  {
      * @throws ScriptException
      */
 
-     public String calccondition(String val,String condition) {
+     public static String calccondition(String val,String condition) {
         String st="";
         try
         {
@@ -602,12 +692,12 @@ public final  class AnaUtil  {
      * checkevt
 
      */
-     public void handleCondition(String val, String channel,Jedis tjedis) {
+     public static void handleCondition(String val, String channel) {
         boolean calcEvt = false;
         String luaStr="",nval="";
          Reader r = null;
 
-        // mjedis = RedisUtil.getJedis(1);
+         Jedis tjedis= JedisUtil.getInstance().getJedis();
         int tp=0;
         if (objcondition.containsKey(channel)){
             List<Map<String, Object>> dobj =  new ArrayList<Map<String, Object>>();
@@ -683,7 +773,7 @@ public final  class AnaUtil  {
         }
         // RedisUtil.close(tjedis);
          //tjedis=null;
-
+         JedisUtil.getInstance().returnJedis(tjedis);
          luaStr=null;
          nval=null;
          r = null;
@@ -730,6 +820,23 @@ public final  class AnaUtil  {
 
         return msg;
     }
+    /*
+     * 查询信息
+     * getPrepatedResultSet
+     */
+    public static List getDataList(String sql)
+    {
+        List list = new ArrayList<>();
+        try{
+            list = FirstClass.jdbcTemplate.queryForList(sql);
+
+        }catch(Exception e){
+            FirstClass.logger.error("出错了:"+sql+":"+e.toString());
+            //e.printStackTrace();
+        }
+
+        return list ;
+    }
      public static void handleMessage( String message) {
           String val=null,pmessage=null;
           String mess =null; //new String(message.substring(0,message.indexOf(".")));
@@ -761,15 +868,15 @@ public final  class AnaUtil  {
             pmessage = message.replace("_.value","");
             try {
              if ((long) ((HashMap<String, Object>) AnaUtil.objana_v.get(pmessage)).get("ai_di")==1)
-                 handleMaxMin(pmessage,val,mjedis);
+                 handleMaxMin(pmessage,val);
             } catch (Exception e) {
                 FirstClass.logger.error(e.toString()+"=====>"+pmessage);
             }
             handleEvt(pmessage,val);
 
-            //handleTime(pmessage,val);
+            handleTime(pmessage,val);
 
-            //handleCondition(val,pmessage);
+            handleCondition(val,pmessage);
 
         }
         else if (message.matches("anaupdate")) {
@@ -828,6 +935,48 @@ public final  class AnaUtil  {
 
 
     }
+    /**
+     * try {
+     *             long dateToSecond = sdf.parse(date).getTime();//sdf.parse()实现日期转换为Date格式，然后getTime()转换为毫秒数值
+     *             System.out.print(dateToSecond);
+     *         }catch (ParseException e){
+     *             e.printStackTrace();
+     *         }
+     */
+    /**
+     * 时间转换为秒数
+     * @param dtstr
+     * @return
+     */
+    public static  String getmiseconds(String dtstr){
+        String ms = "";
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//要转换的日期格式，根据实际调整""里面内容
+        try {
+            long dateToSecond = sdf.parse(dtstr).getTime();//sdf.parse()实现日期转换为Date格式，然后getTime()转换为毫秒数值
+            //System.out.print(dateToSecond);
+            ms = String.valueOf(dateToSecond);
+        }catch (ParseException e){
+            e.printStackTrace();
+        }
+        return ms;
+    }
+    /**
+     * 时间转换为秒数
+     * @param dt
+     * @return
+     */
+    public static  String getmiseconds(DateTime dt){
+        String ms = "";
+        //SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//要转换的日期格式，根据实际调整""里面内容
+        try {
+            long dateToSecond = dt.getMillis();//sdf.parse()实现日期转换为Date格式，然后getTime()转换为毫秒数值
+            //System.out.print(dateToSecond);
+            ms = String.valueOf(dateToSecond);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return ms;
+    }
 
     /**
      * 此处挪用dev_author表的type和RC字段，分别用来表示该device启停状态的信息点个数和当前计数点个数
@@ -840,7 +989,7 @@ public final  class AnaUtil  {
             String key =null,devkey=null,dikey=null;
             String value = null;
             int i=0,cnt=0;
-            FirstClass.logger.warn(message);
+            //FirstClass.logger.warn(message);
             Jedis tjedis= JedisUtil.getInstance().getJedis();
             try {
                 jsonObj =  net.sf.json.JSONObject.fromObject(message);
@@ -880,8 +1029,9 @@ public final  class AnaUtil  {
                          tjedis.set(key+"_.value",String.valueOf(Float.parseFloat(value)*Float.parseFloat(objana_v.getJSONObject(key).get("rate").toString())));
                      }
                 }
+                /*
                 if (dev_author.containsKey(devkey)){
-                    if (cnt==Integer.parseInt(dev_author.getJSONObject(devkey).get("type").toString())) i=1;
+                    if (cnt==Integer.parseInt(dev_author.getJSONObject(devkey).get("alert_type").toString())) i=1;
                     if (cnt==0) i=0;
 
 
@@ -896,18 +1046,17 @@ public final  class AnaUtil  {
                     }
 
 
-                    /**
-                     * 如果写入redis实时库，则不用在此处处理事件
-                     * 此处只处理di事件
-                     */
+
+                      //如果写入redis实时库，则不用在此处处理事件
+                      //此处只处理di事件
+
                    // handleEvt(key,String.valueOf(i));
-                    /**
-                     * just for 机动车新项目
-                     */
+
+               // just for 机动车新项目
                     handleTime(key,String.valueOf(i));
 
                 }
-
+*/
                 jsonObj.clear();
             }
             key = null;
@@ -995,10 +1144,10 @@ public final  class AnaUtil  {
        /* RedisUtil.close(mjedis);
         mjedis=null;*/
     }
-     public static void handleMaxMin(String key,String vals,Jedis mjedis) {
+     public static void handleMaxMin(String key,String vals) {
          String maxv,minv;
 
-         //Jedis mjedis = RedisUtil.getJedis(1);
+         Jedis mjedis = RedisUtil.getJedis(1);
 
         //HashMap<String,Object>  map = new HashMap<String,Object>();
 
@@ -1064,7 +1213,7 @@ public final  class AnaUtil  {
         {
             //FirstClass.logger.error("redis_key do not match mysql_kkey:"+key+",请确认！！！");
         }
-         //RedisUtil.close(mjedis);
+         RedisUtil.close(mjedis);
          //mjedis=null;
          maxv=null;
          minv=null;
@@ -1075,16 +1224,30 @@ public final  class AnaUtil  {
 
 
     }
+    public static String sendHttpPost(String url, String JSONBody) throws Exception {
+        CloseableHttpClient httpClient = HttpClients.createDefault();
+        HttpPost httpPost = new HttpPost(url);
+        httpPost.addHeader("Content-Type", "application/json");
+        httpPost.setEntity(new StringEntity(JSONBody));
+        CloseableHttpResponse response = httpClient.execute(httpPost);
+//		System.out.println(response.getStatusLine().getStatusCode() + "\n");
+        HttpEntity entity = response.getEntity();
+        String responseContent = EntityUtils.toString(entity, "UTF-8");
+//		System.out.println(responseContent);
+        response.close();
+        httpClient.close();
+        return responseContent;
+    }
     public static void testexecutor(String ss)
     {
 
     }
      public static void handleEvt(String key,String vals) {
-        String down,up,limit=" ",rtuno,sn,dbname,dbname2,msgah,mailah,altah,mobs = "",gkey="";
+        String down,up,limit=" ",rtuno,sn,dbname,dbname2,msgah,mailah,altah,return_key = "",gkey="",mobs=null;
         Calendar c;
         String msg="";
         //char[] ss=null;
-        String msgs =null;
+         List msgs =null;
          String s1 =null;
          String s2 =null;
          String s3 =null;
@@ -1098,7 +1261,8 @@ public final  class AnaUtil  {
         dbname2 = "hevt"+(rightnow.getYear()%10);
         int min= rightnow.getHour()*60+rightnow.getMinute();
         //FirstClass.logger.warn(msg_author.toString());
-        int vv = -2;int ttp=0;
+        int vv = -2;
+        String ttp="";
         if (objana_v.containsKey(key))
         {
 
@@ -1175,48 +1339,56 @@ public final  class AnaUtil  {
                         //chgtime 字段用来存储当前遥测状态
                         add_red("UPDATE prtuana SET chgtime=" + vv + " WHERE RTUNO=" + rtuno + " AND SN=" + sn);
                         ((HashMap<String,String>) objana_v.get(key)).put("chgtime", tvv);
-
+                        return_key = "1,"+rightnow.format(DateTimeFormatter.ofPattern("YYMMdd")) + "," + rightnow.format(DateTimeFormatter.ofPattern("HHmmss")) + "," + rtuno + "," + sn + "," + vv + "," + vals + "," + key+ "," + ((HashMap<String,Object>)ana_fullname.get(key)).get("deviceid").toString().trim();
                         //authormap = (HashMap<String,Object>)msg_author.get(map.get("deviceno").toString());
 
 
-                        //FirstClass.logger.warn(authormap.toString());
+                        //FirstClass.logger.warn("select concat(a.pro_name,b.name,c.roomname,d.devicenm,e.name) msg,d.alert_type alttype,d.alert_stay altstay from project_list a,prtu b,room c,dev_author d,prtuana e where a.pro_id=b.domain and b.rtuno=c.rtuno and c.roomno = d.roomno and d.deviceno=e.deviceno and d.domain=e.rtuno and b.rtuno=e.rtuno and e.rtuno=" + rtuno + " and e.sn=" + sn);
 
-                        msg = query_red( "select concat(a.pro_name,b.name,c.roomname,d.devicenm,e.name) msg from project_list a,prtu b,room c,dev_author d,prtuana e where a.pro_id=b.domain and b.rtuno=c.rtuno and c.roomno = d.roomno and d.deviceno=e.deviceno and d.domain=e.rtuno and b.rtuno=e.rtuno and e.rtuno=" + rtuno + " and e.sn=" + sn);
-                        if (!msg.isEmpty())
-                        {
-                            msg = rightnow.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) + " " + msg;
-                            switch (vv) {
-                                case -1:
-                                    msg = msg + " 越下限。备注：" + vals + "（" + down + "~" + up + "）";
-                                    ttp = 1;
-                                    break;
-                                case 0:
-                                    msg = msg + " 恢复正常。备注：" + vals + "（" + down + "~" + up + "）";
-                                    ttp = 0;
-                                    break;
-                                case 1:
-                                    msg = msg + " 越上限。备注：" + vals + "（" + down + "~" + up + "）";
-                                    ttp = 1;
-                                    break;
-                                default:
-                                    break;
-                            }
-                            if (Integer.parseInt(altah) > 0) {
-                                //FirstClass.logger.info( "send alt_yc_msg :" + msg);
-                                if (!ChatSocket.getSockets().isEmpty()) {
-                                    ChatSocket.broadcast( "{\"auth\":\""+altah+"\",\"gkey\":\""+gkey+"\",\"msg\":{\"message\":\"" + msg + "\",\"title\":\"遥测越限\",\"type\":" + ttp + ",\"stay\":5000}}", Integer.parseInt(altah));
-                                    FirstClass.logger.warn( "send alt_msg :" + "{\"auth\":\""+altah+"\",\"gkey\":\""+gkey+"\",\"msg\":{\"message\":\"" + msg + "\",\"title\":\"遥测越限\",\"type\":" + ttp + ",\"stay\":5000}}", Integer.parseInt(altah));
+                        msgs = getDataList( "select concat(a.pro_name,b.name,c.roomname,d.devicenm,e.name) msg,e.altleval alttype,d.alert_stay altstay from project_list a,prtu b,room c,dev_author d,prtuana e where a.pro_id=b.domain and b.rtuno=c.rtuno and c.roomno = d.roomno and d.deviceno=e.deviceno and d.domain=e.rtuno and b.rtuno=e.rtuno and e.rtuno=" + rtuno + " and e.sn=" + sn);
+                        synchronized(msgs) {
+                            if (!msgs.isEmpty()) {
+                                s1 = ((HashMap) msgs.get(0)).get("altstay").toString();
+                                ttp = ((HashMap) msgs.get(0)).get("alttype").toString();
+                                msg = rightnow.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) + " " + ((HashMap) msgs.get(0)).get("msg").toString();
+                                //FirstClass.logger.warn( "send alt_msg :" + "{\"auth\":\""+altah+"\",\"gkey\":\""+gkey+"\",\"msg\":{\"message\":\"" + msg + "\",\"title\":\"遥测越限\",\"type\":" + ttp + ",\"stay\":"+s1+",\"rkey\":"+return_key+"}}", Integer.parseInt(altah));
 
+                                switch (vv) {
+                                    case -1:
+                                        msg = msg + " 越下限。备注：" + vals + "（" + down + "~" + up + "）";
+                                        //ttp = 1;
+                                        break;
+                                    case 0:
+                                        msg = msg + " 恢复正常。备注：" + vals + "（" + down + "~" + up + "）";
+                                        ttp = "0";
+                                        break;
+                                    case 1:
+                                        msg = msg + " 越上限。备注：" + vals + "（" + down + "~" + up + "）";
+                                        //ttp = 1;
+                                        break;
+                                    default:
+                                        break;
                                 }
-                                // FirstClass.logger.warn( "send alt_msg :" + "{\"msg\":{\"message\":\""+msg+"\",\"title\":\"遥测越\",\"type\":"+ttp+",\"stay\":5000}}");
-                                //sendmsg.sendmsg(mobs.substring(1),msg);\"auth\":\""+altah+"\",
+                                if (Integer.parseInt(altah) > 0) {
+                                    //FirstClass.logger.warn(altah);
+                                    if (!ChatSocket.getSockets().isEmpty()) {
+                                        // FirstClass.logger.warn(altah);
+
+                                        ChatSocket.broadcast("{\"auth\":\"" + altah + "\",\"gkey\":\"" + gkey + "\",\"msg\":{\"message\":\"" + msg + "\",\"title\":\"遥测越限\",\"type\":" + ttp + ",\"stay\":" + s1 + ",\"rkey\":\"" + return_key + "\"}}", Integer.parseInt(altah));
+                                        FirstClass.logger.warn("send alt_msg :" + "{\"auth\":\"" + altah + "\",\"gkey\":\"" + gkey + "\",\"msg\":{\"message\":\"" + msg + "\",\"title\":\"遥测越限\",\"type\":" + ttp + ",\"stay\":" + s1 + ",\"rkey\":\"" + return_key + "\"}}", Integer.parseInt(altah));
+
+                                    }
+                                    // FirstClass.logger.warn( "send alt_msg :" + "{\"msg\":{\"message\":\""+msg+"\",\"title\":\"遥测越\",\"type\":"+ttp+",\"stay\":5000}}");
+                                    //sendmsg.sendmsg(mobs.substring(1),msg);\"auth\":\""+altah+"\",
+                                }
+
+
                             }
-
-
-
                         }
-
-                       /* msg=projectName +msg;
+                        /**
+                         * 发送告警短信
+                         */
+                        /*msg=projectName +msg;
                         if (Integer.parseInt(msgah) > 1) {
                             try {
                                  s = Integer.toBinaryString(Integer.parseInt(msgah));
@@ -1249,6 +1421,11 @@ public final  class AnaUtil  {
                             }
 
                         }*/
+                        /**
+                         *
+                         * 发送邮件
+                         *
+                         */
                         /*
                         if (Integer.parseInt(mailah) > 1) {
                              umap = new HashMap<String, String>();
@@ -1293,12 +1470,12 @@ public final  class AnaUtil  {
                 //map =(Map) objdig.get(s);
                 //FirstClass.logger.warn(map.toString());
                 //FirstClass.logger.warn(vals);
-                mobs="";
+               // mobs="";
                 //rtuno = map.get("rtuno").toString();
                 //sn = map.get("sn").toString();
                 up = ((HashMap<String,Object>)objana_v.get(key)).get("type").toString();
                 // FirstClass.logger.warn(key+","+vals+","+map.get("chgtime").toString());
-                vv =  checkevt(vals,Integer.parseInt(((HashMap<String,Object>)objana_v.get(key)).get("chgtime").toString().trim()));
+                vv =  checkevt(vals,Integer.parseInt(((HashMap<String,Object>)objana_v.get(key)).get("chgtime").toString().trim().replace(".000","")));
                 String tvv = new String(""+vals);
                 //FirstClass.logger.warn(map);
                 // FirstClass.logger.warn(vals);
@@ -1325,29 +1502,38 @@ public final  class AnaUtil  {
 
 
 
+                    return_key = "2,"+rightnow.format(DateTimeFormatter.ofPattern("YYMMdd")) + "," + rightnow.format(DateTimeFormatter.ofPattern("HHmmss")) + "," + rtuno + "," + sn + "," + up + "," + vals + "," + key+"," + ((HashMap<String,Object>)ana_fullname.get(key)).get("deviceid").toString().trim();
 
 
                     // authormap = (HashMap<String,Object>)msg_author.get(map.get("deviceno").toString());
                     //FirstClass.logger.warn(authormap);
 
+                    /**
+                     *
+                     * 此处查询宜使用getDataList函数，等以后修改
+                     *  msgs = getDataList( "select concat(a.pro_name,b.name,c.roomname,d.devicenm,e.name) msg,e.altleval alttype,d.alert_stay altstay from project_list a,prtu b,room c,dev_author d,prtuana e where a.pro_id=b.domain and b.rtuno=c.rtuno and c.roomno = d.roomno and d.deviceno=e.deviceno and d.domain=e.rtuno and b.rtuno=e.rtuno and e.rtuno=" + rtuno + " and e.sn=" + sn);
+                     */
 
-                    msg=query_red("select concat(a.pro_name,b.name,c.roomname,d.devicenm,e.name,f.e_info,',',f.e_color,'$',f.e_stay) msg from project_list a,prtu b,room c,dev_author d,prtudig e,etype_info f where a.pro_id=b.domain and b.rtuno=c.rtuno and c.roomno = d.roomno and c.rtuno=d.domain and d.deviceno=e.deviceno and c.rtuno=e.rtuno and e.type=f.e_type and d.domain=e.rtuno and b.rtuno=e.rtuno  and e.rtuno="+rtuno+" and e.sn="+sn+" and f.e_zt="+vals);
-                   // msgs = msg.split(",");
-                    if (msg.contains(",")) {
-                        s1 = (new String(msg.substring(0, msg.indexOf(","))));
-                        s2 = (new String(msg.substring(msg.indexOf(",")+1, msg.indexOf("$"))));
-                        s3 = (new String(msg.substring(msg.indexOf("$")+1)));
-                        msgs = projectName + rightnow.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) + " " + s1;
-                        if (Integer.parseInt(altah) > 0) {
+                        msg = query_red("select concat(a.pro_name,b.name,c.roomname,d.devicenm,e.name,f.e_info,',',f.e_color,'$',f.e_stay) msg from project_list a,prtu b,room c,dev_author d,prtudig e,etype_info f where a.pro_id=b.domain and b.rtuno=c.rtuno and c.roomno = d.roomno and c.rtuno=d.domain and d.deviceno=e.deviceno and c.rtuno=e.rtuno and e.type=f.e_type and d.domain=e.rtuno and b.rtuno=e.rtuno  and e.rtuno=" + rtuno + " and e.sn=" + sn + " and f.e_zt=" + vals);
+                        // msgs = msg.split(",");
+                    synchronized(msg) {
+                        if (msg.contains(",")) {
+                            s1 = (new String(msg.substring(0, msg.indexOf(","))));
+                            s2 = (new String(msg.substring(msg.indexOf(",") + 1, msg.indexOf("$"))));
+                            s3 = (new String(msg.substring(msg.indexOf("$") + 1)));
+                            msg = projectName + rightnow.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) + " " + s1;
+                            if (Integer.parseInt(altah) > 0) {
 
-                            if (!ChatSocket.getSockets().isEmpty()) {
-                                //skt.broadcast(skt.getSockets(), "{\"gkey\":\""+key.split("\\.")[0]+"\",\"msg\":{\"message\":\"" + msg + "\",\"title\":\"遥测越限\",\"type\":" + ttp + ",\"stay\":5000}}", Integer.parseInt(altah));
+                                if (!ChatSocket.getSockets().isEmpty()) {
+                                    //skt.broadcast(skt.getSockets(), "{\"gkey\":\""+key.split("\\.")[0]+"\",\"msg\":{\"message\":\"" + msg + "\",\"title\":\"遥测越限\",\"type\":" + ttp + ",\"stay\":5000}}", Integer.parseInt(altah));
 
-                                ChatSocket.broadcast("{\"auth\":\"" + altah + "\",\"gkey\":\"" + gkey + "\",\"msg\":{\"message\":\"" + rightnow.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) + " " + s1 + "\",\"title\":\"开关变位\",\"type\":\"" + s2 + "\",\"stay\":\"" + s3 + "\"}}", Integer.parseInt(altah));
+                                    ChatSocket.broadcast("{\"auth\":\"" + altah + "\",\"gkey\":\"" + gkey + "\",\"msg\":{\"message\":\"" + rightnow.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) + " " + s1 + "\",\"title\":\"开关变位\",\"type\":\"" + s2 + "\",\"stay\":\"" + s3 + "\",\"rkey\":\"" + return_key + "\"}}", Integer.parseInt(altah));
 
-                                FirstClass.logger.info("send alt_yx_msg :" + s1 + "   {\"auth\":\"" + altah + "\",\"gkey\":\"" + gkey + "\"}");
+                                    FirstClass.logger.info("send alt_yx_msg :" + "{\"auth\":\"" + altah + "\",\"gkey\":\"" + gkey + "\",\"msg\":{\"message\":\"" + rightnow.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) + " " + s1 + "\",\"title\":\"开关变位\",\"type\":\"" + s2 + "\",\"stay\":\"" + s3 + "\",\"rkey\":\"" + return_key + "\"}}", Integer.parseInt(altah));
+
+                                }
+                                //sendmsg.sendmsg(mobs.substring(1),msg);
                             }
-                            //sendmsg.sendmsg(mobs.substring(1),msg);
                         }
                     }
 

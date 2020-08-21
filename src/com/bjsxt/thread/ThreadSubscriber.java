@@ -17,26 +17,17 @@ package com.bjsxt.thread;
  *@createtime:2019-6-18
  */
 
-import com.bjsxt.server.ChatSocket;
 import com.dl.tool.AnaUtil;
 import com.dl.tool.FirstClass;
 import com.dl.tool.JedisUtil;
-import com.dl.tool.RedisUtil;
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.jdbc.core.JdbcTemplate;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPubSub;
 import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.exceptions.JedisException;
-
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
 import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+
 
 public class ThreadSubscriber  extends Thread {
 	 private Thread t;
@@ -113,7 +104,7 @@ public class ThreadSubscriber  extends Thread {
 
 	               // RedisUtil.close(jedis);
 	               //jedis=null;
-					 JedisUtil.getInstance().returnJedis(jedis);
+
 
 	            }
 	        	 catch (ClassCastException e) {
@@ -126,8 +117,8 @@ public class ThreadSubscriber  extends Thread {
 	                
 
 	            }
-	        	
-	        	 
+
+	        	 JedisUtil.getInstance().returnJedis(jedis);
 	          /*  try{
 	            	 logger.warn("waiting for 2s");
 	                Thread.sleep(2000);
@@ -271,66 +262,37 @@ class KeyExpiredListener extends JedisPubSub {
 		//mess = message;
 		//if ( message.indexOf("di_0")>0)
 		//	logger.warn("rec："+channel+" : "+message);//channel,message,jdbcTemplate,skt
-
-		FirstClass.executor.execute( new Runnable() {
-
-			@Override
-			public void run() {
-				try {
-					//logger.warn("正在执行task "+channel+":"+message);
-				 // Jedis	tjedis = RedisUtil.getJedis();
-				 // Jedis	mjedis = RedisUtil.getJedis(1);//dddd
-
-
-					//Jedis tjedis= JedisUtil.getInstance().getJedis();
-					//Jedis mjedis= JedisUtil.getInstance().getJedis(1);
-					       /* for (int i = 0; i < 10; i++) {
-						            jedis.set("test", "test");
-						            System.out.println(i+"=="+jedis.get("test"));
-						        }
-
-
-						        {
-			MyTask myTask = new MyTask(channel,message,jdbcTemplate, tjedis,skt);
-			//if (executor.getQueue().size()<100)
-				executor.execute(myTask);
-			//logger.warn("线程池中线程数目："+executor.getPoolSize()+"，队列中等待执行的任务数目："+executor.getQueue().size()+"，已执行完毕的任务数目："+executor.getCompletedTaskCount());
-		}
-						        */
+		Runnable noArguments = () -> {
+			try {
 
 
 
-					{
-						try {
-							if (channel.contains("expired") ) {
-								//logger.warn(message);
-								AnaUtil.handleExpired(message);
-							}
-							else {
 
-
-								//logger.warn(message+","+channel);
-								AnaUtil.handleMessage( message);
-
-							}
-						} catch (Exception e) {
-							e.printStackTrace();
+				{
+					try {
+						if (channel.contains("expired") ) {
+							//logger.warn(message);
+							AnaUtil.handleExpired(message);
 						}
+						else {
+
+
+							//logger.warn(message+","+channel);
+							AnaUtil.handleMessage( message);
+
+						}
+					} catch (Exception e) {
+						e.printStackTrace();
 					}
-					//JedisUtil.getInstance().returnJedis(tjedis);
-					//JedisUtil.getInstance().returnJedis(mjedis);
-					//jedis = null;
-					//RedisUtil.close(tjedis);
-					//tjedis=null;
-					// RedisUtil.close(mjedis);
-					//  mjedis=null;
-					//logger.warn("执行task结束 "+channel+":"+message);
-				} catch (Exception e) {
-					e.printStackTrace();
 				}
 
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
-		});
+
+		};
+		FirstClass.executor.execute( noArguments);
+				/**/
 		//channel=null;
 		//message=null;
 		//logger.warn("rec："+channel+" : "+message);

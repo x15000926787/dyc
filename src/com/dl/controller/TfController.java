@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import javax.script.ScriptException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.text.ParseException;
@@ -40,6 +41,11 @@ public class TfController
   {
 	   Tool.request(user.rbt(),response);
   }
+    @RequestMapping({"jdcData"})
+    public void jdcData(HttpServletResponse response) throws IOException
+    {
+        Tool.request(user.get_jdcData(),response);
+    }
   @RequestMapping({"setRedisVal"})
   public void setRedisVal(Integer optype,String key,String okey, String val,String hlimit,HttpServletRequest request,HttpServletResponse response)
   {
@@ -171,12 +177,12 @@ public class TfController
      * @return       返回5分钟zuhe值
      */
     @RequestMapping({"ask4uniondata"})
-    public void ask4uniondata(String no,int len,String dtstr,HttpServletResponse response) throws ParseException
+    public void ask4uniondata(String no,int len,String dtstr,HttpServletResponse response)
     {
         Tool.request( user.ask4uniondata(no,len,dtstr),response);
     }
     @RequestMapping({"ask4devavgdata"})
-    public void ask4devavgdata(String deviceno,int len,int dtype,int type,HttpServletResponse response) throws ParseException
+    public void ask4devavgdata(String deviceno,int len,int dtype,int type,HttpServletResponse response)
     {
         Tool.request( user.ask4devavgdata(deviceno,len,dtype,type),response);
     }
@@ -189,7 +195,7 @@ public class TfController
      * @return       返回5分钟遥测值
      */
     @RequestMapping({"ask4data"})
-    public void ask4data(String keys,int len,int type,String dtstr,HttpServletResponse response) throws ParseException
+    public void ask4data(String keys,int len,int type,String dtstr,HttpServletResponse response)
     {
         Tool.request( user.ask4data(keys,len,type,dtstr),response);
     }
@@ -201,18 +207,95 @@ public class TfController
      * @return      日电量结算值
      */
     @RequestMapping({"ask4dndata"})
-    public void ask4dndata(String keys,int len,int type,HttpServletResponse response) throws ParseException
+    public void ask4dndata(String keys,int len,int type,HttpServletResponse response)
     {
         Tool.request( user.ask4dndata(keys,len,type),response);
     }
 
+
+    /**
+     * 请求同一设备下的事件
+     * @param keys
+     * @param len
+     * @param response
+     * @throws ParseException
+     */
+    @RequestMapping({"askdev6evt"})
+    public void askdev6evt(String keys,int pageno,int len,HttpServletResponse response)
+    {
+        Tool.request( user.askdev6evt(keys,pageno,len),response);
+    }
+
+    /**
+     *
+     * @param keys
+     * @param skip
+     * @param response
+     * @throws ParseException
+     */
+    @RequestMapping({"ask10daysdata"})
+    public void ask10daysdata(String keys,int skip,HttpServletResponse response)
+    {
+        Tool.request( user.ask10daysdata(keys,skip),response);
+    }
+    /**
+     *
+     * @param keys
+     * @param skip
+     * @param response
+     * @throws ParseException
+     */
+    @RequestMapping({"askAnykeyData"})
+    public void askanykeydata(String keys,int skip,HttpServletResponse response)
+    {
+        Tool.request( user.askanykeydata(keys,skip),response);
+    }
+    /**
+     * 按事件等级分月统计
+     * @param keys
+     * @param skipmonth
+     * @param response
+     */
+    @RequestMapping({"countLeval"})
+    public  void countLeval(String keys,int skipmonth,HttpServletResponse response)
+    {
+        Tool.request( user.countLeval(keys,skipmonth),response);
+    }
+    /**
+     * 按事件等级分月详情
+     * @param keys
+     * @param skipmonth
+     * @param response
+     */
+    @RequestMapping({"evtLevalInfo"})
+    public  void evtLevalInfo(String keys,int leval,int skipmonth,HttpServletResponse response)
+    {
+        Tool.request( user.evtLevalInfo(keys,leval,skipmonth),response);
+    }
+    @RequestMapping({"evtInfo"})
+    public  void evtInfo(String keys,HttpServletResponse response)
+    {
+        Tool.request( user.evtInfo(keys),response);
+    }
+
+    /**
+     * 导出历史数据
+     * @param ip 服务器地址
+     * @param yy 年份
+     * @param response
+     * 需手动修改jdbcutils和expdatatask中的 数据库连接信息！！！！
+     */
+    @RequestMapping({"expdata"})
+    public  void expdata(String ip,int yy,int aa,HttpServletResponse response) throws SQLException, IOException {
+        Tool.request( user.expdata(ip,yy,aa),response);
+    }
     @RequestMapping({"loadDevice_dig"})
-    public void loadDevice_dig(String dm,String gky,HttpServletResponse response) throws ParseException
+    public void loadDevice_dig(String dm,String gky,HttpServletResponse response)
     {
         Tool.request( user.loadDevice_dig(dm,gky),response);
     }
   @RequestMapping({"getuser"})
-  public void getuser(String userId,String gky,HttpServletResponse response) throws IOException
+  public void getuser(String userId,String gky,HttpServletResponse response)
   {
 	   Tool.request(user.getuser(userId,gky),response);
   }

@@ -1,6 +1,7 @@
 package com.dl.tool;
 
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.poi.ss.usermodel.*;
@@ -125,7 +126,7 @@ public class Report3Task implements Runnable {
         vno = Integer.parseInt(saveno) % 200;
         int sum=0;
         String sql="select (floor(savetime/10000) mod 100) dd,ROUND(sum(IFNULL(val"+vno+",0)),0) vv from hyc"+(rightnow.getYear()%10)+" where   groupno="+gno+" and savetime between "+df.format(st)+"0000 and "+df.format(et)+"2400 group by (floor(savetime/10000) mod 100) ";
-         logger.warn(sql);
+        // logger.warn(sql);
         //if(rand.equalsIgnoreCase(imagerand)){
         try{
             List<Map<String, Object>> userData = jdbcTemplate.queryForList(sql);
@@ -158,7 +159,7 @@ public class Report3Task implements Runnable {
             logger.warn("出错了"+e.toString());
             e.printStackTrace();
         }
-        sql="select ROUND(sum(IFNULL(a.val"+vno+",0)),0) vv,b.TSv from hyc"+(rightnow.getYear()%10)+" a, dnsds b where  (floor(a.savetime/100) mod 100)=b.TSIDX and a.groupno="+gno+" and a.savetime between "+df.format(st)+"0000 and "+df.format(et)+"2400 group by b.TSv ";
+        sql="select ROUND(sum(IFNULL(a.val"+vno+",0)),0) vv,b.TSv from hdz"+(rightnow.getYear()%10)+" a, dnsds b where  (floor(a.savetime/100) mod 100)=b.TSIDX and a.groupno="+gno+" and a.savetime between "+df.format(st)+"0000 and "+df.format(et)+"2400 group by b.TSv ";
 //        logger.warn(sql);
         //if(rand.equalsIgnoreCase(imagerand)){
         try{
@@ -372,49 +373,53 @@ public class Report3Task implements Runnable {
                 int irow = 3;
 
                 cell = sheet.getRow(0).getCell(jcol);
-                cellstr = getCellValue(cell);
-                cell.setCellValue("");
+                if (ObjectUtils.allNotNull(cell)) {
+                    cellstr = getCellValue(cell);
+                    cell.setCellValue("");
 
 
-                //logger.warn(cellstr+","+zerostr);
-                if (isNumeric(cellstr))
-                {
-                    tdata = getdnbbData(jdbcTemplate,cellstr,zerostr,1,rightnow);
-                    //logger.warn(jcol+":"+getCellValue(cell)+":"+tdata);
-                    if (tdata.containsKey("daydata"))
-                    {
-                        daydata = tdata.getJSONObject("daydata");
-                        // logger.warn(daydata);
-                        for(String str:daydata.keySet()){
-                             cell = sheet.getRow(Integer.parseInt(str.replace(".0",""))+irow).getCell(jcol);
-                             cell.setCellValue(daydata.get(str).toString());
-                            // System.out.println(str + ":" +daydata.get(str));
+                    //logger.warn(cellstr+","+zerostr);
+                    if (isNumeric(cellstr)) {
+                        tdata = getdnbbData(jdbcTemplate, cellstr, zerostr, 1, rightnow);
+                        //logger.warn(jcol+":"+getCellValue(cell)+":"+tdata);
+                        if (tdata.containsKey("daydata")) {
+                            daydata = tdata.getJSONObject("daydata");
+                            // logger.warn(daydata);
+                            for (String str : daydata.keySet()) {
+                                cell = sheet.getRow(Integer.parseInt(str.replace(".0", "")) + irow).getCell(jcol);
+                                cell.setCellValue(daydata.get(str).toString());
+                                // System.out.println(str + ":" +daydata.get(str));
 
-                        }
-                        irow = irow+32;
-
-                        while (irow<=rowNum)
-                        {
-                            cell = sheet.getRow(irow).getCell(jcol);
-                            cellstr = getCellValue(cell);
-                            vv = "";
-                            if (cellstr!=null) {
-                                if(tdata.containsKey("sum")&& ((HashMap)tdata.get("sum")).containsKey(cellstr))  vv = ((HashMap)tdata.get("sum")).get(cellstr).toString();
-                                cell.setCellValue(vv);
                             }
-                            irow++;
+                            irow = irow + 32;
+
+                            while (irow <= rowNum) {
+                                cell = sheet.getRow(irow).getCell(jcol);
+                                if (ObjectUtils.allNotNull(cell)) {
+                                    cellstr = getCellValue(cell);
+                                    vv = "";
+                                    if (cellstr != null) {
+                                        if (tdata.containsKey("sum") && ((HashMap) tdata.get("sum")).containsKey(cellstr))
+                                            vv = ((HashMap) tdata.get("sum")).get(cellstr).toString();
+                                        cell.setCellValue(vv);
+                                    }
+                                }
+                                irow++;
+                            }
                         }
+
+
                     }
-
-
-
                 }
 
             }
-           if(sheet.getRow(1)==null)
-               cell = sheet.createRow(1).getCell(0);
-           else
-               cell = sheet.getRow(1).getCell(0);
+            if (ObjectUtils.allNotNull(sheet.getRow(1))) {
+                cell = sheet.getRow(1).getCell(0);
+                if (!ObjectUtils.allNotNull(cell)) cell = sheet.getRow(1).createCell(0);
+            }else
+            {
+                cell = sheet.createRow(1).createCell(0);
+            }
             cell.setCellValue(df3.format(rightnow));
             CellRangeAddress region = new CellRangeAddress(0, 0, 0, colNum-1);
             sheet.addMergedRegion(region);
@@ -474,7 +479,7 @@ public class Report3Task implements Runnable {
         logger.warn("bbtask "+bbname+"执行完毕");
 
         try {
-            excel2Pdf.excel2pdf(exportFilePath,exportFilePath.replace("xlsx","pdf"));
+            excel2Pdf.excel2pdf(exportFilePath,exportFilePath.replace("XLSX","pdf"));
             logger.warn("bbtask "+bbname+"转换完毕");
         }catch (Exception e) {
             e.printStackTrace();

@@ -72,7 +72,7 @@ public class MyTask implements Runnable {
 
 
 
-    public static AnaUtil myana=new AnaUtil();
+
     private static final Logger logger = LogManager.getLogger(MyTask.class);
 
     //private ScriptEngine scriptEngine ;// scriptEngineManager.getEngineByName("nashorn");

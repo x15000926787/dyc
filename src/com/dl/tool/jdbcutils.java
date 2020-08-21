@@ -33,14 +33,18 @@ import java.util.Map;
  
  
  final public class jdbcutils {
-	//数据库用户名
-	private static final String USERNAME = "root";
+
+	 public static  String IP="218.78.61.13";
+ 	//数据库用户名
+	private static  String USERNAME = "shcs";
+
+
 	//数据库密码
-	private static final String PASSWORD = "Shcs2017@";
+	private static  String PASSWORD = "Shcs123";
 	//驱动信息 
-	private static final String DRIVER = "com.mysql.jdbc.Driver";
+	private static  String DRIVER = "com.mysql.jdbc.Driver";
 	//数据库地址
-	private static final String URL = "jdbc:mysql://58.247.132.78:3306/scada";
+	private static  String URL = "jdbc:mysql://"+IP+":3306/scada";
 	private static Connection connection;
 	private static PreparedStatement pstmt;
 	private static ResultSet resultSet;
@@ -236,7 +240,15 @@ import java.util.Map;
 	/**
 	 * 释放数据库连接
 	 */
-	public static void releaseConn(){
+	public static void releaseConn() throws SQLException{
+		if (!connection.isClosed())
+		{
+			try{
+				connection.close();
+			}catch(SQLException e){
+				e.printStackTrace();
+			}
+		}
 		if(resultSet != null){
 			try{
 				resultSet.close();

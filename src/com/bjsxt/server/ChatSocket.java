@@ -46,8 +46,7 @@ public final  class ChatSocket {
 	//private ThreadDemo T1 = null;
 	//private ThreadSubscriber T2 = null;
 
-	private static Gson  gson=new Gson();
-	static JSONObject msgmap = null;
+
 	@OnOpen
 	public  void open(Session  session){
 
@@ -95,7 +94,7 @@ public final  class ChatSocket {
 		message.setFrom(this.username);
 		message.setDate(new Date().toLocaleString());*/
 
-		broadcast(gson.toJson(msg),-1);
+		//broadcast(gson.toJson(msg),-1);
 	}
 
 	@OnClose
@@ -115,6 +114,8 @@ public final  class ChatSocket {
 
 
 		//logger.warn(msg);
+		Gson  gson=new Gson();
+		JSONObject msgmap = new JSONObject();
 		msgmap = JSONObject.parseObject(msg);
 		if (tt<0) {                                                         //发送redis中的 key-value
 
@@ -211,13 +212,15 @@ public final  class ChatSocket {
 			}
 		}
 
-		//msgmap=null;
+		gson=null;
+		msgmap = null;
 
 	}
 	public static void broadcast(String msg ){
 
 
-		//logger.warn(msg);
+		Gson  gson=new Gson();
+		JSONObject msgmap = new JSONObject();
 		msgmap = JSONObject.parseObject(msg);
 		//msgmap = (JSONObject)msgmap.get("dl");
 
@@ -253,7 +256,8 @@ public final  class ChatSocket {
 			}
 		}
 
-		//msgmap=null;
+		gson=null;
+		msgmap = null;
 
 	}
 

@@ -5,17 +5,22 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.bjsxt.thread.ThreadDemo;
-import com.dl.tool.FirstClass;
-import com.dl.tool.RedisUtil;
+import com.dl.tool.*;
 import com.google.common.io.CharStreams;
+import com.googlecode.aviator.AviatorEvaluator;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFFormulaEvaluator;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.joda.time.DateTime;
 import org.junit.Test;
 import org.quartz.TriggerUtils;
 import org.quartz.impl.triggers.CronTriggerImpl;
 import org.springframework.jdbc.core.support.JdbcDaoSupport;
 import redis.clients.jedis.Jedis;
+import sun.nio.cs.HistoricallyNamedCharset;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -1406,6 +1411,562 @@ FirstClass.logger.warn((savenos));
         return jsonString;
     }
 
+    /**
+     * 事件按等级分月详情
+     * 格式化输出给前端未完成，留待以后完善！！！
+     * @param keys
+     * @param leval
+     * @param skipmonth
+     * @return
+     */
+    public String evtLevalInfo(String keys,int leval,int skipmonth)
+    {
+        String jsonString="{\"result\":0}";
+        String[] savs = keys.split(",");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyMMdd HHmmss");
+        LocalDateTime dateTime2 = LocalDateTime.parse(savs[1]+" 000000", formatter);
+        dateTime2 = dateTime2.minusMonths(skipmonth);
+        String dateString = ""+((dateTime2.getYear() % 100)*100+dateTime2.getMonthValue());
+        java.util.Map<String,Object> map1 = new HashMap<String,Object>();
+
+        JSONArray array= null;//JSONArray.parseArray(JSON.toJSONString(list))；
+
+        String sql ="select * from allevent"+dateTime2.getYear() % 10+" where floor(ymd/100)="+dateString+" and altleval="+leval+" and deviceid="+savs[8]+" ";
+        //FirstClass.logger.warn(sql);
+        List userData = getJdbcTemplate().queryForList(sql);
+
+        int size=userData.size() ;
+
+
+        if (size> 0)
+        {
+            array= JSONArray.parseArray(JSON.toJSONString(userData));
+
+            map1.put("result",1);
+            map1.put("data",array);
+            jsonString = JSON.toJSONString(map1);
+        }
+        return  jsonString;
+    }
+    public String evtInfo(String keys)
+    {
+        String jsonString="{\"result\":0}";
+        String[] savs = keys.split(",");
+
+        String tabname = "hevt";
+        if (savs[0].matches("1")) tabname = "hevtyc";
+
+        String yy = String.valueOf(((int)(Integer.parseInt(savs[1])/10000))%10);
+        tabname = tabname + yy;
+        java.util.Map<String,Object> map1 = new HashMap<String,Object>();
+
+        JSONArray array= null;//JSONArray.parseArray(JSON.toJSONString(list))；
+        JSONArray history= new JSONArray();
+        String sql = null;
+        //JSONArray resons= null;
+        //JSONArray order= null;
+
+          sql = "select `a`.`ymd` AS `ymd`,`a`.`hms` AS `hms`,`a`.`zt` AS `evt`,`a`.`val` AS `val`,(case when (`a`.`zt` = 1) then '越上限' when (`a`.`zt` = 0) then '恢复' else '越下限' end) AS `ifo`,`a`.`tlimit` AS `tz`,`c`.`NAME` AS `cm`,concat(`e`.`roomname`,`f`.`devicenm`,`b`.`name`) AS `bm`,(`b`.`altleval` * abs(`a`.`zt`)) AS `altleval`,`b`.`kkey` AS `kkey`,'1' AS `tp`,`a`.`ch` AS `ch`,`a`.`xh` AS `xh`,ifnull(`a`.`reasons`,'0') AS `resons`,ifnull(`a`.`orderid`,-(1)) AS `orderId`,(((`b`.`rtuno` * 10000) + (`e`.`roomno` * 100)) + `f`.`deviceno`) AS `deviceid` from ((((`hevtyc"+yy+"` `a` join `prtuana` `b`) join `prtu` `c`) join `room` `e`) join `dev_author` `f`) where ((`a`.`ch` = `c`.`rtuno`) and (`a`.`xh` = `b`.`sn`) and (`a`.`ch` = `b`.`rtuno`) and (`e`.`rtuno` = `c`.`rtuno`) and (`e`.`roomno` = `f`.`roomno`) and (`f`.`deviceno` = `b`.`deviceno`) and (`f`.`domain` = `b`.`rtuno`) and (`c`.`rtuno` = `b`.`rtuno`)) and a.ymd="+savs[1]+" and a.hms="+savs[2]+" and b.kkey='"+savs[7]+"'";
+        if (savs[0].matches("2"))
+            sql = "select `a`.`YMD` AS `ymd`,`a`.`HMS` AS `hms`,`a`.`EVENT` AS `evt`,' ' AS `val`,`a`.`ZT` AS `tz`,`d`.`e_info` AS `ifo`,`c`.`NAME` AS `cm`,concat(`e`.`roomname`,`f`.`devicenm`,`b`.`name`) AS `bm`,`d`.`e_color` AS `altleval`,`b`.`kkey` AS `kkey`,'2' AS `tp`,`a`.`CH` AS `ch`,`a`.`XH` AS `xh`,ifnull(`a`.`reasons`,'0') AS `resons`,ifnull(`a`.`orderId`,-(1)) AS `orderId`,(((`b`.`rtuno` * 10000) + (`e`.`roomno` * 100)) + `f`.`deviceno`) AS `deviceid` from (((((`hevt"+yy+"` `a` join `prtudig` `b`) join `prtu` `c`) join `etype_info` `d`) join `room` `e`) join `dev_author` `f`) where ((`b`.`type` = `d`.`e_type`) and (`a`.`ZT` = `d`.`e_zt`) and (`a`.`CH` = `c`.`rtuno`) and (`e`.`rtuno` = `c`.`rtuno`) and (`e`.`roomno` = `f`.`roomno`) and (`f`.`deviceno` = `b`.`deviceno`) and (`f`.`domain` = `b`.`rtuno`) and (`c`.`rtuno` = `b`.`rtuno`) and (`a`.`XH` = `b`.`sn`) and (`a`.`CH` = `b`.`rtuno`)) and a.ymd="+savs[1]+" and a.hms="+savs[2]+" and b.kkey='"+savs[7]+"'";
+
+        //FirstClass.logger.warn(sql);
+        List userData = getJdbcTemplate().queryForList(sql);
+
+        int size=userData.size() ;
+
+
+        if (size> 0)
+        {
+            array= JSONArray.parseArray(JSON.toJSONString(userData));
+
+            map1.put("result",1);
+            map1.put("baseinfo",array);
+            sql ="select * from evt_reson,evt_action where evt_reson.action=evt_action.id and  evt_reson.id in ("+array.getJSONObject(0).get("resons")+")";
+           // sql ="select * from evt_reson,evt_action where evt_reson.action=evt_action.id and  evt_reson.id in (1,2)";
+            FirstClass.logger.warn(array);
+            userData = getJdbcTemplate().queryForList(sql);
+            size=userData.size() ;
+            if (size > 0)
+            {
+                //resons= ;
+                map1.put("resons_action",JSONArray.parseArray(JSON.toJSONString(userData)));
+            }
+            sql ="select status from work_order where id = ("+array.getJSONObject(0).get("orderId")+")";
+           // sql ="select status from work_order where id = 1";
+            FirstClass.logger.warn(sql);
+            userData = getJdbcTemplate().queryForList(sql);
+            size=userData.size() ;
+            if (size > 0)
+            {
+                //order= JSONArray.parseArray(JSON.toJSONString(userData));
+                map1.put("work_order",JSONArray.parseArray(JSON.toJSONString(userData)));
+            }
+            sql ="select count(*) cnt ,-1 status from "+tabname+" where ch = "+savs[3]+" and xh= "+savs[4]+" and  zt<>0  and orderId is null";
+            if (savs[0].matches("2")) sql ="select count(*) cnt,-1 status from hevtyc"+yy+" where ch = "+savs[3]+" and xh= "+savs[4]+" and event="+savs[5]+" and  zt<>0  and orderId is null";
+            //FirstClass.logger.warn(sql);
+            userData = getJdbcTemplate().queryForList(sql);
+            size=userData.size() ;
+            if (size > 0)
+            {
+                history=(JSONArray.parseArray(JSON.toJSONString(userData)));
+                //map1.put("uncalc",JSONArray.parseArray(JSON.toJSONString(userData)));
+            }
+            sql ="select status,count(*) cnt from "+tabname+" a,work_order b where a.orderid=b.id and  a.ch = "+savs[3]+" and a.xh= "+savs[4]+"  group by status";
+           // FirstClass.logger.warn(sql);
+            userData = getJdbcTemplate().queryForList(sql);
+            size=userData.size() ;
+            if (size > 0)
+            {
+                history.add(JSONArray.parseArray(JSON.toJSONString(userData)));
+
+            }
+            map1.put("history", history);
+            //FirstClass.logger.warn(sql);
+            jsonString = JSON.toJSONString(map1);
+        }
+        return  jsonString;
+    }
+    public String countLeval(String keys,int skipmonth)
+    {
+        String jsonString="{\"result\":0}";
+        String[] savs = keys.split(",");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyMMdd HHmmss");
+        LocalDateTime dateTime2 = LocalDateTime.parse(savs[1]+" 000000", formatter);
+        dateTime2 = dateTime2.minusMonths(skipmonth);
+        String dateString = ""+((dateTime2.getYear() % 100)*100+dateTime2.getMonthValue());
+        java.util.Map<String,Object> map1 = new HashMap<String,Object>();
+
+        JSONArray array= null;//JSONArray.parseArray(JSON.toJSONString(list))；((((`hevtyc"+dateTime2.getYear() % 10+"` `a` join `prtuana` `b`) join `prtu` `c`) join `room` `e`) join `dev_author` `f`)
+
+        String sql ="select count(*) cnt,`b`.`altleval` * abs(`a`.`zt`) evtleval from ((((`hevtyc"+dateTime2.getYear() % 10+"` `a` join `prtuana` `b`) join `prtu` `c`) join `room` `e`) join `dev_author` `f`) where ((`a`.`ch` = `c`.`rtuno`) and (`a`.`xh` = `b`.`sn`) and (`a`.`ch` = `b`.`rtuno`) and (`e`.`rtuno` = `c`.`rtuno`) and (`e`.`roomno` = `f`.`roomno`) and (`f`.`deviceno` = `b`.`deviceno`) and (`f`.`domain` = `b`.`rtuno`) ) and floor(ymd/100)="+savs[1].substring(0,4)+" and altleval>0  and (((`b`.`rtuno` * 10000) + (`e`.`roomno` * 100)) + `f`.`deviceno`)=10000 and a.zt<>0 group by `b`.`altleval` * abs(`a`.`zt`)";
+        FirstClass.logger.warn(sql);
+        List userData = getJdbcTemplate().queryForList(sql);
+
+        int size=userData.size() ;
+
+
+        if (size> 0)
+        {
+            array= JSONArray.parseArray(JSON.toJSONString(userData));
+
+            map1.put("result",1);
+            map1.put("yc_data",array);
+            sql ="select count(*) cnt,`d`.`e_color`  evtleval from (((((hevt"+dateTime2.getYear() % 10+" `a` join `prtudig` `b`) join `prtu` `c`) join `etype_info` `d`) join `room` `e`) join `dev_author` `f`) where ((`b`.`type` = `d`.`e_type`) and (`a`.`ZT` = `d`.`e_zt`) and (`a`.`CH` = `c`.`rtuno`) and (`e`.`rtuno` = `c`.`rtuno`) and (`e`.`roomno` = `f`.`roomno`) and (`f`.`deviceno` = `b`.`deviceno`) and (`f`.`domain` = `b`.`rtuno`)  and (`a`.`XH` = `b`.`sn`) and (`a`.`CH` = `b`.`rtuno`)) and floor(ymd/100)="+savs[1].substring(0,4)+" and d.e_color>0  and (((`b`.`rtuno` * 10000) + (`e`.`roomno` * 100)) + `f`.`deviceno`)=10000 and a.zt<>0 group by `d`.`e_color` ";
+            FirstClass.logger.warn(sql);
+            userData = getJdbcTemplate().queryForList(sql);
+            size=userData.size() ;
+
+
+            if (size> 0) {
+                map1.put("yx_data",JSONArray.parseArray(JSON.toJSONString(userData)));
+            }
+            jsonString = JSON.toJSONString(map1);
+        }
+        return  jsonString;
+    }
+
+    /**
+     * 导出数据
+     * @param ip
+     * @param yy
+     * @param aa
+     * @return
+     */
+
+    public String expdata(String ip,int yy,int aa) throws SQLException, IOException {
+        String jsonString="{\"result\":0}";
+        String sql = null;
+        int j=0;
+        jdbcutils.IP = ip;
+        Workbook workbook =null;
+        List<Map<String, Object>> points = null;
+        Cell cell = null;
+        String expdir = PropertyUtil.getProperty("expdata","/opt/java/tomcat8/webapps/dyc/bb/expdata");
+        File file=new File(expdir+"/"+ip);
+        if(!file.exists()){//如果文件夹不存在
+            file.mkdir();//创建文件夹
+        }
+        jdbcutils.getConnection();
+        if (aa==1)
+            sql="select prtu.`NAME`,prtuana.NAME,prtuana.saveno  from prtu,prtuana  where prtu.rtuno=prtuana.RTUNO and prtuana.saveno=30";
+                else
+            sql="select a.name ,b.fname ,b.saveno  from prtu a,prtuana_fullname b where a.rtuno=b.rtuno and b.saveno<>-1";
+        try {
+            points = jdbcutils.findModeResult(sql,null);
+        }catch (Exception e)
+        {
+            FirstClass.logger.error(sql);
+        }
+
+        file = new File(expdir+"/"+"info.xlsx");
+        FileInputStream is = null;
+
+
+            is = new FileInputStream(file);
+
+            try {
+                workbook = new XSSFWorkbook(is);
+
+            } catch (Exception e) {
+                System.out.println("ReportDailyTask 362 :"+e.toString());
+            }
+
+
+            Sheet sheet = workbook.getSheetAt(0);
+        //FirstClass.logger.warn(sheet.toString());
+           try {
+               for( int i = 0; i < points.size(); i++ ) {
+                   Map<String, Object> mapList = points.get(i);
+                   Iterator<String> it = mapList.keySet().iterator();
+                   j =0;
+                   while( it.hasNext() ) {
+                       String str = (String) it.next();
+                       try {
+                           cell=sheet.getRow(i+1).createCell(j);
+                       }catch (Exception e)
+                       {
+                           cell=sheet.createRow(i+1).createCell(j);
+                       }
+                       if (str.matches("saveno"))
+                       {
+                           expdataask expdataask = new expdataask(yy,mapList.get(str).toString(),expdir,ip);
+                           //if (executor.getQueue().size()<100)
+                           FirstClass.executor.execute(expdataask);
+                           //logger.warn("线程池中线程数目："+executor.getPoolSize()+"，队列中等待执行的任务数目："+executor.getQueue().size()+"，已执行完毕的任务数目："+executor.getCompletedTaskCount());
+                       }
+                       cell.setCellValue(mapList.get(str).toString());
+                       j++;
+                       //System.out.println( "key-->" + str + "\t value-->" + mapList.get(str) );
+                   }
+               }
+
+           }catch (Exception e) {
+               FirstClass.logger.warn("输出Excel时发生错误，错误原因：" + e.toString());
+           }
+
+
+        FileOutputStream fileOut = null;
+        try {
+
+            fileOut = new FileOutputStream(expdir+"/"+ip+"/info.xlsx");
+            workbook.write(fileOut);
+            fileOut.close();
+        } catch (Exception e) {
+            logger.warn("输出Excel时发生错误，错误原因：" + e.toString());
+        } finally {
+            try {
+                if (null != fileOut) {
+                    fileOut.close();
+                }
+                if (null != workbook) {
+                    workbook.close();
+                }
+            } catch (IOException e) {
+                logger.warn("关闭输出流时发生错误，错误原因：" + e.toString());
+            }
+        }
+
+
+
+
+
+
+
+
+        is.close();
+
+
+
+
+
+
+
+
+
+
+      /*  List<Map<String, Object>> list = jdbcutils.findModeResult("select saveno from prtuana where saveno<>-1",null);
+        //FirstClass.logger.warn(list);
+        for (Map<String, Object> s : list) {
+
+            Runnable noArguments = () -> {
+                try {
+                    System.out.println(s.get("saveno"));
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+            };
+            FirstClass.executor.execute( noArguments);
+        }*/
+
+        jdbcutils.releaseConn();
+        return  jsonString;
+    }
+    /**
+     * 请求同设备6条事件
+     * @param keys  格式为：1,200715,143114,1,0,-1,-99,un_1_.ai_0_0,10000
+     * @param pageno 页码,start with 0
+     * @param len   个数
+     * @return
+     *
+     *
+     */
+    public String askdev6evt(String keys,int pageno,int len)
+    {
+        String jsonString="{\"result\":0}";
+        //FirstClass.logger.warn(keys);
+        String[] savs = keys.split(",");
+        String savenos="",cols="";
+        int yy = (Integer.parseInt(savs[1])/10000) %10;
+
+        java.util.Map<String,Object> map1 = new HashMap<String,Object>();
+
+        JSONArray array= null;//JSONArray.parseArray(JSON.toJSONString(list))；
+
+        String sql ="select a.ymd ymd,a.hms hms,f.fname bm,d.e_info ifo ,' ' bz,d.e_color altleval,f.kkey kkey,2 'ai_di',f.rtuno ch,f.sn xh,a.zt zt from hevt"+yy+" a,etype_info d,prtudig_fullname f where  f.event=d.e_type and a.zt=d.e_zt and  a.ch=f.rtuno and  a.xh=f.sn and d.e_color>0 and a.ymd<="+savs[1]+" and a.hms<="+savs[2]+" and f.deviceid=" +savs[8]+
+                "  union select a.ymd ymd,a.hms hms,f.fname bm ,CASE a.zt WHEN 1 THEN '越上限'  ELSE '越下限' END as info,concat(a.val,'(',a.tlimit,')') bz,f.altleval altleval,f.kkey kkey,1 'ai_di',f.rtuno ch,f.sn xh,a.zt zt from hevtyc"+yy+" a,prtuana_fullname f  where    a.ch=f.rtuno and a.xh=f.sn and a.zt<>0 and  a.ymd<="+savs[1]+" and a.hms<="+savs[2]+" and f.deviceid=" +savs[8] +
+                "           order by ymd desc,hms desc limit "+pageno+","+len;
+        sql="select a.ymd ymd,a.hms hms,concat(`dd`.`NAME`,`cc`.`roomname`,`bb`.`devicenm`,`aa`.`name`) bm,d.e_info ifo ,' ' bz,d.e_color altleval,aa.kkey kkey,2 'ai_di',aa.rtuno ch,aa.sn xh,a.zt zt from hevt0 a,etype_info d,prtudig aa,dev_author bb,room cc,prtu dd where ((`aa`.`deviceno` = `bb`.`deviceno`) and (`aa`.`rtuno` = `cc`.`rtuno`) and (`bb`.`roomno` = `cc`.`roomno`) and (`bb`.`domain` = `cc`.`rtuno`) and (`aa`.`rtuno` = `dd`.`rtuno`)) and aa.type=d.e_type and a.zt=d.e_zt and  a.ch=aa.rtuno and  a.xh=aa.sn and d.e_color>0 and a.ymd<="+savs[1]+" and a.hms<="+savs[2]+" and (((`aa`.`rtuno` * 10000) + (`cc`.`roomno` * 100)) + `bb`.`deviceno`)= "+savs[8]+
+             " union select a.ymd ymd,a.hms hms,concat(`dd`.`NAME`,`cc`.`roomname`,`bb`.`devicenm`,`aa`.`name`) bm ,CASE a.zt WHEN 1 THEN '越上限'  ELSE '越下限' END as info,concat(a.val,'(',a.tlimit,')') bz,aa.altleval altleval,aa.kkey kkey,1 'ai_di',aa.rtuno ch,aa.sn xh,a.zt zt from hevtyc0 a,prtuana aa ,dev_author bb,room cc ,prtu dd   where  ((`aa`.`deviceno` = `bb`.`deviceno`) and (`aa`.`rtuno` = `cc`.`rtuno`) and (`bb`.`roomno` = `cc`.`roomno`) and (`bb`.`domain` = `cc`.`rtuno`) and (`aa`.`rtuno` = `dd`.`rtuno`)) and  a.ch=aa.rtuno and a.xh=aa.sn and a.zt<>0 and  a.ymd<="+savs[1]+" and a.hms<="+savs[2]+" and (((`aa`.`rtuno` * 10000) + (`cc`.`roomno` * 100)) + `bb`.`deviceno`)="+savs[8]+
+                "   order by ymd desc,hms desc limit "+pageno+","+len;
+
+        FirstClass.logger.warn(sql);
+        List userData = getJdbcTemplate().queryForList(sql);
+
+        int size=userData.size() ;
+
+
+        if (size> 0)
+        {
+            array= JSONArray.parseArray(JSON.toJSONString(userData));
+
+            map1.put("result",1);
+            map1.put("data",array);
+            jsonString = JSON.toJSONString(map1);
+        }
+
+
+        // String startstr = starttime
+
+
+
+
+            //FirstClass.logger.warn(datamap.toJSONString());
+
+
+
+        return jsonString;
+    }
+    /**
+     * 请求单日数据
+     * @param keys  格式为：1,200715,143114,1,0,-1,-99,un_1_.ai_0_0,10000
+     * @param skip  日期跳跃,start with 0
+     * @return
+     *
+     *
+     */
+    public String ask10daysdata(String keys ,int skip)
+    {
+        int gno=0;
+        int vno=0;
+        int sav=0;
+        String jsonString="{\"result\":0}";
+        //FirstClass.logger.warn(keys);
+        String[] savs = keys.split(",");
+        String dbnameString = "";
+
+        String dateString ="";
+        //FirstClass.logger.warn(crewLong);
+        dbnameString= "hyc";
+
+        String sql="";
+
+        List userData = null;
+
+
+
+        {
+            sql = "select saveno msg from prtuana   where kkey='"+savs[7]+"'";
+FirstClass.logger.warn(sql);
+            sav = Integer.parseInt(AnaUtil.query_red(sql));
+        }
+
+
+        gno = (int)sav/200;
+        vno = sav % 200;
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyMMdd HHmmss");
+
+        LocalDateTime dateTime2 = LocalDateTime.parse(savs[1]+" 000000", formatter);
+        dateTime2 = dateTime2.minusDays(skip);
+        dateString = ""+(dateTime2.getMonthValue()*100+dateTime2.getDayOfMonth());
+
+        java.util.Map<String,Object> map1 = new HashMap<String,Object>() ;
+
+        sql = "select IFNULL(val"+vno+",0) val,savetime from "+dbnameString+(dateTime2.getYear()%10)+" where  groupno="+gno+"  and savetime>="+dateString+"0000 and savetime<"+dateString+"9999 order by savetime";
+
+
+        userData = getJdbcTemplate().queryForList(sql);
+
+
+        int size=userData.size() ;
+        //size = 288;
+        String infoArr[ ]=new String[288];
+
+        Object arr[] = new Object[24];
+        for (int i = 0; i<288; i++)
+        {
+            infoArr[i] ="0";
+        }
+
+
+
+
+
+        if (size> 0)
+        {
+            for (int i = 0; i<size; i++)
+            {
+                Map planData = (Map)userData.get(i);
+
+                {
+
+                    String mName = planData.get("val").toString();
+                    BigDecimal bd = new BigDecimal(planData.get("savetime").toString());
+
+                    String st	=	bd.toPlainString();
+                    if (st.indexOf(".")>0)
+                        st = st.substring(0,st.indexOf("."));
+                    int    idx   = Integer.parseInt(st.substring(st.length()-4));
+                    idx = ((int)(idx/100))*12+(idx%100)/5;
+                    infoArr[idx]=mName;
+
+                }
+            }
+
+            /*for (int i = 0; i<24; i++)
+            {
+
+                ArrayList xCell = new ArrayList();
+                xCell.add(""+i+":00");
+                for (int j = 0; j<12; j++)
+                {
+                    xCell.add(infoArr[i*12+j]);
+
+                }
+                arr[i] = xCell;
+            }*/
+            map1.put("data", infoArr);
+            map1.put("result",1);
+
+            jsonString = JSON.toJSONString(map1);
+        }
+
+        return jsonString;
+    }
+    /**
+     * 请求单日数据
+     * @param keys  格式为：0,1,2,3,4...
+     * @param skip  日期跳跃,start with 0
+     * @return
+     *
+     *
+     */
+    public String askanykeydata(String keys ,int skip)
+    {
+        int gno=0;
+        int vno=0;
+        int sav=0;
+        String jsonString="{\"result\":0}";
+        //FirstClass.logger.warn(keys);
+        String[] savs = keys.split(",");
+        String dbnameString = "";
+
+        String dateString ="";
+        //FirstClass.logger.warn(crewLong);
+        dbnameString= "hyc";
+        LocalDateTime dateTime2 = LocalDateTime.now();
+        dateTime2 = dateTime2.minusDays(skip);
+        dateString = ""+(dateTime2.getMonthValue()*100+dateTime2.getDayOfMonth());
+
+        java.util.Map<String,Object> map1 = new HashMap<String,Object>() ;
+        String sql="";
+
+
+        Object arr[] = new Object[24];
+
+        for (int i=0;i<savs.length;i++)
+        {
+            String infoArr[ ]=new String[288];
+            for (int j = 0; j<288; j++)
+            {
+                infoArr[j] ="0";
+            }
+            sav = Integer.parseInt(savs[i]);
+            gno = (int)sav/200;
+            vno = sav % 200;
+            sql = "select IFNULL(val"+vno+",0) val,savetime from "+dbnameString+(dateTime2.getYear()%10)+" where  groupno="+gno+"  and savetime>="+dateString+"0000 and savetime<"+dateString+"9999 order by savetime";
+
+            //FirstClass.logger.warn(sql);
+            List userData = getJdbcTemplate().queryForList(sql);
+
+
+            int size=userData.size() ;
+            //size = 288;
+
+
+
+
+
+
+            if (size> 0)
+            {
+                for (int j = 0; j<size; j++)
+                {
+                    Map planData = (Map)userData.get(j);
+
+                    {
+
+                        String mName = planData.get("val").toString();
+                        BigDecimal bd = new BigDecimal(planData.get("savetime").toString());
+
+                        String st	=	bd.toPlainString();
+                        if (st.indexOf(".")>0)
+                            st = st.substring(0,st.indexOf("."));
+                        int    idx   = Integer.parseInt(st.substring(st.length()-4));
+                        idx = ((int)(idx/100))*12+(idx%100)/5;
+                        infoArr[idx]=mName;
+
+                    }
+                }
+
+            /*for (int i = 0; i<24; i++)
+            {
+
+                ArrayList xCell = new ArrayList();
+                xCell.add(""+i+":00");
+                for (int j = 0; j<12; j++)
+                {
+                    xCell.add(infoArr[i*12+j]);
+
+                }
+                arr[i] = xCell;
+            }*/
+                map1.put(savs[i], infoArr);
+                map1.put("result",1);
+
+
+            }
+
+        }
+
+        jsonString = JSON.toJSONString(map1);
+
+
+        return jsonString;
+    }
   public String getuser(String uid,String gkey)
   {
 	  	String jsonString="{\"result\":0}";
@@ -2214,7 +2775,8 @@ try {
                         if (vv != null) {
                             val.add(vv);
                             // FirstClass.logger.warn(listData.get("val"+vno).toString()+">"+lower.get(i)+" && "+listData.get("val"+vno).toString()+"<"+up.get(i));
-                            if ((boolean) FirstClass.engine.eval(vv + ">" + lower.get(i) + " && " + vv + "<" + up.get(i)))
+                           // Boolean result2 = (Boolean) AviatorEvaluator.execute("3>1 && 2!=4 || true");
+                            if ((boolean) AviatorEvaluator.execute(vv + ">" + lower.get(i) + " && " + vv + "<" + up.get(i)))
                                 color[i] = 0;
                             else
                                 color[i] = 1;
@@ -3504,13 +4066,14 @@ try {
             {
                 JSONArray  temp=editArr.getJSONArray(e);
                 String[] keys=temp.getString(4).split(",");
-                //2,weswsw,13900000000,false,0/1440,111@111.com,false
+                FirstClass.logger.warn(temp);
+                //2,weswsw,13900000000,false,0/1440,111@111.com,falseddd
                 //if (temp.getString(9)==null) temp.set(9,"1000");
 
-                if (temp.getString(8)==null || temp.getString(8).matches(" "))
+                if (temp.getString(8)==null || StringUtils.isEmpty(temp.getString(8)))
                 {
                     sql="update prtuana set upperlimit="+temp.getString(2)+" ,lowerlimit="+temp.getString(3)+",author_alert="+temp.getString(4)+",author_msg="+temp.getString(5)+",author_email="+temp.getString(6)+" where saveno="+temp.getInteger(0);
-
+FirstClass.logger.warn(sql);
                     try {
 
                         stm.addBatch(sql);
@@ -3527,8 +4090,9 @@ try {
                 {
 
                     sql="update prtuana set upperlimit="+temp.getString(2)+" ,lowerlimit="+temp.getString(3)+",author_alert="+temp.getString(4)+",author_msg="+temp.getString(5)+",author_email="+temp.getString(6)+",timevalid="+temp.getString(7)+",timecondition='"+temp.getString(8)+"',warnline="+temp.getString(9)+" where saveno="+temp.getInteger(0);
+                    FirstClass.logger.warn(sql);
                     try {
-                        if ((boolean)FirstClass.engine.eval("1"+temp.getString(8)) );
+                       // if ((boolean)FirstClass.engine.eval("1+"+temp.getString(8)) );
 
                         {
                             stm.addBatch(sql);
@@ -3540,11 +4104,7 @@ try {
                         }
 
 
-                    } catch (ScriptException e1) {
-                        FirstClass.logger.warn("err ScriptException:"+e1.toString());
-                        map1.put("result",2);
-                        //e1.printStackTrace();
-                    }catch (Exception ee)
+                    } catch (Exception ee)
                     {
                         FirstClass.logger.warn("err Exception:"+ee.toString());
                         map1.put("result",0);
@@ -3661,7 +4221,7 @@ try {
 
                     sql="update prtudig set author_alert="+temp.getString(2)+",author_msg="+temp.getString(3)+",author_email="+temp.getString(4)+",timevalid="+temp.getString(5)+",timecondition='"+temp.getString(6)+"',warnline="+temp.getString(7)+" where kkey='"+temp.getString(0)+"'";
                     try {
-                        if ((boolean)FirstClass.engine.eval("1"+temp.getString(6)) );
+                        if ((boolean)AviatorEvaluator.execute("1"+temp.getString(6)) );
 
                         {
                             stm.addBatch(sql);
@@ -3673,10 +4233,7 @@ try {
                         }
 
 
-                    } catch (ScriptException e1) {
-                        map1.put("result",2);
-                        //e1.printStackTrace();
-                    }catch (Exception ee)
+                    } catch (Exception ee)
                     {
                         map1.put("result",0);
                     }
@@ -4210,7 +4767,52 @@ try {
       jsonString = JSON.toJSONString(map1);
     return jsonString;
   }
-  
+    public String get_jdcData()
+    {
+        String jsonString="";
+        /*net.sf.json.JSONArray dev_array = new net.sf.json.JSONArray();
+        Jedis jedis = null;
+        jedis= JedisUtil.getInstance().getJedis();
+        for (Map.Entry<String, Object> entry : AnaUtil.dev_author.entrySet()) {
+            //System.out.println("key值="+entry.getKey());
+            //System.out.println("对应key值的value="+entry.getValue());
+            JSONObject tv = new JSONObject();
+            Map<String,Object> tmap = (Map<String, Object>) entry.getValue();
+            //FirstClass.logger.warn(tmap);
+            tv.put("deviceId",tmap.get("deviceno"));
+            tv.put("deviceName",tmap.get("name"));
+            tv.put("updateTime",AnaUtil.getmiseconds(new DateTime()));
+            if (tmap.containsKey("voltage_A"))
+            {
+                tv.put("voltage_A",jedis.get(tmap.get("voltage_A")+"_.value"));
+            }
+            if (tmap.containsKey("voltage_B"))
+            {
+                tv.put("voltage_B",jedis.get(tmap.get("voltage_B")+"_.value"));
+            }
+            if (tmap.containsKey("voltage_C"))
+            {
+                tv.put("voltage_C",jedis.get(tmap.get("voltage_C")+"_.value"));
+            }
+            if (tmap.containsKey("electricCurrent_A"))
+            {
+                tv.put("electricCurrent_A",jedis.get(tmap.get("electricCurrent_A")+"_.value"));
+            }
+            if (tmap.containsKey("electricCurrent_B"))
+            {
+                tv.put("electricCurrent_B",jedis.get(tmap.get("electricCurrent_B")+"_.value"));
+            }
+            if (tmap.containsKey("electricCurrent_C"))
+            {
+                tv.put("electricCurrent_C",jedis.get(tmap.get("electricCurrent_C")+"_.value"));
+            }
+            dev_array.add(tv);
+        }
+        JedisUtil.getInstance().returnJedis(jedis);*/
+        //FirstClass.logger.warn(AnaUtil.dev_array);
+        jsonString = (AnaUtil.dev_array.toString());
+        return jsonString;
+    }
   public String tfExport(Integer sn,int tab,int mode,String from,String to) 
   {
 	  String jsonString="{\"result\":0}";
@@ -4309,12 +4911,12 @@ try {
 		  	 dateString = ""+(dateTime2.getMonthValue()*100+dateTime2.getDayOfMonth());
 
 		  	java.util.Map<String,Object> map1 = new HashMap<String,Object>() ;
-		  	  sql = "select a.name anm,b.name bnm from prtu a,"+dbnameString2+" b where a.rtuno=b.rtuno and b.saveno="+sav;
+		  	  sql = "select fname from prtuana_fullname where saveno="+sav;
 
 			  
 			     userData = getJdbcTemplate().queryForList(sql);
 			     jznm = (Map)userData.get(0);
-			    jzName=jznm.get("anm").toString()+jznm.get("bnm").toString();
+			    jzName=jznm.get("fname").toString();//+jznm.get("bnm").toString();
 			   // FirstClass.logger.warn(jzName);
 		     sql = "select IFNULL(val"+vno+",0) val,savetime from "+dbnameString+(dateTime2.getYear()%10)+" where  groupno="+gno+"  and savetime>="+dateString+"0000 and savetime<"+dateString+"9999 order by savetime"; 
 		     userData.clear();
@@ -4516,12 +5118,23 @@ try {
 		  	dateString = dateString.substring(2);
 		  	dateString2 = dateString2.substring(2);
 
-		  	String  sql = "select a.ymd yd,a.hms hs,a.event evt,' ' sm,a.zt tz,d.e_info ifo,c.name cm,concat(e.roomname,f.devicenm,b.name) bm from hevt"+(dateString.substring(1,2))+" a,prtudig b,prtu c,etype_info d,room e,dev_author f where (power(2,"+userId+"-1) & b.author_read)>0 and b.type=d.e_type and a.zt=d.e_zt and  a.ch=c.rtuno and e.rtuno=c.rtuno and e.roomno=f.roomno and f.deviceno=b.deviceno and f.domain=b.rtuno and c.rtuno=b.rtuno and a.xh=b.sn and a.ch=b.rtuno and a.ymd>="+dateString+" and a.ymd<="+dateString2+" ";
+		  /*	String  sql = "select a.ymd yd,a.hms hs,a.event evt,' ' sm,a.zt tz,d.e_info ifo,c.name cm,concat(e.roomname,f.devicenm,b.name) bm,concat('2,',a.ymd,',',a.hms,',',a.ch,',',a.xh,',',a.event,',',a.zt,',',b.kkey,',',g.deviceid) rkey,d.e_color altleval from hevt"+(dateString.substring(1,2))+" a,prtudig b,prtu c,etype_info d,room e,dev_author f,prtudig_fullname g where (power(2,"+userId+"-1) & b.author_read)>0 and b.kkey=g.kkey and b.type=d.e_type and a.zt=d.e_zt and  a.ch=c.rtuno and e.rtuno=c.rtuno and e.roomno=f.roomno and f.deviceno=b.deviceno and f.domain=b.rtuno and c.rtuno=b.rtuno and a.xh=b.sn and a.ch=b.rtuno and a.ymd>="+dateString+" and a.ymd<="+dateString2+" ";
           if (pId>=0) sql= sql+" and a.ch="+pId;
           else {
         	  sql= sql+" and c.domain="+pno;
 		}
-          sql = sql + " union select a.ymd yd,a.hms hs,'yc' evt,a.val sm,a.zt tz,a.tlimit ifo,c.name cm,concat(e.roomname,f.devicenm,b.name) bm from hevtyc"+(dateString.substring(1,2))+" a,prtuana b,prtu c,room e,dev_author f  where  (power(2,"+userId+"-1) & b.author_read)>0 and  a.ch=c.rtuno and a.xh=b.sn and a.ch=b.rtuno and e.rtuno=c.rtuno and e.roomno=f.roomno and f.deviceno=b.deviceno and f.domain=b.rtuno and c.rtuno=b.rtuno and a.ymd>="+dateString+" and a.ymd<="+dateString2;
+          sql = sql + " union select a.ymd yd,a.hms hs,'yc' evt,a.val sm,a.zt tz,a.tlimit ifo,c.name cm,concat(e.roomname,f.devicenm,b.name) bm,concat('1,',a.ymd,',',a.hms,',',a.ch,',',a.xh,',',a.zt,',',a.val,',',b.kkey,',',g.deviceid) rkey,b.altleval*abs(a.zt) altleval from hevtyc"+(dateString.substring(1,2))+" a,prtuana b,prtu c,room e,dev_author f,prtuana_fullname g  where  (power(2,"+userId+"-1) & b.author_read)>0 and b.kkey=g.kkey and  a.ch=c.rtuno and a.xh=b.sn and a.ch=b.rtuno and e.rtuno=c.rtuno and e.roomno=f.roomno and f.deviceno=b.deviceno and f.domain=b.rtuno and c.rtuno=b.rtuno and a.ymd>="+dateString+" and a.ymd<="+dateString2;
+*/
+
+          String  sql = "select a.ymd yd,a.hms hs,a.event evt,'yx' sm,a.zt tz,d.e_info ifo,c.name cm,concat(e.roomname,f.devicenm,b.name) bm,d.e_color altleval,b.kkey kkey,'2' tp,a.ch,a.xh from hevt"+(dateString.substring(1,2))+" a,prtudig b,prtu c,etype_info d,room e,dev_author f where (power(2,"+userId+"-1) & b.author_read)>0  and b.type=d.e_type and a.zt=d.e_zt and  a.ch=c.rtuno and e.rtuno=c.rtuno and e.roomno=f.roomno and f.deviceno=b.deviceno and f.domain=b.rtuno and c.rtuno=b.rtuno and a.xh=b.sn and a.ch=b.rtuno and a.ymd>="+dateString+" and a.ymd<="+dateString2+" ";
+          if (pId>=0) sql= sql+" and a.ch="+pId;
+          else {
+              sql= sql+" and c.domain="+pno;
+          }
+          sql = sql + " union select a.ymd yd,a.hms hs,a.zt evt,a.val sm,a.zt tz,a.tlimit ifo,c.name cm,concat(e.roomname,f.devicenm,b.name) bm,b.altleval*abs(a.zt) altleval,b.kkey kkey,'1' tp,a.ch,a.xh from hevtyc"+(dateString.substring(1,2))+" a,prtuana b,prtu c,room e,dev_author f  where  (power(2,"+userId+"-1) & b.author_read)>0  and  a.ch=c.rtuno and a.xh=b.sn and a.ch=b.rtuno and e.rtuno=c.rtuno and e.roomno=f.roomno and f.deviceno=b.deviceno and f.domain=b.rtuno and c.rtuno=b.rtuno and a.ymd>="+dateString+" and a.ymd<="+dateString2;
+
+
+
           if (pId>=0) sql= sql+" and a.ch="+pId;
           else {
         	  sql= sql+" and c.domain="+pno;
@@ -4554,7 +5167,7 @@ FirstClass.logger.warn(sql);
 		    		if (hms.length()<6) hms="0"+hms;
 
 		    		int vx = 0;
-		    		if (planData.get("evt").toString().indexOf("yc")>=0) vx=1;
+		    		if (planData.get("evt").toString().indexOf("yx")<0) vx=1;
 		    		else vx = 0;
 		    		try
 		    		{
@@ -4568,6 +5181,7 @@ FirstClass.logger.warn(sql);
 			    	xCell.add(""+ymd+" "+hms);
 			    	xCell.add(""+planData.get("cm").toString());
 			    	xCell.add(""+planData.get("bm").toString());
+
 
 			    	
 			    	zt = Integer.parseInt(planData.get("tz").toString());
@@ -4645,7 +5259,11 @@ FirstClass.logger.warn(sql);
                             xCell.add("   ");
                         }
                     }
+			    	//concat('1,',a.ymd,',',a.hms,',',a.ch,',',a.xh,',',a.zt,',',a.val,',',b.kkey,',',g.deviceid)
+                    //a.ymd yd,a.hms hs,a.event evt,' ' sm,a.zt tz,d.e_info ifo,c.name cm,concat(e.roomname,f.devicenm,b.name) bm,a.event rkey,d.e_color altleval,b.kkey kkey,'2' tp
+                    xCell.add(""+planData.get("tp").toString()+","+planData.get("yd").toString()+","+planData.get("hs").toString()+","+planData.get("ch").toString()+","+planData.get("xh").toString()+","+planData.get("evt").toString()+","+planData.get("sm").toString()+","+planData.get("kkey").toString()+","+(long) ((HashMap<String, Object>) AnaUtil.ana_fullname.get(planData.get("kkey").toString())).get("deviceid"));
 
+                    xCell.add(""+planData.get("altleval").toString());
 					arr[i] = xCell;
 
 		    	}
@@ -5827,12 +6445,12 @@ FirstClass.logger.warn(sql);
       dateString = ""+(dateTime2.getMonthValue()*100+dateTime2.getDayOfMonth());
 		  //dateTime2 =dateTime2.plusDays(1);
 	  	java.util.Map<String,Object> map1 = new HashMap<String,Object>() ;
-	  	 sql = "select a.name anm,b.name bnm from prtu a,"+dbnameString2+" b where a.rtuno=b.rtuno and b.saveno="+sav;
+	  	 sql = "select fname from prtuana_fullname where saveno="+sav;
 
 		   // FirstClass.logger.warn("ddd2:"+sql);
 		     userData = getJdbcTemplate().queryForList(sql);
 		     jznm = (Map)userData.get(0);
-		    jzName=jznm.get("anm").toString()+jznm.get("bnm").toString();
+		    jzName=jznm.get("fname").toString();//+jznm.get("bnm").toString();
 	     sql = "select IFNULL(val"+vno+",0) val,savetime from "+dbnameString+(dateTime2.getYear()%10)+" where  groupno="+gno+" and savetime>="+dateString+"0000 and savetime<"+dateString+"9999 order by savetime"; 
 		   // sql = "select IFNULL(val"+vno+",0) val,savetime from "+dbnameString+(dateTime2.getYear()%10)+" where  groupno="+gno+" and round(savetime/10000)="+dateString+" order by savetime"; 
         // if (ttp==0)  sql = "select IFNULL(val"+vno+",0) val,savetime from "+dbnameString+(dateTime2.getYear()%10)+" where  groupno="+gno+" and savetime>="+dateString+"0800 and savetime<"+dateString+"2005 order by savetime"; 
@@ -5920,7 +6538,7 @@ FirstClass.logger.warn(sql);
 	    	  map2.put("jzName",jzName);  
 	          jsonString = JSON.toJSONString(map2);
 				
-	          map1 = getTfReal(crew,crewLong,sav);
+	          map1 = getTfReal(crew,"1",sav);
 	          map1.put("planJson", JSON.parse(jsonString)); 
 	          //FirstClass.logger.warn(xArr[0]);
 	    }
@@ -6102,19 +6720,19 @@ FirstClass.logger.warn(sql);
       dateString = ""+(dateTime2.getMonthValue()*100+dateTime2.getDayOfMonth());
 		  //dateTime2 =dateTime2.plusDays(1);
 	  	java.util.Map<String,Object> map1 = new HashMap<String,Object>() ;
-	  	String  sql = "select a.name anm,b.name bnm from prtu a,"+dbnameString2+" b where a.rtuno=b.rtuno and b.saveno="+pId; 
+	  	String  sql = "select fname from prtupul_fullname where saveno="+pId;
 
-		    //FirstClass.logger.warn(sql);
+		    FirstClass.logger.warn(sql);
 		    List userData = getJdbcTemplate().queryForList(sql);
 		    Map jznm = (Map)userData.get(0);
-		    jzName=jznm.get("anm").toString()+jznm.get("bnm").toString();
+		    jzName=jznm.get("fname").toString();//+jznm.get("bnm").toString();
 	     //sql = "select IFNULL(val"+vno+",0) val,savetime from "+dbnameString+(dateTime2.getYear()%10)+" where  groupno="+gno+" and savetime>="+dateString+"0000 and savetime<"+dateString+"9999 order by savetime"; 
-		    sql = "select a.val"+vno+"-b.val"+vno+" val ,b.savetime savetime from "+dbnameString+(dateTime2.getYear()%10)+" a,"+dbnameString+(dateTime2.getYear()%10)+" b where a.groupno=b.groupno and a.groupno="+gno+" and TIMESTAMPDIFF(MINUTE,STR_TO_DATE(concat('',"+dateTime2.getYear()+"*100000000+b.savetime"+"),'%Y%m%d%H%i'),STR_TO_DATE(concat('',"+dateTime2.getYear()+"*100000000+a.savetime)"+",'%Y%m%d%H%i'))=60 and b.savetime>="+dateString+"0000 and b.savetime<"+dateString+"9999 and mod(a.savetime,100)=0"; 
+		    sql = "select ifnull(a.val"+vno+",0)-ifnull(b.val"+vno+",0) val ,b.savetime savetime from "+dbnameString+(dateTime2.getYear()%10)+" a,"+dbnameString+(dateTime2.getYear()%10)+" b where a.groupno=b.groupno and a.groupno="+gno+" and TIMESTAMPDIFF(MINUTE,STR_TO_DATE(concat('',"+dateTime2.getYear()+"*100000000+b.savetime"+"),'%Y%m%d%H%i'),STR_TO_DATE(concat('',"+dateTime2.getYear()+"*100000000+a.savetime)"+",'%Y%m%d%H%i'))=60 and b.savetime>="+dateString+"0000 and b.savetime<"+dateString+"9999 and mod(a.savetime,100)=0";
 
 		    userData.clear();
 	     
 	    userData = getJdbcTemplate().queryForList(sql);
-	    //FirstClass.logger.warn(sql);
+	    FirstClass.logger.warn(sql);
 	    //FirstClass.logger.warn(userData.size());
 	    int size=24 ;
 	    String infoArr[ ]=new String[24];
@@ -6126,14 +6744,14 @@ FirstClass.logger.warn(sql);
 	    Object xArr[ ]=new Object[maxPoint];
 		String realS="";
 		String realE="";
-		   Object yArr[ ]=new Object[maxPoint];
+		   Object yArr[ ]=new String[maxPoint];
 		    String tooltipArr[ ]=new String[maxPoint];
     	int yAddS=0;
     	int yAddE=0;
     	for (int i = 0; i<24; i++)
     	{
-    		yArr[i]="";
-    		xArr[i]= " ";
+    		yArr[i]="0";
+            tooltipArr[i]=" ";
     		dlval[i]=0;
     		
     	}
@@ -6183,21 +6801,21 @@ FirstClass.logger.warn(sql);
 	           }
 	           
 	    	//xArr[i]=dateString;
-	    		tooltipArr[idx]=" 时间:"+userMap.get("VAL").toString();
+	    		tooltipArr[idx]=userMap.get("savetime").toString();
    			 	
 	    	}
 	    	 map2.put("mx","当日电量: "+tvmx+"(kWh)");
 	    	 //map2.put("mn","当日最小值: "+tvmn+" 最小时间: "+mnt);
 	    	 map2.put("result",1);  
 	    	  map2.put("data",yArr);  
-	    	  map2.put("tooltipArr",tooltipArr);  
-	    	  map2.put("infoArr",infoArr);  
-	    	  map2.put("labels",xArr);  
-	    	  map2.put("jzName",jzName);  
+	    	  //map2.put("tooltipArr",tooltipArr);
+	    	  //map2.put("infoArr",infoArr);
+	    	  map2.put("labels",tooltipArr);
+	    	  map2.put("Name",jzName);
 	          jsonString = JSON.toJSONString(map2);
 				
 	          map1 = getdlinc(crew,crewLong,pId);
-	          map1.put("planJson", JSON.parse(jsonString));
+	          map1.put("dangridianliang", JSON.parse(jsonString));
 	          map1.put("result",1);
 	          //FirstClass.logger.warn(xArr[0]);
 	    }
@@ -6974,7 +7592,7 @@ FirstClass.logger.warn(sql);
 	  		dbnameString2 = "prtuana";
 	  		}
 	  	else {
-	  		dbnameString= "dn_inc";
+	  		dbnameString= "hdz";
 	  		dbnameString2 = "prtupul";
 		}
 	  	gno = (int)pId/200;
@@ -6990,17 +7608,17 @@ FirstClass.logger.warn(sql);
 	  	dateTime2 =dateTime2.plusDays(-1);
 	  	dateString = ""+(dateTime2.getMonthValue()*100+dateTime2.getDayOfMonth());
 	  	
-	  	String   sql = "select sum(IFNULL(val"+vno+",0)) val,floor(savetime/100)*100 savetime from "+dbnameString+" where   groupno="+gno+" and savetime>="+dateString+"0000 and savetime<"+dateString+"9999 group by floor(savetime/100) order by floor(savetime/100)"; 
+	  	String   sql = "select sum(IFNULL(val"+vno+",0)) val,floor(savetime/100)*100 savetime from "+dbnameString+dateTime2.getYear()%10+" where   groupno="+gno+" and savetime>="+dateString+"0000 and savetime<"+dateString+"9999 group by floor(savetime/100)*100 order by floor(savetime/100)*100";
 	  	FirstClass.logger.warn(sql);
 	  	List userData = getJdbcTemplate().queryForList(sql);
 	  	int size=userData.size() ; 
-	  	 msiz=288+1;
-		    String xArr[ ]=new String[msiz];
-		    Object yArr[ ]=new Object[msiz];
+	  	 msiz=24;
+
+		    Object yArr[ ]=new String[msiz];
 		    String tooltipArr[ ]=new String[msiz];
 	    	for (int t = 0; t<msiz; t++)
 	    	{
-	    		xArr[t ]="";
+	    		yArr[t ]="0";
 	    		tooltipArr[t]="";
 	    	}
 	    	 if (userData.size() > 0)
@@ -7015,7 +7633,7 @@ FirstClass.logger.warn(sql);
 						st = st.substring(0,st.indexOf("."));		
 		    		int    idx   = Integer.parseInt(st.substring(st.length()-4));
 		    		idx = ((int)(idx/100));
-	 	    		tooltipArr[idx]=" 当日:"+userMap.get("VAL").toString()+"(kWh)";
+	 	    		tooltipArr[idx]=userMap.get("savetime").toString();
 	 	    		 yArr[idx]=userMap.get("VAL").toString(); 
 	 	    		 zrdl = zrdl+Float.parseFloat(userMap.get("VAL").toString());
 	 	    	}
@@ -7024,9 +7642,9 @@ FirstClass.logger.warn(sql);
 		//
 
         map1.put("data",yArr);  
-        map1.put("tooltipArr",tooltipArr);  
+        map1.put("labels",tooltipArr);
         map1.put("mn","昨日电量: "+zrdl+"(kWh)");  
-        map1.put("infoArr","");  
+
 	  return map1;
   }
   public Map getTfReal_xb(String crew, String crewLong ,String pId)throws ParseException

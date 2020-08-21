@@ -286,15 +286,15 @@ public  class ReportDycJob implements Job {
 		hv = Integer.parseInt(code[2]);
 		//logger.warn(hv);
 		switch (timetype){
-			case 0:
-				rightnow = rightnow.minusDays(1);
-				break;
+			/*case 0:
+				rightnow = rightnow;
+				break;*/
 			case 1:
-				rightnow = rightnow.minusDays(1);
+				//rightnow = rightnow.minusDays(1);
 				rightnow = rightnow.minusMonths(1);
 				break;
 			case 2:
-				rightnow = rightnow.minusDays(1);
+				//rightnow = rightnow.minusDays(1);
 				rightnow = rightnow.minusYears(1);
 			default:
 				break;
@@ -325,8 +325,9 @@ public  class ReportDycJob implements Job {
 				{
 //logger.warn(code[6]);
 					// sql="select mod(floor(savetime/10000),100)-"+code[6]+" dd,ifnull(val"+vno+",0) vv from "+bbname+" where (savetime mod 10000) in ("+PropertyUtil.getProperty("data_points_"+code[5],"0")+") and  groupno="+gno+" and savetime between "+df2.format(rightnow)+code[6]+"0000 and "+df2.format(rightnow)+code[7]+"2400 order by mod(floor(savetime/10000),100)";
-					sql="select mod(floor(savetime/10000),100)-"+code[6]+" dd,floor(ifnull(val"+vno+",0)) vv from "+bbname+" where (savetime mod 10000) in (0) and  groupno="+gno+" and savetime between "+df2.format(rightnow)+code[6]+"0000 and "+df2.format(rightnow)+code[7]+"2400 order by mod(floor(savetime/10000),100)";
-
+					//edit
+					sql="select mod(floor(savetime/10000),100)-"+code[6]+" dd,floor(ifnull(val"+vno+",0)) vv from "+bbname+" where (savetime mod 10000) = 0 and  groupno="+gno+" and savetime between "+df2.format(rightnow)+code[6]+"0000 and "+df2.format(rightnow)+code[7]+"2400 ";
+                    if (code[6].matches("18")) sql = sql + " union select "+rightnow.with(TemporalAdjusters.lastDayOfMonth()).getDayOfMonth()+"-17 dd,floor(ifnull(val"+vno+",0)) vv from "+bbname+" where (savetime) = "+df2.format(rightnow.plusMonths(1).with(TemporalAdjusters.firstDayOfMonth()))+"010000 and  groupno="+gno+"";
 					// logger.warn(sql);
 				}
 				break;
@@ -334,15 +335,20 @@ public  class ReportDycJob implements Job {
 				bbname = "hyc"+rightnow.getYear()%10;
 				if (dtp==0)                  //固定点值电表抄表值
 				{
-//logger.warn(code[6]);CASE sva
-//WHEN 1 THEN '男'
-//　　ELSE '女'
-//END AS
-					// sql="select mod(floor(savetime/10000),100)-"+code[6]+" dd,ifnull(val"+vno+",0) vv from "+bbname+" where (savetime mod 10000) in ("+PropertyUtil.getProperty("data_points_"+code[5],"0")+") and  groupno="+gno+" and savetime between "+df2.format(rightnow)+code[6]+"0000 and "+df2.format(rightnow)+code[7]+"2400 order by mod(floor(savetime/10000),100)";
 					sql="select case savetime when "+Integer.parseInt(dfm.format(m1))+"0000 then 0 else 1 end as  dd,floor(ifnull(val"+vno+",0)) vv from "+bbname+" where (savetime mod 10000) in (0) and  groupno="+gno+" and savetime in ("+dfm.format(m1)+"0000,"+dfm.format(m2)+"0000) order by mod(floor(savetime/10000),100)";
 
-					 logger.warn(sql);
 				}
+				if (dtp==1)                  //固定点值电表抄表值
+				{
+					//edit
+					/**
+					跨年？？？
+
+					 */
+					sql="select case savetime when "+(dfm.format(rightnow.minusDays(1)))+"0000 then 0  when "+(dfm.format(rightnow))+"0000 then 1 else 2 end as  dd,floor(ifnull(val"+vno+",0)) vv from "+bbname+" where (savetime mod 10000) = 0 and  groupno="+gno+" and savetime in ("+dfm.format(rightnow)+"0000,"+dfm.format(rightnow.plusDays(1))+"0000,"+dfm.format(rightnow.minusDays(1))+"0000) and chgtime is not null order by mod(floor(savetime/10000),100)";
+
+				}
+				//logger.warn(sql);
 				break;
 			case "2":
 				bbname = "hdz"+rightnow.getYear()%10;
@@ -396,6 +402,13 @@ public  class ReportDycJob implements Job {
 				break;
 			case "4":
 				bbname = "everymon";
+				break;
+			case "5":
+				bbname = "hdz"+rightnow.getYear()%10;
+				if (dtp==0)                  //前一日，当日，日电量
+				{
+					sql="select case mod(floor(savetime/10000),100) when "+rightnow.getDayOfMonth()+" then 0 else 1 end as  dd,floor(sum(ifnull(val"+vno+",0))) vv from "+bbname+" where   groupno="+gno+" and savetime between "+dfm.format(rightnow.minusDays(1))+"0000 and "+dfm.format(rightnow)+"2400 group by dd";
+				}
 				break;
 			default:
 				break;

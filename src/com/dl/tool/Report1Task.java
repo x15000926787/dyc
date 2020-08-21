@@ -1,6 +1,7 @@
 package com.dl.tool;
 
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.poi.ss.usermodel.*;
@@ -370,73 +371,70 @@ public class Report1Task implements Runnable {
                 int irow = 4;
 
                 Cell cell = sheet.getRow(0).getCell(jcol);
-                cellstr = getCellValue(cell);
-                cell.setCellValue("");
+                if (ObjectUtils.allNotNull(cell)) {
+                    cellstr = getCellValue(cell);
+                    cell.setCellValue("");
 
-                cell = sheet.getRow(1).getCell(jcol);
-                zerostr = getCellValue(cell);
-                cell.setCellValue("");
-                //logger.warn(cellstr+","+zerostr);
-                if (isNumeric(cellstr))
-                {
-                    tdata = getYcbbData(jdbcTemplate,cellstr,zerostr,1,rightnow);
-                    //logger.warn(jcol+":"+getCellValue(cell)+":"+tdata);
-                    if (tdata.containsKey("daydata"))
-                    {
-                        daydata = tdata.getJSONObject("daydata");
-                       // logger.warn(daydata);
-                        for(String str:daydata.keySet()){
-                            Cell daycell = sheet.getRow(Integer.parseInt(str)+irow).getCell(jcol);
-                            daycell.setCellValue(daydata.get(str).toString());
-                            // System.out.println(str + ":" +daydata.get(str));
+                    cell = sheet.getRow(1).getCell(jcol);
+                    zerostr = getCellValue(cell);
+                    cell.setCellValue("");
+                    //logger.warn(cellstr+","+zerostr);
+                    if (isNumeric(cellstr)) {
+                        tdata = getYcbbData(jdbcTemplate, cellstr, zerostr, 1, rightnow);
+                        //logger.warn(jcol+":"+getCellValue(cell)+":"+tdata);
+                        if (tdata.containsKey("daydata")) {
+                            daydata = tdata.getJSONObject("daydata");
+                            // logger.warn(daydata);
+                            for (String str : daydata.keySet()) {
+                                Cell daycell = sheet.getRow(Integer.parseInt(str) + irow).getCell(jcol);
+                                daycell.setCellValue(daydata.get(str).toString());
+                                // System.out.println(str + ":" +daydata.get(str));
 
-                        }
-                        irow = irow+24;
-
-                        while (irow<=rowNum)
-                        {
-                            cell = sheet.getRow(irow).getCell(jcol);
-                            cellstr = getCellValue(cell);
-                            vv = "";
-                            if (cellstr!=null) {
-                                switch (cellstr) {
-                                    case "#04":
-                                        if(tdata.containsKey("max"))   vv = ((HashMap)tdata.get("max")).get("maxv").toString();
-                                        break;
-                                    case "#05":
-                                        if(tdata.containsKey("max"))  vv = ((HashMap)tdata.get("max")).get("minv").toString();
-                                        break;
-                                    case "#06":
-                                        if(tdata.containsKey("avg"))  vv = ((HashMap)tdata.get("avg")).get("avg").toString();
-
-                                        break;
-                                    case "#08":
-                                        if(tdata.containsKey("max"))  vv = ((HashMap)tdata.get("max")).get("maxt").toString().substring(5);
-                                        break;
-                                    case "#09":
-                                        if(tdata.containsKey("max"))  vv = ((HashMap)tdata.get("max")).get("mint").toString().substring(5)    ;
-                                        break;
-                                    default:
-                                        vv = "";
-                                        break;
-                                }
-                                cell.setCellValue(vv);
                             }
-                            irow++;
+                            irow = irow + 24;
+
+                            while (irow <= rowNum) {
+                                cell = sheet.getRow(irow).getCell(jcol);
+                                cellstr = getCellValue(cell);
+                                vv = "";
+                                if (cellstr != null) {
+                                    switch (cellstr) {
+                                        case "#04":
+                                            if (tdata.containsKey("max"))
+                                                vv = ((HashMap) tdata.get("max")).get("maxv").toString();
+                                            break;
+                                        case "#05":
+                                            if (tdata.containsKey("max"))
+                                                vv = ((HashMap) tdata.get("max")).get("minv").toString();
+                                            break;
+                                        case "#06":
+                                            if (tdata.containsKey("avg"))
+                                                vv = ((HashMap) tdata.get("avg")).get("avg").toString();
+
+                                            break;
+                                        case "#08":
+                                            if (tdata.containsKey("max"))
+                                                vv = ((HashMap) tdata.get("max")).get("maxt").toString().substring(5);
+                                            break;
+                                        case "#09":
+                                            if (tdata.containsKey("max"))
+                                                vv = ((HashMap) tdata.get("max")).get("mint").toString().substring(5);
+                                            break;
+                                        default:
+                                            vv = "";
+                                            break;
+                                    }
+                                    cell.setCellValue(vv);
+                                }
+                                irow++;
+                            }
                         }
+
+
                     }
 
 
-
                 }
-
-
-
-
-
-
-
-
                 /*for(int cellNum=0;cellNum <= hssfRow.getLastCellNum();cellNum++) {
                     Cell hssfcell=hssfRow.getCell(cellNum);
                     if(hssfcell== null) {
@@ -450,7 +448,9 @@ public class Report1Task implements Runnable {
             CellRangeAddress region = new CellRangeAddress(0, 0, 0, colNum-1);
             sheet.addMergedRegion(region);
             sheet.getRow(0).setHeightInPoints(30);
-            Cell cell = sheet.getRow(1).getCell(0);
+            Cell cell =null;
+            cell = sheet.getRow(1).getCell(0);
+            if (!ObjectUtils.allNotNull(cell)) cell = sheet.getRow( 1).createCell(0);
             cell.setCellValue(df3.format(rightnow));
             region = new CellRangeAddress(1, 1, 0, colNum-1);
             sheet.addMergedRegion(region);

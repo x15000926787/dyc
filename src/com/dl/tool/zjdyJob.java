@@ -1,5 +1,6 @@
 package com.dl.tool;
 
+import com.googlecode.aviator.AviatorEvaluator;
 import org.apache.logging.log4j.LogManager;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
@@ -88,7 +89,7 @@ public  class zjdyJob implements Job {
 					}
 
 					//logger.warn(calc[1]);
-					 result =  FirstClass.engine.eval(calc[1]).toString();
+					 result =  AviatorEvaluator.execute(calc[1]).toString();
 					//logger.warn(result);
 					jedis.set(calc[0]+"_.value",String.valueOf(result));
 

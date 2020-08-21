@@ -68,9 +68,13 @@ public  class saveRedis implements Job {
 			}
 			JedisUtil.getInstance().returnJedis(jedis);
 		}
-		jdbcutils.releaseConn();
+		try {
+			jdbcutils.releaseConn();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 
 
-    }
+	}
     	
 }

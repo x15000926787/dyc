@@ -1,10 +1,11 @@
 package com.dl.tool;
 
 import com.alibaba.fastjson.JSONObject;
+import io.netty.util.internal.ObjectUtil;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
@@ -29,31 +30,31 @@ import java.util.regex.Pattern;
  * @author xuxu
  * @create 2020-04-14 14:31
  */
-public class Report0Task implements Runnable {
+public class Report6Task implements Runnable {
     private String bbname;
-    private String bbtype,reportPath,zero_condition;
+    private String bbtype,reportPath;
     private File file;
     private Excel2Pdf excel2Pdf = new Excel2Pdf();
     private JdbcTemplate jdbcTemplate;
     public static LocalDate rightnow;
 
-    private static final Logger logger = FirstClass.logger;
+    private static final Logger logger = LogManager.getLogger(Report6Task.class);
     private Workbook workbook;
     DateTimeFormatter df = DateTimeFormatter.ofPattern("MMdd");
     DateTimeFormatter df2 = DateTimeFormatter.ofPattern("yyyyMM");
     DateTimeFormatter df3 = DateTimeFormatter.ofPattern("yyyy-MM");
     DecimalFormat decimalFormat = new DecimalFormat(".00");
     //private ScriptEngine scriptEngine ;// scriptEngineManager.getEngineByName("nashorn");
-    public Report0Task(File file, String bbname, String bbtype, JdbcTemplate jdbcTemplate, LocalDate rightnow) throws IOException {
+    public Report6Task(File file, String bbname, String bbtype, JdbcTemplate jdbcTemplate, LocalDate rightnow) throws IOException {
         this.bbname = bbname;
         this.bbtype = bbtype;
         this.jdbcTemplate = jdbcTemplate;
         this.rightnow = rightnow;
         this.file = file;
         reportPath = PropertyUtil.getProperty("reportPath");
-        zero_condition = PropertyUtil.getProperty("zero_condition",">");
+        //zero_condition = PropertyUtil.getProperty("zero_condition",">");
 
-       // this.scriptEngine = scriptEngine;
+        // this.scriptEngine = scriptEngine;
         //this.tjedis = tjedis;
     }
 
@@ -108,26 +109,26 @@ public class Report0Task implements Runnable {
      * @param jdbcTemplate
      * @param saveno
      * @param zero
-     * @param type    预留：0：日平均值，1，日最大值，2：日最小值，3：整点取值
+     * @param type
      * @param rightnow
      * @return
      */
-    public JSONObject getYcbbData(JdbcTemplate jdbcTemplate,String saveno,String zero,int type, LocalDate rightnow){
+    public JSONObject getdnbbData(JdbcTemplate jdbcTemplate,String saveno,String zero,int type, LocalDate rightnow){
         JSONObject data = new JSONObject();
         JSONObject daydata = new JSONObject();
         Map<String,Object> map =null;//new HashMap<>();// (HashMap)userData.get(i);
         int gno,vno;
         LocalDate st,et;
-
+        HashMap<String,Object> map2 = new HashMap<>();
 
 
         st = rightnow.withDayOfMonth(1);
-        et = rightnow.withDayOfMonth(rightnow.lengthOfMonth() );
+        et = rightnow.withDayOfMonth(rightnow.lengthOfMonth());
         gno = Integer.parseInt(saveno)/200;
         vno = Integer.parseInt(saveno) % 200;
-        float avg=0.0f;
-        String sql="select (floor(savetime/10000) mod 100) dd,ROUND(avg(val"+vno+"),2) vv from hyc"+(rightnow.getYear()%10)+" where ABS(val"+vno+")"+zero_condition+zero+" and  groupno="+gno+" and savetime between "+df.format(st)+"0000 and "+df.format(et)+"2400 group by (floor(savetime/10000) mod 100) ";
-       // logger.warn(sql);
+        int sum=0;
+        String sql="select (floor(savetime/10000) mod 100) dd,ROUND(sum(IFNULL(val"+vno+",0)),0) vv from hyc"+(rightnow.getYear()%10)+" where   groupno="+gno+" and savetime between "+df.format(st)+"0000 and "+df.format(et)+"2400 group by (floor(savetime/10000) mod 100) ";
+        // logger.warn(sql);
         //if(rand.equalsIgnoreCase(imagerand)){
         try{
             List<Map<String, Object>> userData = jdbcTemplate.queryForList(sql);
@@ -139,17 +140,19 @@ public class Report0Task implements Runnable {
                 {
 
                     map = (HashMap) userData.get(i);
+                    try {
+                        sum = sum+Integer.parseInt(map.get("vv").toString());
+                    }catch (Exception e){}
 
-                    avg = avg+Float.parseFloat(map.get("vv").toString());
-                    daydata.put(map.get("dd").toString().replace(".0",""), map.get("vv").toString());
+                    daydata.put(map.get("dd").toString(), map.get("vv").toString());
 
                 }
                 //map.clear();
-                avg = avg/size;
-                HashMap<String,Object> map2 = new HashMap<>();
+               // avg = avg/size;
 
-                map2.put("avg",decimalFormat.format(avg));
-                data.put("avg",  map2);
+
+                map2.put("#04",sum);
+
                 data.put("daydata",  daydata);
 
             }
@@ -158,7 +161,7 @@ public class Report0Task implements Runnable {
             logger.warn("出错了"+e.toString());
             e.printStackTrace();
         }
-        sql="select maxv,maxt from everyday a where not EXISTS (select 1 from everyday b where a.saveno=b.saveno and b.maxv>a.maxv and a.tdate and DATE_FORMAT(a.tdate,'%Y%m')=DATE_FORMAT(b.tdate,'%Y%m')) and a.saveno="+saveno+" and DATE_FORMAT(a.tdate,'%Y%m')='"+df2.format(rightnow)+"'";
+        sql="select ROUND(sum(IFNULL(a.val"+vno+",0)),0) vv,b.TSv from hdz"+(rightnow.getYear()%10)+" a, dnsds b where  (floor(a.savetime/100) mod 100)=b.TSIDX and a.groupno="+gno+" and a.savetime between "+df.format(st)+"0000 and "+df.format(et)+"2400 group by b.TSv ";
 //        logger.warn(sql);
         //if(rand.equalsIgnoreCase(imagerand)){
         try{
@@ -171,36 +174,9 @@ public class Report0Task implements Runnable {
                 {
 
                     map = (HashMap) userData.get(i);
+                    sum = Integer.parseInt(map.get("TSv").toString())-1;
 
-
-                    data.put("max",  map);
-
-                }
-
-
-
-            }
-
-        }catch(Exception e){
-            logger.warn("出错了"+e.toString());
-            e.printStackTrace();
-        }
-        sql="select minv,mint from everyday a where not EXISTS (select 1 from everyday b where a.saveno=b.saveno and b.minv<a.minv and a.tdate and DATE_FORMAT(a.tdate,'%Y%m')=DATE_FORMAT(b.tdate,'%Y%m')) and a.saveno="+saveno+" and DATE_FORMAT(a.tdate,'%Y%m')='"+df2.format(rightnow)+"'";
-        //logger.warn(sql);
-        //if(rand.equalsIgnoreCase(imagerand)){
-        try{
-            List<Map<String, Object>> userData = jdbcTemplate.queryForList(sql);
-            int size=userData.size() ;
-            if (size> 0)
-            {
-
-                for (int i = 0; i<size; i++)
-                {
-
-                    map = (HashMap) userData.get(i);
-
-
-                    data.put("min",  map);
+                    map2.put("#0"+sum,  map.get("vv").toString());
 
                 }
 
@@ -212,6 +188,8 @@ public class Report0Task implements Runnable {
             logger.warn("出错了"+e.toString());
             e.printStackTrace();
         }
+        data.put("sum",  map2);
+
         return data;
     }
     /**
@@ -237,24 +215,32 @@ public class Report0Task implements Runnable {
         }
         return true;
     }
+    public static int excelColStrToNum(String colStr) {
+                int num = 0;
+                int result = 0;
+                int length = colStr.length();
+                for(int i = 0; i < length; i++) {
+                        char ch = colStr.charAt(length - i - 1);
+                        num = (int)(ch - 'A' + 1) ;
+                        num *= Math.pow(26, i);
+                        result += num;
+                    }
+                return result-1;
+            }
     @Override
     public void run()  {
 
         logger.warn("正在执行bbtask "+bbname);
 
         JSONObject tdata = null,daydata=null;
-        String cellstr = null,vv=null,zerostr=null;
-        String exportFilePath = reportPath+rightnow.getYear()+"/"+rightnow.getMonthValue()+"/"+bbname;
-        logger.warn(exportFilePath);
+        String cellstr = null,vv=null,valstr=null;
+        String exportFilePath = reportPath+"/"+rightnow.getYear()+"/"+rightnow.getMonthValue()+"/"+bbname;
         FileInputStream is = null;
 
         try {
-            is = new FileInputStream(file);
+                is = new FileInputStream(file);
             //System.out.println(is.available());
-            if (file.getName().endsWith(".xls")) {
-                // Excel2003及以前版本
-                workbook = new HSSFWorkbook(is);
-            } else {
+
                 // Excel2007及以后版本
                 try {
                     workbook = new XSSFWorkbook(is);
@@ -262,7 +248,7 @@ public class Report0Task implements Runnable {
                     System.out.println(e.toString());
                 }
 
-            }
+
 
 
 
@@ -386,102 +372,109 @@ public class Report0Task implements Runnable {
              */
 
             Sheet sheet = workbook.getSheetAt(0);
-            int colNum = sheet.getRow(0).getLastCellNum();
-            //logger.warn(colNum);
-            int rowNum = sheet.getLastRowNum();
             if(sheet == null) {
                 return;
             }
+            Cell cell = null,celln=null;
+            String[] inf = new String[3];
+            int jcol =0;
+            int irow = 0;
+            //cell = sheet.getRow(0).getCell(0);
+            int colNum = 0;//sheet.getRow(0).getLastCellNum();
+            //logger.warn(colNum);
+            int rowNum = sheet.getLastRowNum();
+            for (jcol=0;jcol<rowNum;jcol++)
+                colNum=sheet.getRow(jcol).getLastCellNum()>colNum?sheet.getRow(jcol).getLastCellNum(): colNum;
 
+            logger.warn(rowNum+","+colNum);
             //遍历col
-            for(int jcol= 1;jcol < colNum;jcol++) {
 
-                int irow = 3;
+            for( jcol= 1;jcol < colNum;jcol++) {
 
-                Cell cell = sheet.getRow(0).getCell(jcol);
-                if (ObjectUtils.allNotNull(cell)) {
-                    cellstr = getCellValue(cell);
-                    cell.setCellValue("");
+                 irow = 0;
 
-                    cell = sheet.getRow(1).getCell(jcol);
-                    zerostr = getCellValue(cell);
-                    cell.setCellValue("");
-                    //logger.warn(cellstr+","+zerostr);
-                    if (isNumeric(cellstr)) {
-                        tdata = getYcbbData(jdbcTemplate, cellstr, zerostr, 1, rightnow);
-                        //logger.warn(jcol+":"+getCellValue(cell)+":"+tdata);
-                        if (tdata.containsKey("daydata")) {
-                            daydata = tdata.getJSONObject("daydata");
-                            // logger.warn(daydata);
-                            for (String str : daydata.keySet()) {
-                                Cell daycell = sheet.getRow(Integer.parseInt(str) + irow).getCell(jcol);
-                                daycell.setCellValue(daydata.get(str).toString());
-                                // System.out.println(str + ":" +daydata.get(str));
+               // cell = sheet.getRow(0).getCell(jcol);
 
-                            }
-                            irow = irow + 32;
+                        //cell.setCellValue("");
 
-                            while (irow <= rowNum) {
+                       //irow = irow + 32;
+
+                        while (irow <= rowNum) {
+                            if (ObjectUtils.allNotNull(sheet.getRow(irow))) {
                                 cell = sheet.getRow(irow).getCell(jcol);
-                                cellstr = getCellValue(cell);
-                                vv = "";
-                                if (cellstr != null) {
-                                    switch (cellstr) {
-                                        case "#04":
-                                            if (tdata.containsKey("max"))
-                                                vv = ((HashMap) tdata.get("max")).get("maxv").toString();
-                                            break;
-                                        case "#05":
-                                            if (tdata.containsKey("min"))
-                                                vv = ((HashMap) tdata.get("min")).get("minv").toString();
-                                            break;
-                                        case "#06":
-                                            if (tdata.containsKey("avg"))
-                                                vv = ((HashMap) tdata.get("avg")).get("avg").toString();
+                                if (ObjectUtils.allNotNull(cell)) {
+                                    cellstr = getCellValue(cell);
+                                    if (StringUtils.isNotEmpty(cellstr)) {
+                                        if (cellstr.startsWith("&")) {
 
-                                            break;
-                                        case "#08":
-                                            if (tdata.containsKey("max"))
-                                                vv = ((HashMap) tdata.get("max")).get("maxt").toString().substring(5);
-                                            break;
-                                        case "#09":
-                                            if (tdata.containsKey("min"))
-                                                vv = ((HashMap) tdata.get("min")).get("mint").toString().substring(5);
-                                            break;
-                                        default:
-                                            vv = "";
-                                            break;
+                                            //cell.setCellValue("0.01");
+                                            //logger.warn(cellstr+","+irow+","+jcol);
+                                            //&2号变电量月报表,T,36
+                                            cellstr = cellstr.substring(1);
+
+                                            inf = cellstr.split(",");
+                                            File nfile = new File(reportPath  + rightnow.getYear() + "/" + rightnow.getMonthValue() + "/" + inf[0] + ".XLSX");
+
+                                            FileInputStream iss = null;
+
+                                            try {
+                                                iss = new FileInputStream(nfile);
+                                                //System.out.println(is.available());
+
+                                                // Excel2007及以后版本
+
+                                                Workbook workbookn = new XSSFWorkbook(iss);
+
+                                                Sheet sheetn = workbookn.getSheetAt(0);
+
+                                                if (ObjectUtils.allNotNull(sheetn.getRow(Integer.parseInt(inf[2])-1))) {
+                                                    if (ObjectUtils.allNotNull(sheetn.getRow(Integer.parseInt(inf[2])-1).getCell(excelColStrToNum(inf[1])))) {
+
+                                                        celln = sheetn.getRow(Integer.parseInt(inf[2])-1).getCell(excelColStrToNum(inf[1]));
+
+
+                                                        valstr = getCellValue(celln);
+                                                       // logger.warn(inf[2] + "," + excelColStrToNum(inf[1]) + "," + valstr);
+                                                        cell.setCellValue(valstr);
+                                                    }else
+                                                    {
+                                                        logger.warn("null_cell: "+reportPath  + rightnow.getYear() + "/" + rightnow.getMonthValue() + "/" + inf[0] + ".XLSX  " + "rowNo:"+inf[2]+",colNo:"+inf[1]);
+                                                    }
+                                                }else
+                                                {
+                                                    logger.warn("null_row: "+reportPath  + rightnow.getYear() + "/" + rightnow.getMonthValue() + "/" + inf[0] + ".XLSX  " + "rowNo:"+inf[2]);
+                                                }
+                                                workbookn.close();
+                                                iss.close();
+
+                                            } catch (Exception e) {
+                                                logger.warn(e.toString()+"  "+bbname+","+irow+","+jcol);
+                                            }
+
+                                        }
                                     }
-                                    cell.setCellValue(vv);
                                 }
-                                irow++;
                             }
+                            irow++;
                         }
 
-
-                    }
-
-
-                }
-                /*for(int cellNum=0;cellNum <= hssfRow.getLastCellNum();cellNum++) {
-                    Cell hssfcell=hssfRow.getCell(cellNum);
-                    if(hssfcell== null) {
-                        continue;
-                    }
-                    System.out.print(" "+getCellValue(hssfcell));
-                }
-                System.out.println();*/
             }
 
-            CellRangeAddress region = new CellRangeAddress(0, 0, 0, colNum-1);
-            sheet.addMergedRegion(region);
-            sheet.getRow(0).setHeightInPoints(30);
-            Cell cell = null;
-            cell = sheet.getRow(1).getCell(0);
-            if (!ObjectUtils.allNotNull(cell)) cell = sheet.getRow( 1).createCell(0);
+
+            if (ObjectUtils.allNotNull(sheet.getRow(1))) {
+                cell = sheet.getRow(1).getCell(0);
+                if (!ObjectUtils.allNotNull(cell)) cell = sheet.getRow(1).createCell(0);
+            }else
+            {
+                cell = sheet.createRow(1).createCell(0);
+            }
             cell.setCellValue(df3.format(rightnow));
-            region = new CellRangeAddress(1, 1, 0, colNum-1);
-            sheet.addMergedRegion(region);
+           // CellRangeAddress region = new CellRangeAddress(0, 0, 0, colNum-1);
+           // sheet.addMergedRegion(region);
+            sheet.getRow(0).setHeightInPoints(30);
+
+           // region = new CellRangeAddress(1, 1, 0, colNum-1);
+           // sheet.addMergedRegion(region);
 
             XSSFCellStyle style = (XSSFCellStyle) workbook.createCellStyle();//创建样式
             style.setAlignment(HorizontalAlignment.CENTER);

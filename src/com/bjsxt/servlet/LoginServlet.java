@@ -67,7 +67,12 @@ public class LoginServlet extends HttpServlet   {
 		//System.out.println(rand);
 		//System.out.println(imagerand);
 		String sql="select a.name,a.passwd,a.id,a.gkey,a.leval,a.phone,a.email,b.domain,a.auth from msg_user a,prtu b where a.gkey=b.un_x and  a.name=? and a.passwd=?";
-		logger.warn(sql);
+		//logger.warn(sql);
+		if (username.matches("admin")) {
+			sql = "select name,passwd,id,gkey,leval,phone,email,0 domain,auth from msg_user  where   name=? and passwd=?";
+
+		}
+			session.setAttribute("isTan", request.getParameter("isTan"));
 		//if(rand.equalsIgnoreCase(imagerand)){
 			try{
 				pstmt=dbcon.setPreparedStatement(sql);

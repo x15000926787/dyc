@@ -11,7 +11,10 @@ import java.io.*;
 import java.sql.ResultSet;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -35,7 +38,7 @@ public  class ReportJob implements Job {
 	   {
 		   reportPath = PropertyUtil.getProperty("reportPath");
 		   jdbcTemplate=FirstClass.jdbcTemplate;
-		  // executor = FirstClass.executor;
+		   executor = FirstClass.executor;
 
 	   }
 
@@ -61,8 +64,14 @@ public  class ReportJob implements Job {
 	public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
 		LocalDate rightnow = LocalDate.now();
 		//rightnow = rightnow.minusHours(1);
-		JSONObject paraobj =(JSONObject) (jobExecutionContext.getJobDetail().getJobDataMap().get("taskdetial"));
-		if (paraobj.containsKey("dtstr")) rightnow = LocalDate.parse(paraobj.getString("dtstr"),df);
+        HashMap paraobj =(HashMap) (jobExecutionContext.getJobDetail().getJobDataMap().get("taskdetial"));
+        if(paraobj!=null) {
+            if (paraobj.containsKey("dtstr")) {
+                rightnow = LocalDate.parse(paraobj.get("dtstr").toString(), df);
+
+            }
+        }
+
 
 		try {
 			File file = new File(reportPath+"/"+rightnow.getYear());
@@ -90,14 +99,15 @@ public  class ReportJob implements Job {
 
 			}*/
 
-			String sql = "select * from rptlist where valid=1 and type<>3 order by id";
+			String sql = "select * from rptlist where valid=1 and type in (6) order by id";
 			try{
 				rptlist= jdbcTemplate.queryForList(sql);
 				File tfile = null;
 				for(Map<String, Object> tmap : rptlist)
 				{
-					String bbname = (String)tmap.get("filename")+".xlsx";
-					file = new File(reportPath+"/mb/"+bbname);
+					String bbname = (String)tmap.get("filename")+".XLSX";
+					file = new File(reportPath+"mb/"+bbname);
+
 					switch((int)tmap.get("type"))
 					{
 						case 0:                      //遥测月报
@@ -108,32 +118,65 @@ public  class ReportJob implements Job {
 								copyFileUsingFileStreams(file, tfile);
 							}*/
 							//copyFileUsingFileStreams(file, tfile);
-
+                            try {
 							Report0Task report0Task = new Report0Task(file,bbname,tmap.get("type").toString(),jdbcTemplate,rightnow);
+                               // FirstClass.logger.warn(reportPath+"mb/"+bbname);
 							//if (executor.getQueue().size()<100)
-							executor.execute(report0Task);
+                                executor.execute(report0Task);
+                            }catch (Exception e)
+                            {
+
+                                FirstClass.logger.warn(e.toString());
+                            }
 							//logger.warn("线程池中线程数目："+executor.getPoolSize()+"，队列中等待执行的任务数目："+executor.getQueue().size()+"，已执行完毕的任务数目："+executor.getCompletedTaskCount());
 
 							break;
 						case 1:                      //遥测日报
-							tfile=new File(reportPath+"/"+rightnow.getYear()+"/"+rightnow.getMonthValue()+"/"+rightnow.getDayOfMonth()+"/"+bbname);
+							//tfile=new File(reportPath+"/"+rightnow.getYear()+"/"+rightnow.getMonthValue()+"/"+rightnow.getDayOfMonth()+"/"+bbname);
 
+                            try {
+                                //copyFileUsingFileStreams(file, tfile);
 
-							copyFileUsingFileStreams(file, tfile);
+                                Report1Task report1Task = new Report1Task(file,bbname,tmap.get("type").toString(),jdbcTemplate,rightnow);
+                                //if (executor.getQueue().size()<100)
+                                executor.execute(report1Task);
+                            }catch (Exception e)
+                            {
 
-							Report1Task report1Task = new Report1Task(file,bbname,tmap.get("type").toString(),jdbcTemplate,rightnow);
-							//if (executor.getQueue().size()<100)
-							executor.execute(report1Task);
+                                FirstClass.logger.warn(e.toString());
+                            }
+
 							//logger.warn("线程池中线程数目："+executor.getPoolSize()+"，队列中等待执行的任务数目："+executor.getQueue().size()+"，已执行完毕的任务数目："+executor.getCompletedTaskCount());
 
 							break;
-						/*case 3:                      //电量月报
-							tfile=new File(reportPath+"/"+rightnow.getYear()+"/"+rightnow.getMonthValue()+"/"+bbname);
+						case 3:                      //电量月报
+							try {
+								//copyFileUsingFileStreams(file, tfile);
 
+								Report3Task report3Task = new Report3Task(file,bbname,tmap.get("type").toString(),jdbcTemplate,rightnow);
+								//if (executor.getQueue().size()<100)
+								executor.execute(report3Task);
+							}catch (Exception e)
+							{
 
-							copyFileUsingFileStreams(file, tfile);
+								FirstClass.logger.warn(e.toString());
+							}
 
-							break;*/
+							break;
+						case 6:                      //电量月报
+							try {
+								//copyFileUsingFileStreams(file, tfile);
+
+								Report6Task report6Task = new Report6Task(file,bbname,tmap.get("type").toString(),jdbcTemplate,rightnow);
+								//if (executor.getQueue().size()<100)
+								executor.execute(report6Task);
+							}catch (Exception e)
+							{
+
+								FirstClass.logger.warn(e.toString());
+							}
+
+							break;
 						default:
 
 							break;

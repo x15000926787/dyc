@@ -16,7 +16,7 @@ import java.util.Iterator;
 public class MqttTask implements Runnable {
 
     public String message;
-    public Jedis jedis;
+
 
 
     public String getMessage() {
